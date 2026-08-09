@@ -1,0 +1,374 @@
+@Logic
+script Phase0VoyagePrototype extends Logic
+
+	property any keyHandler = nil
+	property boolean initialized = false
+	property string currentPort = "魔法森林"
+	property string currentPortId = "forest"
+	property string selectedDestinationId = "sky"
+	property integer voyageCount = 0
+	property integer money = 120
+	property integer cloudCrystal = 0
+	property integer hull = 100
+	property integer maxHull = 100
+	property integer shield = 20
+	property integer maxShield = 20
+	property integer armor = 40
+	property integer maxArmor = 40
+	property integer structure = 100
+	property integer maxStructure = 100
+	property integer hullLevel = 1
+	property integer shieldLevel = 1
+	property integer selectedGoodIndex = 1
+	property integer tradeQuantity = 1
+	property integer cargoCapacity = 8
+	property integer quantity = 0
+	property integer cargoGoodIndex = 0
+	property integer cargoBuyPrice = 0
+	property integer forestRedPotionPrice = 50
+	property integer forestBluePotionPrice = 100
+	property integer forestOrangePotionPrice = 160
+	property integer skyRedPotionPrice = 70
+	property integer skyBluePotionPrice = 80
+	property integer skyOrangePotionPrice = 210
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		if self.initialized == false then
+			self.initialized = true
+			self:ResetPrototype()
+		end
+		log("[VoyageState] ready without legacy global hotkeys")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnEndPlay()
+		if self.keyHandler ~= nil then
+			_InputService:DisconnectEvent(KeyDownEvent, self.keyHandler)
+			self.keyHandler = nil
+		end
+	end
+
+
+	@ExecSpace("ClientOnly")
+	method void ResetPrototype()
+		self.currentPort = "魔法森林"
+		self.currentPortId = "forest"
+		self.selectedDestinationId = "sky"
+		self.voyageCount = 0
+		self.money = 120
+		self.cloudCrystal = 0
+		self.maxHull = 100
+		self.hull = self.maxHull
+		self.maxShield = 20
+		self.shield = self.maxShield
+		self.maxArmor = 40
+		self.armor = self.maxArmor
+		self.maxStructure = 100
+		self.structure = self.maxStructure
+		self.hull = self.structure
+		self.hullLevel = 1
+		self.shieldLevel = 1
+		self.selectedGoodIndex = 1
+		self.tradeQuantity = 1
+		self.quantity = 0
+		self.cargoGoodIndex = 0
+		self.cargoBuyPrice = 0
+		self:Notify("Phase 0 已重置：魔法森林起航，按 1 出航；5選商品 6買 7賣。")
+		self:LogStatus()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ShowHelp()
+		self:Notify("楓谷雲海空賊王 P0：1出航 2船體 3護盾 4整備 5換商品 6買 7賣 Q/E數量 R重置")
+	end
+
+	@ExecSpace("Client")
+	method void DamageShipFromRaid(number amount)
+		local result = self:ApplyDamage(amount)
+		log("[Phase0] raid damage: " .. result)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void StartVoyage()
+		if self.structure <= 0 or self.hull <= 0 then
+			self:Notify("船體結構已破損，先按 4 整備或 R 重置。")
+			return
+		end
+		if self.selectedDestinationId == self.currentPortId then
+			self:Notify("請先選擇不同的目的港。")
+			return
+		end
+		if self.money < 8 then
+			self:Notify("金幣不足以補給出航，按 R 重置本輪。")
+			return
+		end
+
+		local origin = self.currentPort
+		local destination = self:GetDestination()
+		local airspace = self:GetAirspaceName()
+		self.money = self.money - 8
+		self.voyageCount = self.voyageCount + 1
+		self:RecoverShield(4)
+
+		local eventRoll = _UtilLogic:RandomIntegerRange(1, 100)
+		local eventText = ""
+		local rewardMoney = 0
+		local rewardCrystal = 0
+		local damageText = "無損傷"
+
+		if eventRoll <= 40 then
+			eventText = "順風航行"
+		elseif eventRoll <= 65 then
+			eventText = "漂流寶箱"
+			rewardMoney = 20
+			rewardCrystal = 1
+		elseif eventRoll <= 90 then
+			eventText = "空賊小怪騷擾"
+			damageText = self:ApplyDamage(18)
+		else
+			eventText = "大巴前兆"
+			rewardCrystal = 2
+			damageText = self:ApplyDamage(34)
+		end
+
+		self.money = self.money + rewardMoney
+		self.cloudCrystal = self.cloudCrystal + rewardCrystal
+		self.currentPortId = self.selectedDestinationId
+		self.currentPort = self:GetPortName(self.currentPortId)
+		if self.currentPortId == "forest" then
+			self.selectedDestinationId = "sky"
+		else
+			self.selectedDestinationId = "forest"
+		end
+
+		local result = "第 " .. tostring(self.voyageCount) .. " 航：" .. origin .. " -> " .. destination .. " / " .. airspace .. " / " .. eventText .. " / 事件+" .. tostring(rewardMoney) .. "G 結晶+" .. tostring(rewardCrystal) .. " / " .. damageText
+		self:Notify(result)
+		self:LogStatus()
+	end
+
+	@ExecSpace("ClientOnly")
+	method string ApplyDamage(number damage)
+		local shieldLoss = 0
+		local armorLoss = 0
+		local structureLoss = 0
+		if self.shield > 0 then
+			shieldLoss = math.min(self.shield, damage)
+			self.shield = self.shield - shieldLoss
+			damage = damage - shieldLoss
+		end
+		if damage > 0 and self.armor > 0 then
+			armorLoss = math.min(self.armor, damage)
+			self.armor = self.armor - armorLoss
+			damage = damage - armorLoss
+		end
+		if damage > 0 then
+			structureLoss = damage
+			self.structure = math.max(0, self.structure - structureLoss)
+			self.hull = self.structure
+		end
+		return "護盾-" .. tostring(shieldLoss) .. " 裝甲-" .. tostring(armorLoss) .. " 結構-" .. tostring(structureLoss)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void UpgradeHull()
+		local costMoney = 70 + (self.hullLevel * 35)
+		local costCrystal = self.hullLevel
+		if self.money < costMoney or self.cloudCrystal < costCrystal then
+			self:Notify("船體升級不足：需要 " .. tostring(costMoney) .. "G / 結晶" .. tostring(costCrystal))
+			return
+		end
+		self.money = self.money - costMoney
+		self.cloudCrystal = self.cloudCrystal - costCrystal
+		self.hullLevel = self.hullLevel + 1
+		self.maxHull = self.maxHull + 28
+		self.maxStructure = self.maxHull
+		self.structure = self.maxStructure
+		self.hull = self.structure
+		self:Notify("船體升級完成：Lv." .. tostring(self.hullLevel) .. " / 結構 " .. tostring(self.maxStructure))
+		self:LogStatus()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void UpgradeShield()
+		local costMoney = 60 + (self.shieldLevel * 30)
+		local costCrystal = self.shieldLevel
+		if self.money < costMoney or self.cloudCrystal < costCrystal then
+			self:Notify("護盾升級不足：需要 " .. tostring(costMoney) .. "G / 結晶" .. tostring(costCrystal))
+			return
+		end
+		self.money = self.money - costMoney
+		self.cloudCrystal = self.cloudCrystal - costCrystal
+		self.shieldLevel = self.shieldLevel + 1
+		self.maxShield = self.maxShield + 18
+		self.shield = self.maxShield
+		self:Notify("護盾升級完成：Lv." .. tostring(self.shieldLevel) .. " / 耐久 " .. tostring(self.maxShield))
+		self:LogStatus()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefitShip()
+		local armorCost = 8
+		local structureCost = 24
+		local costMoney = armorCost + structureCost
+		if self.money < costMoney then
+			self:Notify("港口整備金幣不足：需要 " .. tostring(costMoney) .. "G")
+			return
+		end
+		self.money = self.money - costMoney
+		self.armor = math.min(self.maxArmor, self.armor + 35)
+		self.structure = math.min(self.maxStructure, self.structure + 25)
+		self.hull = self.structure
+		self.shield = math.min(self.maxShield, self.shield + 8)
+		self:Notify("港口整備完成：裝甲+35 / 結構+25 / 護盾+8")
+		self:LogStatus()
+	end
+
+	@ExecSpace("ClientOnly")
+	method string GetDestination()
+		return self:GetPortName(self.selectedDestinationId)
+	end
+
+	@ExecSpace("ClientOnly")
+	method string GetPortName(string portId)
+		if portId == "forest" then
+			return "魔法森林"
+		end
+		return "天空之城"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SelectDestination(string portId)
+		if portId ~= "forest" and portId ~= "sky" then
+			return
+		end
+		if portId == self.currentPortId then
+			self:Notify("目的港不能與目前港口相同。")
+			return
+		end
+		self.selectedDestinationId = portId
+		self:Notify("目的港已選擇：" .. self:GetPortName(portId))
+	end
+
+	@ExecSpace("ClientOnly")
+	method string GetGoodName(integer index)
+		if index == 1 then
+			return "紅色藥水"
+		elseif index == 2 then
+			return "藍色藥水"
+		end
+		return "橘色藥水"
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer GetCurrentMarketPrice(integer index)
+		if self.currentPortId == "forest" then
+			if index == 1 then
+				return self.forestRedPotionPrice
+			elseif index == 2 then
+				return self.forestBluePotionPrice
+			end
+			return self.forestOrangePotionPrice
+		end
+		if index == 1 then
+			return self.skyRedPotionPrice
+		elseif index == 2 then
+			return self.skyBluePotionPrice
+		end
+		return self.skyOrangePotionPrice
+	end
+
+	@ExecSpace("ClientOnly")
+	method void CycleTradeGood(integer delta)
+		self.selectedGoodIndex = self.selectedGoodIndex + delta
+		if self.selectedGoodIndex > 3 then
+			self.selectedGoodIndex = 1
+		elseif self.selectedGoodIndex < 1 then
+			self.selectedGoodIndex = 3
+		end
+		self:Notify("商品：" .. self:GetGoodName(self.selectedGoodIndex) .. " / " .. tostring(self:GetCurrentMarketPrice(self.selectedGoodIndex)) .. "G")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void AdjustTradeQuantity(integer delta)
+		self.tradeQuantity = math.max(1, math.min(self.cargoCapacity, self.tradeQuantity + delta))
+	end
+
+	@ExecSpace("ClientOnly")
+	method void BuySelectedGood()
+		if self.quantity > 0 then
+			self:Notify("一次只能攜帶一種貨物，請先賣出目前貨物。")
+			return
+		end
+		local price = self:GetCurrentMarketPrice(self.selectedGoodIndex)
+		local total = price * self.tradeQuantity
+		if self.quantity + self.tradeQuantity > self.cargoCapacity then
+			self:Notify("貨艙容量不足。")
+			return
+		end
+		if self.money < total then
+			self:Notify("金幣不足：需要 " .. tostring(total) .. "G")
+			return
+		end
+		self.money = self.money - total
+		self.quantity = self.tradeQuantity
+		self.cargoGoodIndex = self.selectedGoodIndex
+		self.cargoBuyPrice = price
+		self:Notify("買入 " .. self:GetGoodName(self.cargoGoodIndex) .. " x" .. tostring(self.quantity) .. "，花費 " .. tostring(total) .. "G")
+		self:LogStatus()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SellCargo()
+		if self.quantity <= 0 then
+			self:Notify("貨艙目前沒有貨物。")
+			return
+		end
+		local price = self:GetCurrentMarketPrice(self.cargoGoodIndex)
+		local total = price * self.quantity
+		self.money = self.money + total
+		self:Notify("賣出 " .. self:GetGoodName(self.cargoGoodIndex) .. " x" .. tostring(self.quantity) .. "，收入 " .. tostring(total) .. "G")
+		self.quantity = 0
+		self.cargoGoodIndex = 0
+		self.cargoBuyPrice = 0
+		self:LogStatus()
+	end
+
+	@ExecSpace("ClientOnly")
+	method string GetMarketText()
+		return "市場 " .. self:GetPortName(self.currentPortId) .. "｜" .. self:GetGoodName(self.selectedGoodIndex) .. " " .. tostring(self:GetCurrentMarketPrice(self.selectedGoodIndex)) .. "G"
+	end
+
+	@ExecSpace("ClientOnly")
+	method string GetCargoText()
+		if self.quantity <= 0 then
+			return "貨艙 0/" .. tostring(self.cargoCapacity)
+		end
+		return "貨艙 " .. self:GetGoodName(self.cargoGoodIndex) .. " x" .. tostring(self.quantity) .. "/" .. tostring(self.cargoCapacity)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RecoverShield(integer amount)
+		self.shield = math.min(self.maxShield, self.shield + amount)
+	end
+
+	@ExecSpace("ClientOnly")
+	method string GetAirspaceName()
+		if self.voyageCount % 3 == 2 then
+			return "黑雲帶"
+		end
+		return "普通雲海"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void Notify(string message)
+		log("[Phase0] " .. message)
+		_ScreenMessageLogic:PrivateMsg(message)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void LogStatus()
+		log("[Phase0] 狀態：港口=" .. self.currentPort .. " 金幣=" .. tostring(self.money) .. " 結晶=" .. tostring(self.cloudCrystal) .. " 船體=" .. tostring(self.hull) .. "/" .. tostring(self.maxHull) .. " 護盾=" .. tostring(self.shield) .. "/" .. tostring(self.maxShield) .. " 裝甲=" .. tostring(self.armor) .. "/" .. tostring(self.maxArmor) .. " 結構=" .. tostring(self.structure) .. "/" .. tostring(self.maxStructure) .. " 貨艙=" .. self:GetCargoText() .. " Lv=" .. tostring(self.hullLevel) .. "/" .. tostring(self.shieldLevel))
+	end
+
+end

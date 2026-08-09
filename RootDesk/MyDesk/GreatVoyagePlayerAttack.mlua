@@ -1,0 +1,36 @@
+@Component
+script GreatVoyagePlayerAttack extends AttackComponent
+
+	property any keyHandler = nil
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		self.keyHandler = _InputService:ConnectEvent(KeyDownEvent, self.OnKeyDown)
+		log("[PlayerAttack] input ready")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnEndPlay()
+		if self.keyHandler ~= nil then
+			_InputService:DisconnectEvent(KeyDownEvent, self.keyHandler)
+			self.keyHandler = nil
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnKeyDown(KeyDownEvent event)
+		if event.key == KeyboardKey.LeftControl or event.key == KeyboardKey.RightControl then
+			self:PerformAttack()
+		end
+	end
+
+	method integer CalcDamage(Entity attacker, Entity defender, string attackInfo)
+		return 5
+	end
+
+	@ExecSpace("Server")
+	method void PerformAttack()
+		local hits = self:Attack(Vector2(1.0, 1.2), Vector2(0, 0.25), nil)
+		log("[PlayerAttack] attack dispatched")
+	end
+end

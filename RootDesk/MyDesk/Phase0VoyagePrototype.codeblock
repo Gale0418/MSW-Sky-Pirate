@@ -1,0 +1,33 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "codeblock://f5e3e8e7-0f4d-4e2e-bf2d-6f0e6f5c0a91",
+  "ContentType": "x-mod/codeblock",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.5.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "CoreVersion": {
+        "Major": 0,
+        "Minor": 2
+      },
+      "ScriptVersion": {
+        "Major": 1,
+        "Minor": 1
+      },
+      "Description": "Phase 0 playable text voyage prototype.",
+      "Id": "f5e3e8e7-0f4d-4e2e-bf2d-6f0e6f5c0a91",
+      "Language": 1,
+      "Name": "Phase0VoyagePrototype",
+      "Type": 5,
+      "Source": 0,
+      "Target": null
+    }
+  }
+}

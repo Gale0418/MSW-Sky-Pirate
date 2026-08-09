@@ -1,0 +1,522 @@
+@Logic
+script GreatVoyageAdventureController extends Logic
+
+	property Entity promptButtonEntity = "82fe4e25-a3ef-4b44-bacf-a5331f3c4579"
+	property ButtonComponent promptButton = "82fe4e25-a3ef-4b44-bacf-a5331f3c4579"
+	property TextGUIRendererComponent promptLabel = "82fe4e25-a3ef-4b44-bacf-a5331f3c4579"
+	property TextGUIRendererComponent portText = "636305f6-b3d9-4d6d-ae97-2a911cbde7b5"
+	property TextGUIRendererComponent messageText = "89d9f8ce-b86a-4495-9919-00b931a2d9a3"
+	property Entity worldMapModal = "f7519afa-8f51-4dd3-bfdf-d1816f996d2c"
+	property ButtonComponent forestButton = "420fe609-fe0c-46ed-a111-c5c2467424cc"
+	property ButtonComponent skyButton = "d1ae873e-d0c5-49c4-9326-f4e2fd601006"
+	property ButtonComponent sailButton = "98db399b-dc67-4cf9-a172-d1c1b90760cf"
+	property ButtonComponent closeMapButton = "3edba1c7-3af1-48ed-a6f2-8500dd30da76"
+	property TextGUIRendererComponent selectedText = "2dae4a3b-b561-4ec8-9bf3-2090dfd84f93"
+	property Entity shopModal = "d07fa018-85e1-4c04-a649-81c6c6951436"
+	property ButtonComponent shopCloseButton = "a36fa1b1-ef82-4ac0-ad45-858fddd8e16d"
+	property ButtonComponent shopGood1Button = "2d603d71-0ce9-4b7c-bfcd-f117ab99a4ee"
+	property ButtonComponent shopGood2Button = "44228b52-3647-4c5c-96b8-51ec4343b30c"
+	property ButtonComponent shopGood3Button = "c886f65a-f85f-483a-961a-41ca8c19b96b"
+	property ButtonComponent shopMinusButton = "808e9c9a-d3ab-4580-8e79-646e44a203f5"
+	property ButtonComponent shopPlusButton = "e6a43be9-134c-407d-a7b5-db89f90f6471"
+	property ButtonComponent shopBuyButton = "c996d596-b751-4441-bc52-ff84d3d83029"
+	property ButtonComponent shopSellButton = "0044263f-3560-4d02-8b01-7af93b0729b6"
+	property TextGUIRendererComponent shopGoldText = "2f325fb6-ed00-4a37-887c-788788d39d50"
+	property TextGUIRendererComponent shopNpcNameText = "69459c9b-19f1-413f-80f9-e9f4054be84e"
+	property TextGUIRendererComponent shopDialogText = "95a2bcbf-b613-474b-973b-d40383f2ec75"
+	property TextGUIRendererComponent shopGood1Text = "2d603d71-0ce9-4b7c-bfcd-f117ab99a4ee"
+	property TextGUIRendererComponent shopGood2Text = "44228b52-3647-4c5c-96b8-51ec4343b30c"
+	property TextGUIRendererComponent shopGood3Text = "c886f65a-f85f-483a-961a-41ca8c19b96b"
+	property TextGUIRendererComponent shopSelectedText = "31c3e156-d2cf-4d24-8552-bba6921826e7"
+	property TextGUIRendererComponent shopCargoText = "8c3eae0b-a4cc-4779-a522-0dce01f63763"
+	property TextGUIRendererComponent shopQuantityText = "7bfda3d9-2122-43ad-9d09-ed8e74ee90f1"
+	property TextGUIRendererComponent shopStatusText = "9dc38146-7093-4e4e-b3ec-e799bf116149"
+	property any promptHandler = nil
+	property any forestHandler = nil
+	property any skyHandler = nil
+	property any sailHandler = nil
+	property any closeHandler = nil
+	property any shopCloseHandler = nil
+	property any good1Handler = nil
+	property any good2Handler = nil
+	property any good3Handler = nil
+	property any minusHandler = nil
+	property any plusHandler = nil
+	property any buyHandler = nil
+	property any sellHandler = nil
+	property any keyHandler = nil
+	property Entity shipTarget = nil
+	property Entity npcTarget = nil
+	property string currentAction = ""
+	property string currentMapName = ""
+	property string currentPortId = "forest"
+	property string selectedDestinationId = "sky"
+	property string pendingDestinationId = "sky"
+	property string modalType = ""
+	property string shopStatusMessage = "選擇商品後進行交易"
+	property number targetX = 0
+	property number targetY = -1.55
+	property number shipBoardX = 0
+	property number shipBoardY = 0
+	property number refreshElapsed = 0
+	property boolean modalOpen = false
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		if not isvalid(self.promptButton) or not isvalid(self.worldMapModal) or not isvalid(self.shopModal) then
+			log_warning("[Adventure] UI bindings invalid")
+			return
+		end
+		self.promptButtonEntity.Enable = false
+		self.worldMapModal.Enable = false
+		self.shopModal.Enable = false
+		self.promptHandler = self.promptButton.Entity:ConnectEvent(ButtonClickEvent, self.OnPromptClick)
+		self.forestHandler = self.forestButton.Entity:ConnectEvent(ButtonClickEvent, self.OnForestClick)
+		self.skyHandler = self.skyButton.Entity:ConnectEvent(ButtonClickEvent, self.OnSkyClick)
+		self.sailHandler = self.sailButton.Entity:ConnectEvent(ButtonClickEvent, self.OnSailClick)
+		self.closeHandler = self.closeMapButton.Entity:ConnectEvent(ButtonClickEvent, self.OnCloseMapClick)
+		self.shopCloseHandler = self.shopCloseButton.Entity:ConnectEvent(ButtonClickEvent, self.OnShopCloseClick)
+		self.good1Handler = self.shopGood1Button.Entity:ConnectEvent(ButtonClickEvent, self.OnGood1Click)
+		self.good2Handler = self.shopGood2Button.Entity:ConnectEvent(ButtonClickEvent, self.OnGood2Click)
+		self.good3Handler = self.shopGood3Button.Entity:ConnectEvent(ButtonClickEvent, self.OnGood3Click)
+		self.minusHandler = self.shopMinusButton.Entity:ConnectEvent(ButtonClickEvent, self.OnMinusClick)
+		self.plusHandler = self.shopPlusButton.Entity:ConnectEvent(ButtonClickEvent, self.OnPlusClick)
+		self.buyHandler = self.shopBuyButton.Entity:ConnectEvent(ButtonClickEvent, self.OnBuyClick)
+		self.sellHandler = self.shopSellButton.Entity:ConnectEvent(ButtonClickEvent, self.OnSellClick)
+		self.keyHandler = _InputService:ConnectEvent(KeyDownEvent, self.OnKeyDown)
+		self:RefreshMapContext(true)
+		log("[Adventure] voyage and merchant proximity UI ready")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnUpdate(number delta)
+		self.refreshElapsed = self.refreshElapsed + delta
+		if self.refreshElapsed < 0.1 then return end
+		self.refreshElapsed = 0
+		self:RefreshMapContext(false)
+		self:RefreshInteraction()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshMapContext(boolean force)
+		local player = _UserService.LocalPlayer
+		if player == nil then return end
+		local mapName = player.CurrentMapName
+		if force == false and mapName == self.currentMapName then return end
+		self.currentMapName = mapName
+		self.shipTarget = nil
+		self.npcTarget = nil
+		self.currentAction = ""
+		self.promptButtonEntity.Enable = false
+
+		if mapName == "map_forest_port" then
+			self.currentPortId = "forest"
+			self.portText.Text = "魔法森林空港"
+			self.messageText.Text = "探索月台；左側是專屬飛空船，商人艾琳在中央等你"
+			self.shipTarget = _EntityService:GetEntityByPath("/maps/map_forest_port/GV_PlayerShip")
+			self.shipBoardX = 0.65
+			self.shipBoardY = -0.61
+			self.npcTarget = _EntityService:GetEntityByPath("/maps/map_forest_port/森林商人．艾琳")
+			if _Phase0VoyagePrototype ~= nil then
+				_Phase0VoyagePrototype.currentPortId = "forest"
+				_Phase0VoyagePrototype.currentPort = "魔法森林"
+			end
+		elseif mapName == "map_orbis_port" then
+			self.currentPortId = "sky"
+			self.portText.Text = "天空之城空港"
+			self.messageText.Text = "探索天空月台；右側是專屬飛空船，商人露米在左側等你"
+			self.shipTarget = _EntityService:GetEntityByPath("/maps/map_orbis_port/GV_PlayerShip")
+			self.shipBoardX = -1.96
+			self.shipBoardY = -4.34
+			self.npcTarget = _EntityService:GetEntityByPath("/maps/map_orbis_port/天空商人．露米")
+			if _Phase0VoyagePrototype ~= nil then
+				_Phase0VoyagePrototype.currentPortId = "sky"
+				_Phase0VoyagePrototype.currentPort = "天空之城"
+			end
+		elseif mapName == "map_airship_deck" then
+			self.portText.Text = "雲海航行甲板"
+			self.messageText.Text = "走向右舷操舵台，確認航線後抵達目的港"
+			self.targetX = 0.35
+			self.currentAction = "arrive"
+		else
+			self.portText.Text = "楓谷雲海航線"
+			self.messageText.Text = "前往魔法森林或天空之城空港"
+		end
+		log("[Adventure] map context=" .. mapName .. " action=" .. self.currentAction)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshInteraction()
+		if self.modalOpen then
+			self.promptButtonEntity.Enable = false
+			return
+		end
+		local player = _UserService.LocalPlayer
+		if player == nil or player.TransformComponent == nil then return end
+		local playerPosition = player.TransformComponent.WorldPosition
+		local near = false
+		self.currentAction = ""
+
+		if self.currentMapName == "map_airship_deck" then
+			local deckX = playerPosition.x - self.targetX
+			local deckY = playerPosition.y - self.targetY
+			near = math.sqrt(deckX * deckX + deckY * deckY) <= 0.95
+			if near then self.currentAction = "arrive" end
+		else
+			local shipDistance = 999
+			local npcDistance = 999
+			if isvalid(self.shipTarget) then
+				local shipPosition = self.shipTarget.TransformComponent.WorldPosition
+				local shipScale = self.shipTarget.TransformComponent.Scale
+				local scaleFactor = math.abs(shipScale.x) / 0.4
+				local boardX = shipPosition.x + self.shipBoardX * scaleFactor
+				local boardY = shipPosition.y + self.shipBoardY * scaleFactor
+				local shipX = playerPosition.x - boardX
+				local shipY = playerPosition.y - boardY
+				shipDistance = math.sqrt(shipX * shipX + shipY * shipY)
+			end
+			if isvalid(self.npcTarget) then
+				local npcPosition = self.npcTarget.TransformComponent.WorldPosition
+				local npcX = playerPosition.x - npcPosition.x
+				local npcY = playerPosition.y - npcPosition.y
+				npcDistance = math.sqrt(npcX * npcX + npcY * npcY)
+			end
+			if npcDistance <= 1.1 and npcDistance <= shipDistance then
+				near = true
+				self.currentAction = "shop"
+			elseif shipDistance <= 1.25 then
+				near = true
+				self.currentAction = "open_map"
+			end
+		end
+
+		self.promptButtonEntity.Enable = near
+		if near == false then return end
+		if self.currentAction == "open_map" then
+			self.promptLabel.Text = "E　登上你的專屬飛空船：啟航"
+		elseif self.currentAction == "shop" then
+			self.promptLabel.Text = "E　與港口商人交談"
+		else
+			self.promptLabel.Text = "E　轉動舵輪：抵達 " .. self:GetPortName(self.pendingDestinationId)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnKeyDown(KeyDownEvent event)
+		if self.modalOpen then
+			if event.key == KeyboardKey.Escape then
+				self:CloseActiveModal()
+			elseif self.modalType == "world_map" and (event.key == KeyboardKey.Return or event.key == KeyboardKey.E) then
+				self:BeginVoyage()
+			elseif self.modalType == "shop" then
+				if event.key == KeyboardKey.LeftArrow then
+					self:CycleGood(-1)
+				elseif event.key == KeyboardKey.RightArrow then
+					self:CycleGood(1)
+				elseif event.key == KeyboardKey.UpArrow then
+					self:AdjustQuantity(1)
+				elseif event.key == KeyboardKey.DownArrow then
+					self:AdjustQuantity(-1)
+				elseif event.key == KeyboardKey.B then
+					self:BuyGood()
+				elseif event.key == KeyboardKey.S then
+					self:SellGood()
+				end
+			end
+			return
+		end
+		if event.key == KeyboardKey.E and self.promptButtonEntity.Enable then
+			self:RunCurrentAction()
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnPromptClick(ButtonClickEvent event)
+		self:RunCurrentAction()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RunCurrentAction()
+		if self.currentAction == "open_map" then
+			self:OpenWorldMap()
+		elseif self.currentAction == "shop" then
+			self:OpenShop()
+		elseif self.currentAction == "arrive" then
+			self:ArriveAtDestination()
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OpenWorldMap()
+		if self.currentPortId == "forest" then self.selectedDestinationId = "sky" else self.selectedDestinationId = "forest" end
+		self.modalOpen = true
+		self.modalType = "world_map"
+		self.worldMapModal.Enable = true
+		self.shopModal.Enable = false
+		self.promptButtonEntity.Enable = false
+		self:RefreshSelectionText()
+		log("[Adventure] world map opened from=" .. self.currentPortId)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void CloseWorldMap()
+		self.worldMapModal.Enable = false
+		if self.modalType == "world_map" then
+			self.modalOpen = false
+			self.modalType = ""
+		end
+		log("[Adventure] world map closed")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OpenShop()
+		self.modalOpen = true
+		self.modalType = "shop"
+		self.shopModal.Enable = true
+		self.worldMapModal.Enable = false
+		self.promptButtonEntity.Enable = false
+		self.shopStatusMessage = "← → 選商品；↑ ↓ 調整數量"
+		self:RefreshShop()
+		log("[Adventure] merchant opened port=" .. self.currentPortId)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void CloseShop()
+		self.shopModal.Enable = false
+		if self.modalType == "shop" then
+			self.modalOpen = false
+			self.modalType = ""
+		end
+		log("[Adventure] merchant closed")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void CloseActiveModal()
+		if self.modalType == "shop" then self:CloseShop() else self:CloseWorldMap() end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnForestClick(ButtonClickEvent event)
+		self:SelectDestination("forest")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnSkyClick(ButtonClickEvent event)
+		self:SelectDestination("sky")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SelectDestination(string portId)
+		if portId == self.currentPortId then
+			self.messageText.Text = "這裡就是目前港口，請選擇另一個目的地"
+			return
+		end
+		self.selectedDestinationId = portId
+		self:RefreshSelectionText()
+		log("[Adventure] destination selected=" .. portId)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshSelectionText()
+		self.selectedText.Text = "目前：" .. self:GetPortName(self.currentPortId) .. "　→　目的地：" .. self:GetPortName(self.selectedDestinationId)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnSailClick(ButtonClickEvent event)
+		self:BeginVoyage()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void BeginVoyage()
+		if self.selectedDestinationId == self.currentPortId then
+			self.messageText.Text = "目的地不可與目前港口相同"
+			return
+		end
+		self.pendingDestinationId = self.selectedDestinationId
+		if _Phase0VoyagePrototype ~= nil then
+			_Phase0VoyagePrototype:SelectDestination(self.pendingDestinationId)
+			_Phase0VoyagePrototype:StartVoyage()
+		end
+		self:CloseWorldMap()
+		self.messageText.Text = "離港！正在前往雲海航行甲板"
+		local player = _UserService.LocalPlayer
+		if player ~= nil and player.PlayerComponent ~= nil then
+			log("[Adventure] depart target=" .. self.pendingDestinationId)
+			player.PlayerComponent:MoveToMapPosition("map_airship_deck", Vector2(-0.5, -1.55))
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCloseMapClick(ButtonClickEvent event)
+		self:CloseWorldMap()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ArriveAtDestination()
+		local targetMap = "map_orbis_port"
+		local targetPosition = Vector2(0.7, -0.45)
+		if self.pendingDestinationId == "forest" then
+			targetMap = "map_forest_port"
+			targetPosition = Vector2(5.5, -0.25)
+		end
+		self.messageText.Text = "航線確認，準備抵達 " .. self:GetPortName(self.pendingDestinationId)
+		local player = _UserService.LocalPlayer
+		if player ~= nil and player.PlayerComponent ~= nil then
+			log("[Adventure] arrive request map=" .. targetMap)
+			player.PlayerComponent:MoveToMapPosition(targetMap, targetPosition)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshShop()
+		local game = _Phase0VoyagePrototype
+		if game == nil then return end
+		local prefix1 = "　"
+		local prefix2 = "　"
+		local prefix3 = "　"
+		if game.selectedGoodIndex == 1 then prefix1 = "▶ " elseif game.selectedGoodIndex == 2 then prefix2 = "▶ " else prefix3 = "▶ " end
+		self.shopGoldText.Text = "持有 " .. tostring(game.money) .. " G"
+		if self.currentPortId == "forest" then
+			self.shopNpcNameText.Text = "森林商人．艾琳"
+			self.shopDialogText.Text = "冒險者，森林補給站的經典藥水很齊全；不同港口的行情也不一樣喔！"
+		else
+			self.shopNpcNameText.Text = "天空商人．露米"
+			self.shopDialogText.Text = "歡迎抵達雲端！紅、藍、橘三種楓谷經典藥水都準備好了。"
+		end
+		self.shopGood1Text.Text = prefix1 .. "紅色藥水　" .. tostring(game:GetCurrentMarketPrice(1)) .. " G"
+		self.shopGood2Text.Text = prefix2 .. "藍色藥水　　" .. tostring(game:GetCurrentMarketPrice(2)) .. " G"
+		self.shopGood3Text.Text = prefix3 .. "橘色藥水　　" .. tostring(game:GetCurrentMarketPrice(3)) .. " G"
+		self.shopSelectedText.Text = "已選：" .. game:GetGoodName(game.selectedGoodIndex)
+		self.shopCargoText.Text = game:GetCargoText()
+		self.shopQuantityText.Text = "數量　" .. tostring(game.tradeQuantity)
+		self.shopStatusText.Text = self.shopStatusMessage
+	end
+
+	@ExecSpace("ClientOnly")
+	method void CycleGood(integer delta)
+		local game = _Phase0VoyagePrototype
+		if game == nil then return end
+		game:CycleTradeGood(delta)
+		self.shopStatusMessage = "已選擇 " .. game:GetGoodName(game.selectedGoodIndex)
+		self:RefreshShop()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SelectGood(integer index)
+		local game = _Phase0VoyagePrototype
+		if game == nil then return end
+		game.selectedGoodIndex = index
+		self.shopStatusMessage = "已選擇 " .. game:GetGoodName(index)
+		self:RefreshShop()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void AdjustQuantity(integer delta)
+		local game = _Phase0VoyagePrototype
+		if game == nil then return end
+		game:AdjustTradeQuantity(delta)
+		self.shopStatusMessage = "交易數量調整為 " .. tostring(game.tradeQuantity)
+		self:RefreshShop()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void BuyGood()
+		local game = _Phase0VoyagePrototype
+		if game == nil then return end
+		if game.quantity > 0 then
+			self.shopStatusMessage = "貨艙已有貨物，請先賣出"
+		else
+			local total = game:GetCurrentMarketPrice(game.selectedGoodIndex) * game.tradeQuantity
+			if game.money < total then
+				self.shopStatusMessage = "金幣不足，需要 " .. tostring(total) .. " G"
+			else
+				local name = game:GetGoodName(game.selectedGoodIndex)
+				local amount = game.tradeQuantity
+				game:BuySelectedGood()
+				self.shopStatusMessage = "買入 " .. name .. " ×" .. tostring(amount) .. " 完成"
+				log("[Adventure] merchant buy good=" .. name .. " qty=" .. tostring(amount))
+			end
+		end
+		self:RefreshShop()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SellGood()
+		local game = _Phase0VoyagePrototype
+		if game == nil then return end
+		if game.quantity <= 0 then
+			self.shopStatusMessage = "貨艙目前沒有可賣出的貨物"
+		else
+			local name = game:GetGoodName(game.cargoGoodIndex)
+			local amount = game.quantity
+			game:SellCargo()
+			self.shopStatusMessage = "賣出 " .. name .. " ×" .. tostring(amount) .. " 完成"
+			log("[Adventure] merchant sell good=" .. name .. " qty=" .. tostring(amount))
+		end
+		self:RefreshShop()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShopCloseClick(ButtonClickEvent event)
+		self:CloseShop()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnGood1Click(ButtonClickEvent event)
+		self:SelectGood(1)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnGood2Click(ButtonClickEvent event)
+		self:SelectGood(2)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnGood3Click(ButtonClickEvent event)
+		self:SelectGood(3)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnMinusClick(ButtonClickEvent event)
+		self:AdjustQuantity(-1)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnPlusClick(ButtonClickEvent event)
+		self:AdjustQuantity(1)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnBuyClick(ButtonClickEvent event)
+		self:BuyGood()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnSellClick(ButtonClickEvent event)
+		self:SellGood()
+	end
+
+	@ExecSpace("ClientOnly")
+	method string GetPortName(string portId)
+		if portId == "forest" then return "魔法森林" end
+		return "天空之城"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnEndPlay()
+		if isvalid(self.promptButton) and self.promptHandler ~= nil then self.promptButton.Entity:DisconnectEvent(ButtonClickEvent, self.promptHandler) end
+		if isvalid(self.forestButton) and self.forestHandler ~= nil then self.forestButton.Entity:DisconnectEvent(ButtonClickEvent, self.forestHandler) end
+		if isvalid(self.skyButton) and self.skyHandler ~= nil then self.skyButton.Entity:DisconnectEvent(ButtonClickEvent, self.skyHandler) end
+		if isvalid(self.sailButton) and self.sailHandler ~= nil then self.sailButton.Entity:DisconnectEvent(ButtonClickEvent, self.sailHandler) end
+		if isvalid(self.closeMapButton) and self.closeHandler ~= nil then self.closeMapButton.Entity:DisconnectEvent(ButtonClickEvent, self.closeHandler) end
+		if isvalid(self.shopCloseButton) and self.shopCloseHandler ~= nil then self.shopCloseButton.Entity:DisconnectEvent(ButtonClickEvent, self.shopCloseHandler) end
+		if isvalid(self.shopGood1Button) and self.good1Handler ~= nil then self.shopGood1Button.Entity:DisconnectEvent(ButtonClickEvent, self.good1Handler) end
+		if isvalid(self.shopGood2Button) and self.good2Handler ~= nil then self.shopGood2Button.Entity:DisconnectEvent(ButtonClickEvent, self.good2Handler) end
+		if isvalid(self.shopGood3Button) and self.good3Handler ~= nil then self.shopGood3Button.Entity:DisconnectEvent(ButtonClickEvent, self.good3Handler) end
+		if isvalid(self.shopMinusButton) and self.minusHandler ~= nil then self.shopMinusButton.Entity:DisconnectEvent(ButtonClickEvent, self.minusHandler) end
+		if isvalid(self.shopPlusButton) and self.plusHandler ~= nil then self.shopPlusButton.Entity:DisconnectEvent(ButtonClickEvent, self.plusHandler) end
+		if isvalid(self.shopBuyButton) and self.buyHandler ~= nil then self.shopBuyButton.Entity:DisconnectEvent(ButtonClickEvent, self.buyHandler) end
+		if isvalid(self.shopSellButton) and self.sellHandler ~= nil then self.shopSellButton.Entity:DisconnectEvent(ButtonClickEvent, self.sellHandler) end
+		if self.keyHandler ~= nil then _InputService:DisconnectEvent(KeyDownEvent, self.keyHandler) end
+	end
+end

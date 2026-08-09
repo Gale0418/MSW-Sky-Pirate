@@ -1,0 +1,33 @@
++# Local agent and workspace state
++.agents/
++.codex/
++.tmp/
++skills-lock.json
++AGENTS.md
++
++# MSW generated/native environment files; retain tracked project configuration
++Environment/*
++!Environment/config
++
++# MissionCenter working artifacts
++MissionCenter/backups/
++MissionCenter/evidence/
++MissionCenter/assets/
++output/
++
++# Local captures and logs
++maker_play_*.png
++*.log
++*.tmp
++*.temp
++*.bak
++*.swp
++*.swo
++
++# OS/editor files
++.DS_Store
++Thumbs.db
++Desktop.ini
++$RECYCLE.BIN/
++.idea/
++.vscode/

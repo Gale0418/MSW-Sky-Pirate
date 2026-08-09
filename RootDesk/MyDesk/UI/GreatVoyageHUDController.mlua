@@ -1,0 +1,117 @@
+@Logic
+script GreatVoyageHUDController extends Logic
+	property TextGUIRendererComponent routeText = "619e328d-aed4-4844-bc19-2305895b6d7b"
+	property TextGUIRendererComponent moneyText = "5f90c21b-0c3b-4f94-bde4-1704ede536e7"
+	property TextGUIRendererComponent crystalText = "feaf0dd5-da2b-4927-b3d5-41f49958bd44"
+	property TextGUIRendererComponent hullText = "f5075fbf-22a2-4258-9e1d-20c0d018ec0d"
+	property TextGUIRendererComponent shieldText = "18dd8d0e-f126-4279-9f27-a39511608ffa"
+	property TextGUIRendererComponent levelText = "c7bbc03d-a158-41bb-b9ed-851c89cf1cc3"
+	property TextGUIRendererComponent messageText = "a5b49f57-bb10-4f69-b933-0ad4354301c5"
+	property UITransformComponent hullFill = "9403c6e3-c874-48ea-bc2b-c6b61d60e007"
+	property UITransformComponent shieldFill = "7e26a497-5686-469c-b3a7-23525eed1396"
+	property ButtonComponent startVoyageButton = "1cff774d-5772-4bf1-b504-4afa4c011fa4"
+	property ButtonComponent upgradeHullButton = "048f6106-d6da-4d21-a591-198122a0b292"
+	property ButtonComponent upgradeShieldButton = "56d32d11-f98a-4fa6-9084-5aa8190910f6"
+	property ButtonComponent refitButton = "de5d4ce3-128e-4eac-8a2c-76b906b5a2e7"
+	property ButtonComponent resetButton = "b2b36867-b0f1-4408-bc6d-fc321917cfa7"
+	property any startHandler = nil
+	property any hullHandler = nil
+	property any shieldHandler = nil
+	property any refitHandler = nil
+	property any resetHandler = nil
+	property number refreshElapsed = 0
+	property boolean loggedGaugeReady = false
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		-- 連接 HUD 按鈕並立即同步一次航海狀態。
+		self.startHandler = self.startVoyageButton.Entity:ConnectEvent(ButtonClickEvent, self.OnStartClick)
+		self.hullHandler = self.upgradeHullButton.Entity:ConnectEvent(ButtonClickEvent, self.OnHullClick)
+		self.shieldHandler = self.upgradeShieldButton.Entity:ConnectEvent(ButtonClickEvent, self.OnShieldClick)
+		self.refitHandler = self.refitButton.Entity:ConnectEvent(ButtonClickEvent, self.OnRefitClick)
+		self.resetHandler = self.resetButton.Entity:ConnectEvent(ButtonClickEvent, self.OnResetClick)
+		self:RefreshHUD()
+		log("[GreatVoyageHUD] 初始化完成")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnUpdate(number delta)
+		-- 以固定頻率刷新 HUD，避免每幀重建文字與狀態條。
+		self.refreshElapsed = self.refreshElapsed + delta
+		if self.refreshElapsed >= 0.1 then
+			self.refreshElapsed = 0
+			self:RefreshHUD()
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnEndPlay()
+		-- 解除所有 HUD 事件，避免重新遊玩時重複綁定。
+		if self.startHandler ~= nil then self.startVoyageButton.Entity:DisconnectEvent(ButtonClickEvent, self.startHandler) end
+		if self.hullHandler ~= nil then self.upgradeHullButton.Entity:DisconnectEvent(ButtonClickEvent, self.hullHandler) end
+		if self.shieldHandler ~= nil then self.upgradeShieldButton.Entity:DisconnectEvent(ButtonClickEvent, self.shieldHandler) end
+		if self.refitHandler ~= nil then self.refitButton.Entity:DisconnectEvent(ButtonClickEvent, self.refitHandler) end
+		if self.resetHandler ~= nil then self.resetButton.Entity:DisconnectEvent(ButtonClickEvent, self.resetHandler) end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnStartClick(ButtonClickEvent event)
+		-- 執行一次航行並更新操作訊息。
+		log("[GreatVoyageHUD] 點擊啟航")
+		_Phase0VoyagePrototype:StartVoyage()
+		self.messageText.Text = "航行結果已更新"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnHullClick(ButtonClickEvent event)
+		-- 嘗試升級船體。
+		_Phase0VoyagePrototype:UpgradeHull()
+		self.messageText.Text = "已嘗試升級船體"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShieldClick(ButtonClickEvent event)
+		-- 嘗試升級護盾。
+		_Phase0VoyagePrototype:UpgradeShield()
+		self.messageText.Text = "已嘗試升級護盾"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnRefitClick(ButtonClickEvent event)
+		-- 在港口執行船隻整備。
+		_Phase0VoyagePrototype:RefitShip()
+		self.messageText.Text = "已嘗試港口整備"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnResetClick(ButtonClickEvent event)
+		-- 重置航海原型資料。
+		_Phase0VoyagePrototype:ResetPrototype()
+		self.messageText.Text = "航行測試已重置"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshHUD()
+		-- 將航海資料同步到繁中木質 HUD 與船況填充條。
+		local game = _Phase0VoyagePrototype
+		if game == nil then return end
+		local hullRatio = 0
+		if game.maxHull > 0 then hullRatio = game.hull / game.maxHull end
+		hullRatio = math.max(0, math.min(1, hullRatio))
+		local shieldRatio = 0
+		if game.maxShield > 0 then shieldRatio = game.shield / game.maxShield end
+		shieldRatio = math.max(0, math.min(1, shieldRatio))
+		self.hullFill.RectSize = Vector2(384 * hullRatio, 28)
+		self.shieldFill.RectSize = Vector2(384 * shieldRatio, 28)
+		self.routeText.Text = "航線　" .. game.currentPort .. " → " .. game:GetDestination()
+		self.moneyText.Text = "金幣　" .. tostring(game.money) .. " G"
+		self.crystalText.Text = "雲晶　" .. tostring(game.cloudCrystal)
+		self.hullText.Text = "船體　" .. tostring(game.hull) .. " / " .. tostring(game.maxHull) .. "　裝甲 " .. tostring(game.armor) .. "/" .. tostring(game.maxArmor)
+		self.shieldText.Text = "護盾　" .. tostring(game.shield) .. " / " .. tostring(game.maxShield) .. "　結構 " .. tostring(game.structure) .. "/" .. tostring(game.maxStructure)
+		self.levelText.Text = "船體 Lv." .. tostring(game.hullLevel) .. "　護盾 Lv." .. tostring(game.shieldLevel) .. "　" .. game:GetCargoText()
+		if self.loggedGaugeReady == false then
+			self.loggedGaugeReady = true
+			log("[GreatVoyageHUD] 木質狀態條已同步 hullRatio=" .. tostring(hullRatio) .. " shieldRatio=" .. tostring(shieldRatio))
+		end
+	end
+end

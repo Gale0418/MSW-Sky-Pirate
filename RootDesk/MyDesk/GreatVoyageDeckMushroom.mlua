@@ -1,0 +1,50 @@
+@Component
+script GreatVoyageDeckMushroom extends Component
+
+	property integer hp = 15
+	property number attackElapsed = 0
+	property number lifeElapsed = 0
+	property boolean dead = false
+
+	@ExecSpace("ServerOnly")
+	method void OnBeginPlay()
+		log("[DeckMushroom] spawned")
+	end
+
+	@ExecSpace("ServerOnly")
+	@EventSender("Self")
+	handler HandleHitEvent(HitEvent event)
+		if self.dead then
+			return
+		end
+		local damage = event.TotalDamage
+		if damage <= 0 then
+			damage = 5
+		end
+		self.hp = self.hp - damage
+		if self.hp <= 0 then
+			self.dead = true
+			log("[DeckMushroom] defeated")
+			self.Entity:Destroy(0.3)
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnUpdate(number delta)
+		if self.dead then
+			return
+		end
+		self.lifeElapsed = self.lifeElapsed + delta
+		if self.lifeElapsed >= 12 then
+			self.Entity:Destroy(0)
+			return
+		end
+		self.attackElapsed = self.attackElapsed + delta
+		if self.attackElapsed >= 3 then
+			self.attackElapsed = 0
+			if _Phase0VoyagePrototype ~= nil then
+				_Phase0VoyagePrototype:DamageShipFromRaid(4)
+			end
+		end
+	end
+end

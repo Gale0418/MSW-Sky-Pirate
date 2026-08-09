@@ -1,0 +1,110 @@
+@Logic
+script GreatVoyageDeckRaid extends Logic
+
+	property boolean raidActive = false
+	property number elapsed = 0
+	property any cloudFarA = nil
+	property any cloudFarB = nil
+	property any keyHandler = nil
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		-- 舊甲板戰鬥原型暫時休眠，避免在港口全域傳送玩家或搶走輸入。
+		log("[DeckRaid] legacy raid dormant")
+	end
+
+	@ExecSpace("Server")
+	method void RegisterPlayerAttack(string userId)
+		local player = _UserService:GetUserEntityByUserId(userId)
+		if player == nil then
+			log_warning("[DeckRaid] player entity missing")
+			return
+		end
+		if player.GreatVoyagePlayerAttack == nil then
+			local component = player:AddComponent("script.GreatVoyagePlayerAttack")
+			if component == nil then
+				log_warning("[DeckRaid] player attack component missing")
+			else
+				log("[DeckRaid] player attack component added")
+			end
+		else
+			log("[DeckRaid] player attack component already registered")
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void BeginRaid()
+		if self.raidActive then
+			return
+		end
+		self.raidActive = true
+		self.elapsed = 0
+		local desk = _EntityService:GetEntityByPath("/ui/GreatVoyageRouteDesk")
+		if desk ~= nil then
+			desk:SetVisible(false)
+		end
+		self:StartRaid()
+	end
+
+	@ExecSpace("Server")
+	method void StartRaid()
+		local parent = _EntityService:GetEntityByPath("/maps/map01")
+		if parent == nil then
+			log_warning("[DeckRaid] map01 parent missing")
+			return
+		end
+		local p1 = _SpawnService:SpawnByModelId("greatvoyagedeckmushroom", "DeckMushroomA", Vector3(-1.4, -1.4, 0), parent)
+		local p2 = _SpawnService:SpawnByModelId("greatvoyagedeckmushroom", "DeckMushroomB", Vector3(0, -1.4, 0), parent)
+		local p3 = _SpawnService:SpawnByModelId("greatvoyagedeckmushroom", "DeckMushroomC", Vector3(1.4, -1.4, 0), parent)
+		if p1 == nil or p2 == nil or p3 == nil then
+			log_warning("[DeckRaid] mushroom spawn failed")
+		else
+			log("[DeckRaid] spawned 3 deck mushrooms")
+		end
+	end
+
+	@ExecSpace("Client")
+	method void DamageShip(number amount)
+		if _Phase0VoyagePrototype ~= nil then
+			local result = _Phase0VoyagePrototype:ApplyDamage(amount)
+			log("[DeckRaid] ship damaged: " .. result)
+		end
+	end
+
+
+
+	@ExecSpace("ClientOnly")
+	method void OnEndPlay()
+		if self.keyHandler ~= nil then
+			_InputService:DisconnectEvent(KeyDownEvent, self.keyHandler)
+			self.keyHandler = nil
+		end
+	end
+	@ExecSpace("ClientOnly")
+	method void OnUpdate(number delta)
+		if self.raidActive == false then
+			return
+		end
+		self.elapsed = self.elapsed + delta
+		if self.cloudFarA ~= nil then
+			self.cloudFarA.TransformComponent.Position = self.cloudFarA.TransformComponent.Position + Vector3(-delta * 0.6, 0, 0)
+			if self.cloudFarA.TransformComponent.Position.x < -16 then
+				self.cloudFarA.TransformComponent.Position = Vector3(16, self.cloudFarA.TransformComponent.Position.y, self.cloudFarA.TransformComponent.Position.z)
+			end
+		end
+		if self.cloudFarB ~= nil then
+			self.cloudFarB.TransformComponent.Position = self.cloudFarB.TransformComponent.Position + Vector3(-delta * 0.4, 0, 0)
+			if self.cloudFarB.TransformComponent.Position.x < -16 then
+				self.cloudFarB.TransformComponent.Position = Vector3(16, self.cloudFarB.TransformComponent.Position.y, self.cloudFarB.TransformComponent.Position.z)
+			end
+		end
+		if self.elapsed >= 12 then
+			self.raidActive = false
+			local desk = _EntityService:GetEntityByPath("/ui/GreatVoyageRouteDesk")
+			if desk ~= nil then
+				desk:SetVisible(true)
+			end
+			log("[DeckRaid] raid complete")
+		end
+	end
+end

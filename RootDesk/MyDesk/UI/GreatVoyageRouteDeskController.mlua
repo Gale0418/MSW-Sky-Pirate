@@ -1,0 +1,132 @@
+@Logic
+script GreatVoyageRouteDeskController extends Logic
+	property ButtonComponent forestPortButton = "b7aa9261-c3f1-45ee-8eb6-157dea8a9410"
+	property ButtonComponent skyPortButton = "a56abbe3-3193-43c2-bbd9-fc66223a3bcf"
+	property ButtonComponent sailButton = "524922d3-60da-4e81-a67e-5de9ef151ad1"
+	property TextGUIRendererComponent selectedText = "3f5e05db-b5dd-4f2e-9fd0-96c0d523d885"
+	property TextGUIRendererComponent routeStatusText = "61b533b4-b6a5-44c8-943f-c9515c334e18"
+	property Entity forestShipToken = "4e1d9a24-8813-41f4-bfab-be7aa1337986"
+	property Entity skyShipToken = "fee4146c-f5b9-48d9-af16-fb6ddee8b1c9"
+	property TextGUIRendererComponent marketText = "cca2fb62-8cbd-4f25-a93e-0f00f795ce7a"
+	property TextGUIRendererComponent cargoText = "dc1bd6f4-25c5-4b82-963d-82abe3d77d02"
+	property TextGUIRendererComponent quantityText = "b161ef5a-c940-4a3b-8820-81f041ab1b8e"
+	property ButtonComponent previousGoodButton = "d73412cb-8db1-4e94-8195-30c03ffc4751"
+	property ButtonComponent nextGoodButton = "1104eb3e-41fc-4c68-85b3-6273451d074d"
+	property ButtonComponent quantityMinusButton = "a3d93a81-699b-4658-83f1-dbafadf4fe25"
+	property ButtonComponent quantityPlusButton = "1bdaf171-ed56-4cb1-94f2-13e0e15759d7"
+	property ButtonComponent buyButton = "e962658e-f4b9-4ca7-869f-34adbb8f5340"
+	property ButtonComponent sellButton = "52b2f8e5-2e79-48f0-8eca-ccc8a47d7748"
+	property any forestHandler = nil
+	property any skyHandler = nil
+	property any sailHandler = nil
+	property any previousGoodHandler = nil
+	property any nextGoodHandler = nil
+	property any quantityMinusHandler = nil
+	property any quantityPlusHandler = nil
+	property any buyHandler = nil
+	property any sellHandler = nil
+	property number elapsed = 0
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		if isvalid(self.forestPortButton) == false or isvalid(self.skyPortButton) == false or isvalid(self.sailButton) == false then
+			log_warning("[RouteDesk] UI 綁定無效")
+			return
+		end
+		self.forestHandler = self.forestPortButton.Entity:ConnectEvent(ButtonClickEvent, self.OnForestClick)
+		self.skyHandler = self.skyPortButton.Entity:ConnectEvent(ButtonClickEvent, self.OnSkyClick)
+		self.sailHandler = self.sailButton.Entity:ConnectEvent(ButtonClickEvent, self.OnSailClick)
+		if isvalid(self.previousGoodButton) then self.previousGoodHandler = self.previousGoodButton.Entity:ConnectEvent(ButtonClickEvent, self.OnPreviousGoodClick) end
+		if isvalid(self.nextGoodButton) then self.nextGoodHandler = self.nextGoodButton.Entity:ConnectEvent(ButtonClickEvent, self.OnNextGoodClick) end
+		if isvalid(self.quantityMinusButton) then self.quantityMinusHandler = self.quantityMinusButton.Entity:ConnectEvent(ButtonClickEvent, self.OnQuantityMinusClick) end
+		if isvalid(self.quantityPlusButton) then self.quantityPlusHandler = self.quantityPlusButton.Entity:ConnectEvent(ButtonClickEvent, self.OnQuantityPlusClick) end
+		if isvalid(self.buyButton) then self.buyHandler = self.buyButton.Entity:ConnectEvent(ButtonClickEvent, self.OnBuyClick) end
+		if isvalid(self.sellButton) then self.sellHandler = self.sellButton.Entity:ConnectEvent(ButtonClickEvent, self.OnSellClick) end
+		self:RefreshDesk()
+		log("[RouteDesk] 藏寶圖航線桌初始化完成")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnUpdate(number delta)
+		self.elapsed = self.elapsed + delta
+		if self.elapsed >= 0.1 then
+			self.elapsed = 0
+			self:RefreshDesk()
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnEndPlay()
+		if isvalid(self.forestPortButton) and self.forestHandler ~= nil then self.forestPortButton.Entity:DisconnectEvent(ButtonClickEvent, self.forestHandler) end
+		if isvalid(self.skyPortButton) and self.skyHandler ~= nil then self.skyPortButton.Entity:DisconnectEvent(ButtonClickEvent, self.skyHandler) end
+		if isvalid(self.sailButton) and self.sailHandler ~= nil then self.sailButton.Entity:DisconnectEvent(ButtonClickEvent, self.sailHandler) end
+		if isvalid(self.previousGoodButton) and self.previousGoodHandler ~= nil then self.previousGoodButton.Entity:DisconnectEvent(ButtonClickEvent, self.previousGoodHandler) end
+		if isvalid(self.nextGoodButton) and self.nextGoodHandler ~= nil then self.nextGoodButton.Entity:DisconnectEvent(ButtonClickEvent, self.nextGoodHandler) end
+		if isvalid(self.quantityMinusButton) and self.quantityMinusHandler ~= nil then self.quantityMinusButton.Entity:DisconnectEvent(ButtonClickEvent, self.quantityMinusHandler) end
+		if isvalid(self.quantityPlusButton) and self.quantityPlusHandler ~= nil then self.quantityPlusButton.Entity:DisconnectEvent(ButtonClickEvent, self.quantityPlusHandler) end
+		if isvalid(self.buyButton) and self.buyHandler ~= nil then self.buyButton.Entity:DisconnectEvent(ButtonClickEvent, self.buyHandler) end
+		if isvalid(self.sellButton) and self.sellHandler ~= nil then self.sellButton.Entity:DisconnectEvent(ButtonClickEvent, self.sellHandler) end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnForestClick(ButtonClickEvent event)
+		if _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype:SelectDestination("forest") end
+		self.selectedText.Text = "選擇港口：魔法森林"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnSkyClick(ButtonClickEvent event)
+		if _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype:SelectDestination("sky") end
+		self.selectedText.Text = "選擇港口：天空之城"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnSailClick(ButtonClickEvent event)
+		if _Phase0VoyagePrototype == nil then return end
+		_Phase0VoyagePrototype:StartVoyage()
+		self.selectedText.Text = "船棋沿航線前進"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnPreviousGoodClick(ButtonClickEvent event)
+		if _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype:CycleTradeGood(-1) end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnNextGoodClick(ButtonClickEvent event)
+		if _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype:CycleTradeGood(1) end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnQuantityMinusClick(ButtonClickEvent event)
+		if _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype:AdjustTradeQuantity(-1) end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnQuantityPlusClick(ButtonClickEvent event)
+		if _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype:AdjustTradeQuantity(1) end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnBuyClick(ButtonClickEvent event)
+		if _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype:BuySelectedGood() end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnSellClick(ButtonClickEvent event)
+		if _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype:SellCargo() end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshDesk()
+		local game = _Phase0VoyagePrototype
+		if game == nil or isvalid(self.routeStatusText) == false then return end
+		local atForest = game.currentPort == "魔法森林"
+		if isvalid(self.forestShipToken) then self.forestShipToken.Enable = atForest end
+		if isvalid(self.skyShipToken) then self.skyShipToken.Enable = atForest == false end
+		self.routeStatusText.Text = "目前位置　" .. game.currentPort .. "　／　航行 " .. tostring(game.voyageCount) .. " 次　／　目的地 " .. game:GetDestination()
+		if isvalid(self.marketText) then self.marketText.Text = game:GetMarketText() end
+		if isvalid(self.cargoText) then self.cargoText.Text = game:GetCargoText() end
+		if isvalid(self.quantityText) then self.quantityText.Text = "數量 " .. tostring(game.tradeQuantity) end
+	end
+end

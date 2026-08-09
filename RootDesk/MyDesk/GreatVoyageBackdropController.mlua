@@ -1,0 +1,189 @@
+@Component
+script GreatVoyageBackdropController extends Component
+
+	property SpriteRendererComponent backdrop = nil
+	property SoundComponent ambience = nil
+	property Entity forestLine = nil
+	property Entity orbisMapStrip = nil
+	property Entity flightScene = nil
+	property Entity cloudFarA = nil
+	property Entity cloudFarB = nil
+	property Entity deckHull = nil
+	property Entity hpCrystal = nil
+	property string activePortId = "forest"
+	property string targetPortId = "forest"
+	property boolean flightActive = false
+	property number flightElapsed = 0
+	property number refreshElapsed = 0
+
+	property string forestBackdropRUID = "778b36c4d3b9405e9b467694a0affddc"
+	property string skyBackdropRUID = "fea861416a8e4ff59afe27171b0b0aa1"
+	property string flightBackdropRUID = "35dbcbb0c21a42af8f25cc8c717328e3"
+	property string forestPortBgmRUID = "b87b1307cb584a57941a1aeac41644c1"
+	property string skyPortBgmRUID = "02301b8112894626a78f8d517aada78a"
+	property string flightBgmRUID = "35e1ceffb5a54321a3ae5d43b3656c7a"
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		self.backdrop = self.Entity.SpriteRendererComponent
+		self.ambience = self.Entity.SoundComponent
+		self.forestLine = _EntityService:GetEntityByPath("/maps/map01/GV_ForestLine")
+		self.orbisMapStrip = _EntityService:GetEntityByPath("/maps/map01/GV_OrbisMapStrip")
+		self.flightScene = _EntityService:GetEntityByPath("/maps/map01/GV_FlightScene")
+		self.cloudFarA = _EntityService:GetEntityByPath("/maps/map01/GV_CloudFarA")
+		self.cloudFarB = _EntityService:GetEntityByPath("/maps/map01/GV_CloudFarB")
+		self.deckHull = _EntityService:GetEntityByPath("/maps/map01/GV_DeckHull")
+		self.hpCrystal = _EntityService:GetEntityByPath("/maps/map01/GV_HP_Crystal")
+		local game = _Phase0VoyagePrototype
+		if game ~= nil then
+			self.activePortId = game.currentPortId
+			self.targetPortId = self.activePortId
+		end
+		if self.backdrop ~= nil then self.backdrop.Enable = false end
+		local map = self.Entity.CurrentMap
+		if map ~= nil and map.FootholdComponent ~= nil then map.FootholdComponent.Enable = false end
+		self:ApplyPortBackdrop(self.activePortId)
+		log("[Backdrop] official scenes initialized port=" .. self.activePortId)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnUpdate(number delta)
+		local game = _Phase0VoyagePrototype
+		if game == nil then return end
+		self.refreshElapsed = self.refreshElapsed + delta
+		if self.refreshElapsed >= 0.2 then
+			self.refreshElapsed = 0
+			if self.flightActive == false and game.currentPortId ~= self.activePortId then
+				self:BeginFlight(game.currentPortId)
+			end
+		end
+		if self.flightActive == false then return end
+		self.flightElapsed = self.flightElapsed + delta
+		self:MoveClouds(delta)
+		if self.flightElapsed >= 4 then
+			self.flightActive = false
+			self.activePortId = self.targetPortId
+			self:ApplyPortBackdrop(self.activePortId)
+			log("[Backdrop] arrived port=" .. self.activePortId)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void BeginFlight(string destinationId)
+		self.targetPortId = destinationId
+		self.flightElapsed = 0
+		self.flightActive = true
+		self:SetOriginalMapEnabled(false)
+		self:SetFamilyEnabled("GVF_", false)
+		self:SetFamilyEnabled("GVO_", false)
+		self:SetFamilyEnabled("GVL_", true)
+		if self.backdrop ~= nil then self.backdrop.Enable = false end
+		if self.cloudFarA ~= nil then self.cloudFarA.Enable = true end
+		if self.cloudFarB ~= nil then self.cloudFarB.Enable = true end
+		self:SetDockedShip(false, destinationId)
+		self:MoveLocalPlayer(Vector3(0.2, -1.0, 0))
+		self:PlayAmbience(self.flightBgmRUID)
+		log("[Backdrop] flight start target=" .. destinationId)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ApplyPortBackdrop(string portId)
+		local isForest = portId == "forest"
+		self:SetOriginalMapEnabled(false)
+		self:SetFamilyEnabled("GVF_", isForest)
+		self:SetFamilyEnabled("GVO_", isForest == false)
+		self:SetFamilyEnabled("GVL_", false)
+		if self.backdrop ~= nil then self.backdrop.Enable = false end
+		if self.cloudFarA ~= nil then self.cloudFarA.Enable = false end
+		if self.cloudFarB ~= nil then self.cloudFarB.Enable = false end
+		self:SetDockedShip(true, portId)
+		self:MoveLocalPlayer(self:GetDockPosition(portId))
+		if isForest then
+			self:PlayAmbience(self.forestPortBgmRUID)
+		else
+			self:PlayAmbience(self.skyPortBgmRUID)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetOriginalMapEnabled(boolean enabled)
+		local map = self.Entity.CurrentMap
+		if map == nil then return end
+		local children = map.Children:ToTable()
+		for i = 1, #children do
+			local name = children[i].Name
+			local isCustom = string.sub(name, 1, 3) == "GV_"
+			local isForest = string.sub(name, 1, 4) == "GVF_"
+			local isFlight = string.sub(name, 1, 4) == "GVL_"
+			local isSky = string.sub(name, 1, 4) == "GVO_"
+			if not isCustom and not isForest and not isFlight and not isSky then children[i]:SetEnable(enabled) end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetFamilyEnabled(string prefix, boolean enabled)
+		local map = self.Entity.CurrentMap
+		if map == nil then return end
+		local children = map.Children:ToTable()
+		for i = 1, #children do
+			local child = children[i]
+			if string.sub(child.Name, 1, string.len(prefix)) == prefix then
+				child:SetEnable(enabled)
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method Vector3 GetDockPosition(string portId)
+		if portId == "sky" then return Vector3(-6.7, -0.2, 0) end
+		return Vector3(0, -2.0, 0)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetDockedShip(boolean visible, string portId)
+		local dock = self:GetDockPosition(portId)
+		if self.deckHull ~= nil then
+			self.deckHull.Enable = visible
+			self.deckHull.TransformComponent.Position = Vector3(dock.x, dock.y - 0.2, 999.7)
+		end
+		if self.hpCrystal ~= nil then
+			self.hpCrystal.Enable = visible
+			self.hpCrystal.TransformComponent.Position = Vector3(dock.x, dock.y + 0.8, 999.7)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void MoveLocalPlayer(Vector3 position)
+		local player = _UserService.LocalPlayer
+		if player ~= nil and player.TransformComponent ~= nil then
+			player.TransformComponent.Position = position
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void PlayAmbience(string clipRUID)
+		if self.ambience == nil then return end
+		self.ambience:Stop()
+		self.ambience.AudioClipRUID = clipRUID
+		self.ambience.Loop = true
+		self.ambience.Bgm = true
+		self.ambience:Play()
+		log("[Backdrop] audio clip=" .. clipRUID)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void MoveClouds(number delta)
+		if self.cloudFarA ~= nil and self.cloudFarA.Enable then
+			self.cloudFarA.TransformComponent.Position = self.cloudFarA.TransformComponent.Position + Vector3(-delta * 1.1, 0, 0)
+			if self.cloudFarA.TransformComponent.Position.x < -16 then
+				self.cloudFarA.TransformComponent.Position = Vector3(16, self.cloudFarA.TransformComponent.Position.y, self.cloudFarA.TransformComponent.Position.z)
+			end
+		end
+		if self.cloudFarB ~= nil and self.cloudFarB.Enable then
+			self.cloudFarB.TransformComponent.Position = self.cloudFarB.TransformComponent.Position + Vector3(-delta * 0.75, 0, 0)
+			if self.cloudFarB.TransformComponent.Position.x < -16 then
+				self.cloudFarB.TransformComponent.Position = Vector3(16, self.cloudFarB.TransformComponent.Position.y, self.cloudFarB.TransformComponent.Position.z)
+			end
+		end
+	end
+end
