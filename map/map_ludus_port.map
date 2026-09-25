@@ -8376,7 +8376,7 @@
               "NameTagRUID": {
                 "DataId": "9bf18287398c44699c20fc5123d1a1ae"
               },
-              "Enable": true
+              "Enable": false
             }
           ],
           "@version": 1
@@ -8739,7 +8739,7 @@
               "OrderInLayer": 0,
               "PlayRate": 1,
               "RenderSetting": 0,
-              "SortingLayer": "MapLayer6",
+              "SortingLayer": "MapLayer4",
               "SpriteRUID": "b4973e0def274436a33d0a6e9dad5fe8",
               "StartFrameIndex": 0,
               "Color": {
@@ -8803,10 +8803,10 @@
               "EndFrameIndex": 2147483647,
               "FlipX": false,
               "FlipY": false,
-              "OrderInLayer": 10,
+              "OrderInLayer": 3,
               "PlayRate": 1,
               "RenderSetting": 0,
-              "SortingLayer": "MapLayer6",
+              "SortingLayer": "MapLayer4",
               "SpriteRUID": "eb4c963ffb754ce3847d2dac46efffb1",
               "StartFrameIndex": 0,
               "Color": {

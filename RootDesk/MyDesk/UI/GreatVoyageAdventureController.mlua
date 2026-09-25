@@ -135,7 +135,7 @@ script GreatVoyageAdventureController extends Logic
 		if mapName == "map_forest_port" then
 			self.currentPortId = "forest"
 			self.portText.Text = "魔法森林空港"
-			self.messageText.Text = "探索月台；右側是專屬飛空船，商人艾琳在起點附近"
+			self.messageText.Text = "艾琳在左側；往右走到飛船梯旁，按 E 開航圖"
 			self.boardingTarget = _EntityService:GetEntityByPath("/maps/map_forest_port/GV_ShipBoardInteractPoint")
 			self.npcTarget = _EntityService:GetEntityByPath("/maps/map_forest_port/森林商人．艾琳")
 			if _Phase0VoyagePrototype ~= nil then

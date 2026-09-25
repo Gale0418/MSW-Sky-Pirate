@@ -5931,7 +5931,7 @@
               "NameTagRUID": {
                 "DataId": "9bf18287398c44699c20fc5123d1a1ae"
               },
-              "Enable": true
+              "Enable": false
             }
           ],
           "@version": 1
@@ -6038,7 +6038,7 @@
               "NameTagRUID": {
                 "DataId": "9bf18287398c44699c20fc5123d1a1ae"
               },
-              "Enable": true
+              "Enable": false
             }
           ],
           "@version": 1
