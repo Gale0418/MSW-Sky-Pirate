@@ -3,8 +3,9 @@ script GreatVoyageDeckMushroom extends Component
 
 	property integer hp = 15
 	property number attackElapsed = 0
-	property number lifeElapsed = 0
 	property boolean dead = false
+	property string ownerPlayerId = ""
+	property string encounterId = ""
 
 	@ExecSpace("ServerOnly")
 	method void OnBeginPlay()
@@ -14,16 +15,15 @@ script GreatVoyageDeckMushroom extends Component
 	@ExecSpace("ServerOnly")
 	@EventSender("Self")
 	handler HandleHitEvent(HitEvent event)
-		if self.dead then
-			return
-		end
+		if self.dead or self.ownerPlayerId == "" or event.AttackerEntity == nil then return end
+		local attacker = event.AttackerEntity.PlayerComponent
+		if attacker == nil or attacker.UserId ~= self.ownerPlayerId then return end
 		local damage = event.TotalDamage
-		if damage <= 0 then
-			damage = 5
-		end
+		if damage <= 0 then return end
 		self.hp = self.hp - damage
 		if self.hp <= 0 then
 			self.dead = true
+			if _GreatVoyageVoyageState ~= nil then _GreatVoyageVoyageState:MarkRaidEnemyRemoved(self.ownerPlayerId, self.encounterId) end
 			log("[DeckMushroom] defeated")
 			self.Entity:Destroy(0.3)
 		end
@@ -34,17 +34,10 @@ script GreatVoyageDeckMushroom extends Component
 		if self.dead then
 			return
 		end
-		self.lifeElapsed = self.lifeElapsed + delta
-		if self.lifeElapsed >= 12 then
-			self.Entity:Destroy(0)
-			return
-		end
 		self.attackElapsed = self.attackElapsed + delta
 		if self.attackElapsed >= 3 then
 			self.attackElapsed = 0
-			if _Phase0VoyagePrototype ~= nil then
-				_Phase0VoyagePrototype:DamageShipFromRaid(4)
-			end
+			if _GreatVoyageVoyageState ~= nil then _GreatVoyageVoyageState:ApplyRaidDamage(self.ownerPlayerId, self.encounterId) end
 		end
 	end
 end

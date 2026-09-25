@@ -13,6 +13,7 @@ Environment/*
 MissionCenter/backups/
 MissionCenter/evidence/
 MissionCenter/assets/
+MissionCenter/.mission-center/operations/
 output/
 
 # Local captures and logs

@@ -7,11 +7,21 @@ script GreatVoyageAdventureController extends Logic
 	property TextGUIRendererComponent portText = "636305f6-b3d9-4d6d-ae97-2a911cbde7b5"
 	property TextGUIRendererComponent messageText = "89d9f8ce-b86a-4495-9919-00b931a2d9a3"
 	property Entity worldMapModal = "f7519afa-8f51-4dd3-bfdf-d1816f996d2c"
-	property ButtonComponent forestButton = "420fe609-fe0c-46ed-a111-c5c2467424cc"
-	property ButtonComponent skyButton = "d1ae873e-d0c5-49c4-9326-f4e2fd601006"
+	property ButtonComponent forestButton = "e54bbca2-3940-4845-8199-fbf5fc12a2ad"
+	property ButtonComponent skyButton = "e73bf40b-3fc9-423a-a359-3c854f7cb4a7"
+	property ButtonComponent ludusButton = "f16dc84e-6ee9-4364-8f2a-10ed5650688f"
+	property ButtonComponent nihalButton = "238a0ecc-cfcd-44ac-88a6-268eb3e17416"
 	property ButtonComponent sailButton = "98db399b-dc67-4cf9-a172-d1c1b90760cf"
 	property ButtonComponent closeMapButton = "3edba1c7-3af1-48ed-a6f2-8500dd30da76"
 	property TextGUIRendererComponent selectedText = "2dae4a3b-b561-4ec8-9bf3-2090dfd84f93"
+	property UITransformComponent routeTransform = "f052c982-146a-412b-a552-a670727ca978"
+	property UITransformComponent routeArrowTransform = "984f9dfb-f337-47ba-8084-b65bc3d74c66"
+	property Entity deckEncounterPanel = "2f5b8dbc-b01b-4bfa-8488-ec2031a2a907"
+	property TextGUIRendererComponent encounterTitleText = "5211f35e-1315-4a64-a405-30ba64206558"
+	property TextGUIRendererComponent encounterBodyText = "de1d6fa4-2f54-414c-a26a-72e40b29e45f"
+	property TextGUIRendererComponent previewSummaryText = "114c9a3c-b95a-428c-83e6-91b3c03bf1d9"
+	property TextGUIRendererComponent airspaceOrderText = "fc8752c3-d5be-4563-85b1-0ce0913b90bd"
+	property TextGUIRendererComponent segmentDetailsText = "b749e462-0765-4858-8cab-bfb14ae9ab61"
 	property Entity shopModal = "d07fa018-85e1-4c04-a649-81c6c6951436"
 	property ButtonComponent shopCloseButton = "a36fa1b1-ef82-4ac0-ad45-858fddd8e16d"
 	property ButtonComponent shopGood1Button = "2d603d71-0ce9-4b7c-bfcd-f117ab99a4ee"
@@ -27,6 +37,9 @@ script GreatVoyageAdventureController extends Logic
 	property TextGUIRendererComponent shopGood1Text = "2d603d71-0ce9-4b7c-bfcd-f117ab99a4ee"
 	property TextGUIRendererComponent shopGood2Text = "44228b52-3647-4c5c-96b8-51ec4343b30c"
 	property TextGUIRendererComponent shopGood3Text = "c886f65a-f85f-483a-961a-41ca8c19b96b"
+	property SpriteGUIRendererComponent shopGood1Icon = "f797880a-ddf5-45bf-877e-493a9c6ccea8"
+	property SpriteGUIRendererComponent shopGood2Icon = "a0554e60-be60-42e7-8ad7-104b3fa8906b"
+	property SpriteGUIRendererComponent shopGood3Icon = "f8ee7a7d-a309-4356-ba9d-60db2f5bac51"
 	property TextGUIRendererComponent shopSelectedText = "31c3e156-d2cf-4d24-8552-bba6921826e7"
 	property TextGUIRendererComponent shopCargoText = "8c3eae0b-a4cc-4779-a522-0dce01f63763"
 	property TextGUIRendererComponent shopQuantityText = "7bfda3d9-2122-43ad-9d09-ed8e74ee90f1"
@@ -34,6 +47,8 @@ script GreatVoyageAdventureController extends Logic
 	property any promptHandler = nil
 	property any forestHandler = nil
 	property any skyHandler = nil
+	property any ludusHandler = nil
+	property any nihalHandler = nil
 	property any sailHandler = nil
 	property any closeHandler = nil
 	property any shopCloseHandler = nil
@@ -45,21 +60,23 @@ script GreatVoyageAdventureController extends Logic
 	property any buyHandler = nil
 	property any sellHandler = nil
 	property any keyHandler = nil
-	property Entity shipTarget = nil
+	property Entity boardingTarget = nil
 	property Entity npcTarget = nil
 	property string currentAction = ""
 	property string currentMapName = ""
 	property string currentPortId = "forest"
 	property string selectedDestinationId = "sky"
 	property string pendingDestinationId = "sky"
+	property string lastEncounterId = ""
+	property integer lastRaidRemaining = -1
 	property string modalType = ""
 	property string shopStatusMessage = "選擇商品後進行交易"
 	property number targetX = 0
 	property number targetY = -1.55
-	property number shipBoardX = 0
-	property number shipBoardY = 0
 	property number refreshElapsed = 0
 	property boolean modalOpen = false
+	property number routeAngle = 0
+	property number routeArrowAngle = 0
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
@@ -70,9 +87,12 @@ script GreatVoyageAdventureController extends Logic
 		self.promptButtonEntity.Enable = false
 		self.worldMapModal.Enable = false
 		self.shopModal.Enable = false
+		if isvalid(self.deckEncounterPanel) then self.deckEncounterPanel.Enable = false end
 		self.promptHandler = self.promptButton.Entity:ConnectEvent(ButtonClickEvent, self.OnPromptClick)
 		self.forestHandler = self.forestButton.Entity:ConnectEvent(ButtonClickEvent, self.OnForestClick)
 		self.skyHandler = self.skyButton.Entity:ConnectEvent(ButtonClickEvent, self.OnSkyClick)
+		if isvalid(self.ludusButton) then self.ludusHandler = self.ludusButton.Entity:ConnectEvent(ButtonClickEvent, self.OnLudusClick) end
+		if isvalid(self.nihalButton) then self.nihalHandler = self.nihalButton.Entity:ConnectEvent(ButtonClickEvent, self.OnNihalClick) end
 		self.sailHandler = self.sailButton.Entity:ConnectEvent(ButtonClickEvent, self.OnSailClick)
 		self.closeHandler = self.closeMapButton.Entity:ConnectEvent(ButtonClickEvent, self.OnCloseMapClick)
 		self.shopCloseHandler = self.shopCloseButton.Entity:ConnectEvent(ButtonClickEvent, self.OnShopCloseClick)
@@ -104,7 +124,10 @@ script GreatVoyageAdventureController extends Logic
 		local mapName = player.CurrentMapName
 		if force == false and mapName == self.currentMapName then return end
 		self.currentMapName = mapName
-		self.shipTarget = nil
+		self.lastEncounterId = ""
+		self.lastRaidRemaining = -1
+		if isvalid(self.deckEncounterPanel) then self.deckEncounterPanel.Enable = false end
+		self.boardingTarget = nil
 		self.npcTarget = nil
 		self.currentAction = ""
 		self.promptButtonEntity.Enable = false
@@ -112,10 +135,8 @@ script GreatVoyageAdventureController extends Logic
 		if mapName == "map_forest_port" then
 			self.currentPortId = "forest"
 			self.portText.Text = "魔法森林空港"
-			self.messageText.Text = "探索月台；左側是專屬飛空船，商人艾琳在中央等你"
-			self.shipTarget = _EntityService:GetEntityByPath("/maps/map_forest_port/GV_PlayerShip")
-			self.shipBoardX = 0.65
-			self.shipBoardY = -0.61
+			self.messageText.Text = "探索月台；右側是專屬飛空船，商人艾琳在起點附近"
+			self.boardingTarget = _EntityService:GetEntityByPath("/maps/map_forest_port/GV_ShipBoardInteractPoint")
 			self.npcTarget = _EntityService:GetEntityByPath("/maps/map_forest_port/森林商人．艾琳")
 			if _Phase0VoyagePrototype ~= nil then
 				_Phase0VoyagePrototype.currentPortId = "forest"
@@ -125,19 +146,36 @@ script GreatVoyageAdventureController extends Logic
 			self.currentPortId = "sky"
 			self.portText.Text = "天空之城空港"
 			self.messageText.Text = "探索天空月台；右側是專屬飛空船，商人露米在左側等你"
-			self.shipTarget = _EntityService:GetEntityByPath("/maps/map_orbis_port/GV_PlayerShip")
-			self.shipBoardX = -1.96
-			self.shipBoardY = -4.34
+			self.boardingTarget = _EntityService:GetEntityByPath("/maps/map_orbis_port/GV_ShipBoardInteractPoint")
 			self.npcTarget = _EntityService:GetEntityByPath("/maps/map_orbis_port/天空商人．露米")
 			if _Phase0VoyagePrototype ~= nil then
 				_Phase0VoyagePrototype.currentPortId = "sky"
 				_Phase0VoyagePrototype.currentPort = "天空之城"
 			end
+		elseif mapName == "map_ludus_port" then
+			self.currentPortId = "ludus"
+			self.portText.Text = "玩具城港"
+			self.messageText.Text = "探索玩具城月台；靠近飛空船可規劃下一段航線"
+			self.boardingTarget = _EntityService:GetEntityByPath("/maps/map_ludus_port/GV_ShipBoardInteractPoint")
+			self.npcTarget = _EntityService:GetEntityByPath("/maps/map_ludus_port/玩具城商人．奈洛")
+			if _Phase0VoyagePrototype ~= nil then
+				_Phase0VoyagePrototype.currentPortId = "ludus"
+				_Phase0VoyagePrototype.currentPort = "玩具城"
+			end
+		elseif mapName == "map_nihal_port" then
+			self.currentPortId = "nihal"
+			self.portText.Text = "納希沙漠港"
+			self.messageText.Text = "探索沙漠月台；靠近飛空船可規劃下一段航線"
+			self.boardingTarget = _EntityService:GetEntityByPath("/maps/map_nihal_port/GV_ShipBoardInteractPoint")
+			self.npcTarget = _EntityService:GetEntityByPath("/maps/map_nihal_port/納希商人．沙琳")
+			if _Phase0VoyagePrototype ~= nil then
+				_Phase0VoyagePrototype.currentPortId = "nihal"
+				_Phase0VoyagePrototype.currentPort = "納希沙漠"
+			end
 		elseif mapName == "map_airship_deck" then
 			self.portText.Text = "雲海航行甲板"
-			self.messageText.Text = "走向右舷操舵台，確認航線後抵達目的港"
+			self.messageText.Text = "雲海航程倒數開始；遇襲時航程持續"
 			self.targetX = 0.35
-			self.currentAction = "arrive"
 		else
 			self.portText.Text = "楓谷雲海航線"
 			self.messageText.Text = "前往魔法森林或天空之城空港"
@@ -160,20 +198,40 @@ script GreatVoyageAdventureController extends Logic
 		if self.currentMapName == "map_airship_deck" then
 			local deckX = playerPosition.x - self.targetX
 			local deckY = playerPosition.y - self.targetY
+			local encounterId = ""
+			if _GreatVoyageVoyageState ~= nil then encounterId = _GreatVoyageVoyageState.clientSnapshotPendingEncounterId end
+			local raidRemaining = 0
+			if _GreatVoyageVoyageState ~= nil then
+				raidRemaining = _GreatVoyageVoyageState.clientSnapshotRaidRemaining
+				if _GreatVoyageVoyageState.clientSnapshotStatus == "sailing" then
+					local seconds = math.ceil(_GreatVoyageVoyageState.clientSnapshotRemainingSeconds)
+					local secondsText = tostring(math.max(0, seconds))
+					if seconds < 10 then secondsText = "0" .. secondsText end
+					if raidRemaining > 0 then
+						self.messageText.Text = "菇菇襲擊！按 Ctrl 迎擊，或撐到抵港　｜　剩餘 00:" .. secondsText
+					elseif encounterId ~= "" then
+						self.messageText.Text = "遭遇事件進行中；航程持續　｜　剩餘 00:" .. secondsText
+					else
+						self.messageText.Text = "雲海航程　00:" .. secondsText .. "　｜　抵港前保持警戒"
+					end
+				end
+			end
+			if encounterId ~= self.lastEncounterId or raidRemaining ~= self.lastRaidRemaining then self:RefreshDeckEncounter(encounterId) end
 			near = math.sqrt(deckX * deckX + deckY * deckY) <= 0.95
+			near = near and encounterId ~= "" and raidRemaining == 0
 			if near then self.currentAction = "arrive" end
+			if raidRemaining > 0 then
+				near = true
+				self.currentAction = "attack"
+			end
 		else
-			local shipDistance = 999
+			local boardDistance = 999
 			local npcDistance = 999
-			if isvalid(self.shipTarget) then
-				local shipPosition = self.shipTarget.TransformComponent.WorldPosition
-				local shipScale = self.shipTarget.TransformComponent.Scale
-				local scaleFactor = math.abs(shipScale.x) / 0.4
-				local boardX = shipPosition.x + self.shipBoardX * scaleFactor
-				local boardY = shipPosition.y + self.shipBoardY * scaleFactor
-				local shipX = playerPosition.x - boardX
-				local shipY = playerPosition.y - boardY
-				shipDistance = math.sqrt(shipX * shipX + shipY * shipY)
+			if isvalid(self.boardingTarget) then
+				local boardPosition = self.boardingTarget.TransformComponent.WorldPosition
+				local boardX = playerPosition.x - boardPosition.x
+				local boardY = playerPosition.y - boardPosition.y
+				boardDistance = math.sqrt(boardX * boardX + boardY * boardY)
 			end
 			if isvalid(self.npcTarget) then
 				local npcPosition = self.npcTarget.TransformComponent.WorldPosition
@@ -181,10 +239,10 @@ script GreatVoyageAdventureController extends Logic
 				local npcY = playerPosition.y - npcPosition.y
 				npcDistance = math.sqrt(npcX * npcX + npcY * npcY)
 			end
-			if npcDistance <= 1.1 and npcDistance <= shipDistance then
+			if npcDistance <= 1.1 and npcDistance <= boardDistance then
 				near = true
 				self.currentAction = "shop"
-			elseif shipDistance <= 1.25 then
+			elseif boardDistance <= 1.25 then
 				near = true
 				self.currentAction = "open_map"
 			end
@@ -196,9 +254,57 @@ script GreatVoyageAdventureController extends Logic
 			self.promptLabel.Text = "E　登上你的專屬飛空船：啟航"
 		elseif self.currentAction == "shop" then
 			self.promptLabel.Text = "E　與港口商人交談"
+		elseif self.currentAction == "attack" then
+			self.promptLabel.Text = "攻擊菇菇　｜　鍵盤 Ctrl"
 		else
-			self.promptLabel.Text = "E　轉動舵輪：抵達 " .. self:GetPortName(self.pendingDestinationId)
+			self.promptLabel.Text = "E　轉動舵輪：處理航程事件"
 		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshDeckEncounter(string encounterId)
+		-- 只在遭遇 ID 改變時重建事件文案，避免每幀重算航線幾何。
+		self.lastEncounterId = encounterId
+		self.lastRaidRemaining = 0
+		if _GreatVoyageVoyageState ~= nil then self.lastRaidRemaining = _GreatVoyageVoyageState.clientSnapshotRaidRemaining end
+		if not isvalid(self.deckEncounterPanel) then return end
+		self.deckEncounterPanel.Enable = encounterId ~= ""
+		if encounterId == "" then return end
+		local title = "未知空域事件"
+		local body = "航程不會停下；可前往操舵台處理事件，或等待抵港。"
+		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+		local remainingText = ""
+		if snapshot ~= nil then
+			local seconds = math.max(0, math.ceil(snapshot.remainingSeconds or 0))
+			remainingText = "　｜　剩餘 00:"
+			if seconds < 10 then remainingText = remainingText .. "0" end
+			remainingText = remainingText .. tostring(seconds)
+		end
+		if snapshot ~= nil and _GreatVoyageVoyageData ~= nil then
+		local segment = _GreatVoyageVoyageState:GetSegmentForDistance(snapshot, snapshot.pausedDistance)
+			if segment ~= nil then
+				local card = _GreatVoyageVoyageData:GetEncounterCard(segment.airspaceId, snapshot.encounterCount + 1)
+				if card ~= nil then
+					title = card.title
+					body = card.text
+					if card.id == "victoria_mushroom_raid" then
+						if snapshot.raidRemaining > 0 then
+						body = body .. "\n按 Ctrl 迎擊，或撐到抵港｜菇菇剩餘 " .. tostring(snapshot.raidRemaining) .. " 隻。"
+					else
+						body = body .. "\n襲擊結束，繼續航行。"
+						end
+					end
+				end
+			end
+		end
+		if isvalid(self.encounterTitleText) then self.encounterTitleText.Text = "遭遇・" .. title end
+		if isvalid(self.encounterBodyText) then self.encounterBodyText.Text = body end
+		if self.lastRaidRemaining > 0 then
+		self.messageText.Text = "菇菇襲擊！按 Ctrl 迎擊，或撐到抵港" .. remainingText
+	else
+		self.messageText.Text = "遭遇事件進行中；航程持續" .. remainingText
+		end
+		log("[Adventure] encounter shown id=" .. encounterId .. " title=" .. title)
 	end
 
 	@ExecSpace("ClientOnly")
@@ -243,12 +349,16 @@ script GreatVoyageAdventureController extends Logic
 			self:OpenShop()
 		elseif self.currentAction == "arrive" then
 			self:ArriveAtDestination()
+		elseif self.currentAction == "attack" then
+			local player = _UserService.LocalPlayer
+			if player ~= nil and player.GreatVoyagePlayerAttack ~= nil then player.GreatVoyagePlayerAttack:PerformAttack() end
 		end
 	end
 
 	@ExecSpace("ClientOnly")
 	method void OpenWorldMap()
-		if self.currentPortId == "forest" then self.selectedDestinationId = "sky" else self.selectedDestinationId = "forest" end
+		self.selectedDestinationId = "forest"
+		if self.currentPortId == "forest" then self.selectedDestinationId = "sky" end
 		self.modalOpen = true
 		self.modalType = "world_map"
 		self.worldMapModal.Enable = true
@@ -306,6 +416,16 @@ script GreatVoyageAdventureController extends Logic
 	end
 
 	@ExecSpace("ClientOnly")
+	method void OnLudusClick(ButtonClickEvent event)
+		self:SelectDestination("ludus")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnNihalClick(ButtonClickEvent event)
+		self:SelectDestination("nihal")
+	end
+
+	@ExecSpace("ClientOnly")
 	method void SelectDestination(string portId)
 		if portId == self.currentPortId then
 			self.messageText.Text = "這裡就是目前港口，請選擇另一個目的地"
@@ -319,11 +439,98 @@ script GreatVoyageAdventureController extends Logic
 	@ExecSpace("ClientOnly")
 	method void RefreshSelectionText()
 		self.selectedText.Text = "目前：" .. self:GetPortName(self.currentPortId) .. "　→　目的地：" .. self:GetPortName(self.selectedDestinationId)
+		self:RefreshRoutePreview()
+	end
+
+	@ExecSpace("ClientOnly")
+	method any GetPortPosition(string portId)
+		-- 港口與箭頭共用航線資料座標，避免 UI 複本漂移。
+		if _GreatVoyageVoyageData == nil then return nil end
+		local port = _GreatVoyageVoyageData:GetPort(portId)
+		if port == nil then return nil end
+		return port.position
+	end
+
+	@ExecSpace("ClientOnly")
+	method string GetRiskLevel(number risk)
+		if risk >= 0.35 then return "極高" end
+		if risk >= 0.25 then return "高" end
+		if risk >= 0.15 then return "中" end
+		return "低"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshRoutePreview()
+		if not isvalid(self.routeTransform) or not isvalid(self.routeArrowTransform) then return end
+		local preview = nil
+		if _GreatVoyageVoyageState ~= nil then
+			preview = _GreatVoyageVoyageState:PreviewDirectRoute(self.currentPortId, self.selectedDestinationId)
+		elseif _GreatVoyageVoyageData ~= nil then
+			preview = _GreatVoyageVoyageData:PreviewDirectRoute(self.currentPortId, self.selectedDestinationId)
+		end
+		if preview == nil then return end
+		local origin = self:GetPortPosition(self.currentPortId)
+		local destination = self:GetPortPosition(self.selectedDestinationId)
+		if origin == nil or destination == nil or preview.accepted ~= true then
+			self.routeTransform.Enable = false
+			self.routeArrowTransform.Enable = false
+			if isvalid(self.previewSummaryText) then self.previewSummaryText.Text = "航線不可用\n" .. tostring(preview.reason) end
+			if isvalid(self.airspaceOrderText) then self.airspaceOrderText.Text = "空域順序：—" end
+			if isvalid(self.segmentDetailsText) then self.segmentDetailsText.Text = "請選擇其他港口" end
+			return
+		end
+		local mapX = -165
+		local mapY = -27
+		local mapWidth = 640
+		local mapHeight = 438
+		local dx = (destination.x - origin.x) * mapWidth
+		local dy = (destination.y - origin.y) * mapHeight
+		local lineLength = math.sqrt(dx * dx + dy * dy)
+		local angle = 0
+		if math.abs(dx) <= 0.001 then
+			angle = 90
+		elseif dx < 0 then
+			angle = math.atan(dy / dx) * 180 / math.pi + 180
+		else
+			angle = math.atan(dy / dx) * 180 / math.pi
+		end
+		self.routeTransform.Enable = true
+		self.routeArrowTransform.Enable = true
+		self.routeTransform.RectSize = Vector2(lineLength, 8)
+		self.routeTransform.anchoredPosition = Vector2(mapX + (origin.x + destination.x - 1) * mapWidth * 0.5, mapY + (origin.y + destination.y - 1) * mapHeight * 0.5)
+		self.routeTransform:Rotate(angle - self.routeAngle)
+		self.routeArrowTransform.anchoredPosition = Vector2(mapX + (destination.x - 0.5) * mapWidth, mapY + (destination.y - 0.5) * mapHeight)
+		-- UI 旋轉的正方向與地圖座標的 y 軸相反；箭頭須反轉角度才會指向目的港。
+		self.routeArrowTransform:Rotate(-angle - self.routeArrowAngle)
+		self.routeAngle = angle
+		self.routeArrowAngle = -angle
+		log("[MapRoute] " .. self.currentPortId .. "->" .. self.selectedDestinationId .. " start=" .. tostring(origin.x) .. "," .. tostring(origin.y) .. " end=" .. tostring(destination.x) .. "," .. tostring(destination.y))
+		if isvalid(self.previewSummaryText) then
+			local expectedCount = preview.expectedEncounterCount or preview.expectedEncounter or 0
+			self.previewSummaryText.Text = "航程：60 秒（遇襲時持續）\n航線風險：" .. self:GetRiskLevel(preview.risk) .. "\n預期遭遇：" .. tostring(expectedCount) .. " 次"
+		end
+		local order = ""
+		for index, segment in ipairs(preview.segments) do
+			if index > 1 then order = order .. "→" end
+			local shortName = segment.shortName or segment.displayName
+			order = order .. shortName
+		end
+		if isvalid(self.airspaceOrderText) then self.airspaceOrderText.Text = "途經：" .. order end
+		if isvalid(self.segmentDetailsText) then self.segmentDetailsText.Text = "進入新區域，可能遇見不同事件" end
+		log("[Adventure] route preview " .. self.currentPortId .. "->" .. self.selectedDestinationId .. " distance=" .. tostring(preview.distance))
 	end
 
 	@ExecSpace("ClientOnly")
 	method void OnSailClick(ButtonClickEvent event)
 		self:BeginVoyage()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void StartVoyage(string destinationId)
+		if _GreatVoyageVoyageState ~= nil then
+			-- UI 只送目的地；Server 以 senderUserId 鎖定請求者。
+			_GreatVoyageVoyageState:StartVoyage(destinationId)
+		end
 	end
 
 	@ExecSpace("ClientOnly")
@@ -333,17 +540,15 @@ script GreatVoyageAdventureController extends Logic
 			return
 		end
 		self.pendingDestinationId = self.selectedDestinationId
-		if _Phase0VoyagePrototype ~= nil then
+		if _GreatVoyageVoyageState ~= nil then
+			self:StartVoyage(self.pendingDestinationId)
+			log("[Adventure] state voyage requested destination=" .. self.pendingDestinationId)
+		elseif _Phase0VoyagePrototype ~= nil then
 			_Phase0VoyagePrototype:SelectDestination(self.pendingDestinationId)
 			_Phase0VoyagePrototype:StartVoyage()
 		end
 		self:CloseWorldMap()
 		self.messageText.Text = "離港！正在前往雲海航行甲板"
-		local player = _UserService.LocalPlayer
-		if player ~= nil and player.PlayerComponent ~= nil then
-			log("[Adventure] depart target=" .. self.pendingDestinationId)
-			player.PlayerComponent:MoveToMapPosition("map_airship_deck", Vector2(-0.5, -1.55))
-		end
 	end
 
 	@ExecSpace("ClientOnly")
@@ -353,22 +558,38 @@ script GreatVoyageAdventureController extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void ArriveAtDestination()
-		local targetMap = "map_orbis_port"
-		local targetPosition = Vector2(0.7, -0.45)
-		if self.pendingDestinationId == "forest" then
-			targetMap = "map_forest_port"
-			targetPosition = Vector2(5.5, -0.25)
-		end
-		self.messageText.Text = "航線確認，準備抵達 " .. self:GetPortName(self.pendingDestinationId)
 		local player = _UserService.LocalPlayer
 		if player ~= nil and player.PlayerComponent ~= nil then
-			log("[Adventure] arrive request map=" .. targetMap)
-			player.PlayerComponent:MoveToMapPosition(targetMap, targetPosition)
+			if _GreatVoyageVoyageState ~= nil then
+				local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+				if snapshot == nil or snapshot.pendingEncounter == nil then return end
+				if snapshot.raidRemaining > 0 then
+					self.messageText.Text = "菇菇尚未擊退；也可以撐到抵港！"
+					return
+				end
+				-- 舵輪只處理進行中的事件；航程倒數不受事件影響。
+				_GreatVoyageVoyageState:ResolveEncounter("deck_resolved")
+				log("[Adventure] deck encounter resolved by local player")
+			else
+				local targetMap = "map_orbis_port"
+				local targetPosition = Vector2(0.7, -0.45)
+				if self.pendingDestinationId == "forest" then
+					targetMap = "map_forest_port"
+					targetPosition = Vector2(5.5, -0.25)
+				elseif self.pendingDestinationId == "ludus" then
+					targetMap = "map_ludus_port"
+				elseif self.pendingDestinationId == "nihal" then
+					targetMap = "map_nihal_port"
+				end
+				player.PlayerComponent:MoveToMapPosition(targetMap, targetPosition)
+			end
 		end
+		self.messageText.Text = "事件已處理，繼續沿原航線前進"
 	end
 
 	@ExecSpace("ClientOnly")
 	method void RefreshShop()
+		-- 三個欄位顯示目前港口貨架；貨艙另顯示跨港收購價。
 		local game = _Phase0VoyagePrototype
 		if game == nil then return end
 		local prefix1 = "　"
@@ -376,16 +597,19 @@ script GreatVoyageAdventureController extends Logic
 		local prefix3 = "　"
 		if game.selectedGoodIndex == 1 then prefix1 = "▶ " elseif game.selectedGoodIndex == 2 then prefix2 = "▶ " else prefix3 = "▶ " end
 		self.shopGoldText.Text = "持有 " .. tostring(game.money) .. " G"
-		if self.currentPortId == "forest" then
-			self.shopNpcNameText.Text = "森林商人．艾琳"
-			self.shopDialogText.Text = "冒險者，森林補給站的經典藥水很齊全；不同港口的行情也不一樣喔！"
-		else
-			self.shopNpcNameText.Text = "天空商人．露米"
-			self.shopDialogText.Text = "歡迎抵達雲端！紅、藍、橘三種楓谷經典藥水都準備好了。"
+		self.shopNpcNameText.Text = self:GetPortName(self.currentPortId) .. "商人"
+		self.shopDialogText.Text = "歡迎抵達 " .. self:GetPortName(self.currentPortId) .. "！本港出售地方特產，也收購外地貨物。"
+		self.shopGood1Text.Text = prefix1 .. game:GetGoodName(1) .. "　" .. tostring(game:GetCurrentMarketPrice(1)) .. " G"
+		self.shopGood2Text.Text = prefix2 .. game:GetGoodName(2) .. "　" .. tostring(game:GetCurrentMarketPrice(2)) .. " G"
+		self.shopGood3Text.Text = prefix3 .. game:GetGoodName(3) .. "　" .. tostring(game:GetCurrentMarketPrice(3)) .. " G"
+		if _GreatVoyageVoyageData ~= nil then
+			local good1 = _GreatVoyageVoyageData:GetLocalGood(self.currentPortId, 1)
+			local good2 = _GreatVoyageVoyageData:GetLocalGood(self.currentPortId, 2)
+			local good3 = _GreatVoyageVoyageData:GetLocalGood(self.currentPortId, 3)
+			if good1 ~= nil and isvalid(self.shopGood1Icon) then self.shopGood1Icon.ImageRUID = DataRef(good1.iconRuid) end
+			if good2 ~= nil and isvalid(self.shopGood2Icon) then self.shopGood2Icon.ImageRUID = DataRef(good2.iconRuid) end
+			if good3 ~= nil and isvalid(self.shopGood3Icon) then self.shopGood3Icon.ImageRUID = DataRef(good3.iconRuid) end
 		end
-		self.shopGood1Text.Text = prefix1 .. "紅色藥水　" .. tostring(game:GetCurrentMarketPrice(1)) .. " G"
-		self.shopGood2Text.Text = prefix2 .. "藍色藥水　　" .. tostring(game:GetCurrentMarketPrice(2)) .. " G"
-		self.shopGood3Text.Text = prefix3 .. "橘色藥水　　" .. tostring(game:GetCurrentMarketPrice(3)) .. " G"
 		self.shopSelectedText.Text = "已選：" .. game:GetGoodName(game.selectedGoodIndex)
 		self.shopCargoText.Text = game:GetCargoText()
 		self.shopQuantityText.Text = "數量　" .. tostring(game.tradeQuantity)
@@ -433,6 +657,9 @@ script GreatVoyageAdventureController extends Logic
 				local name = game:GetGoodName(game.selectedGoodIndex)
 				local amount = game.tradeQuantity
 				game:BuySelectedGood()
+				if _GreatVoyageVoyageState ~= nil then
+					_GreatVoyageVoyageState:RecordCargo(game.cargoGoodId, amount)
+				end
 				self.shopStatusMessage = "買入 " .. name .. " ×" .. tostring(amount) .. " 完成"
 				log("[Adventure] merchant buy good=" .. name .. " qty=" .. tostring(amount))
 			end
@@ -442,16 +669,21 @@ script GreatVoyageAdventureController extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void SellGood()
+		-- 賣出的是貨艙原貨物，不是目的港貨架同序號的商品。
 		local game = _Phase0VoyagePrototype
 		if game == nil then return end
 		if game.quantity <= 0 then
 			self.shopStatusMessage = "貨艙目前沒有可賣出的貨物"
 		else
-			local name = game:GetGoodName(game.cargoGoodIndex)
+			local name = game:GetCargoGoodName()
 			local amount = game.quantity
+			local revenue = game:GetCargoSalePrice() * amount
 			game:SellCargo()
-			self.shopStatusMessage = "賣出 " .. name .. " ×" .. tostring(amount) .. " 完成"
-			log("[Adventure] merchant sell good=" .. name .. " qty=" .. tostring(amount))
+			if _GreatVoyageVoyageState ~= nil then
+				_GreatVoyageVoyageState:RecordCargo("", 0)
+			end
+			self.shopStatusMessage = "賣出 " .. name .. " ×" .. tostring(amount) .. "，獲得 " .. tostring(revenue) .. " G"
+			log("[Adventure] merchant sell good=" .. name .. " qty=" .. tostring(amount) .. " revenue=" .. tostring(revenue))
 		end
 		self:RefreshShop()
 	end
@@ -498,6 +730,10 @@ script GreatVoyageAdventureController extends Logic
 
 	@ExecSpace("ClientOnly")
 	method string GetPortName(string portId)
+		if _GreatVoyageVoyageData ~= nil then
+			local dataName = _GreatVoyageVoyageData:GetPortName(portId)
+			if dataName ~= "未知港口" then return dataName end
+		end
 		if portId == "forest" then return "魔法森林" end
 		return "天空之城"
 	end
@@ -507,6 +743,8 @@ script GreatVoyageAdventureController extends Logic
 		if isvalid(self.promptButton) and self.promptHandler ~= nil then self.promptButton.Entity:DisconnectEvent(ButtonClickEvent, self.promptHandler) end
 		if isvalid(self.forestButton) and self.forestHandler ~= nil then self.forestButton.Entity:DisconnectEvent(ButtonClickEvent, self.forestHandler) end
 		if isvalid(self.skyButton) and self.skyHandler ~= nil then self.skyButton.Entity:DisconnectEvent(ButtonClickEvent, self.skyHandler) end
+		if isvalid(self.ludusButton) and self.ludusHandler ~= nil then self.ludusButton.Entity:DisconnectEvent(ButtonClickEvent, self.ludusHandler) end
+		if isvalid(self.nihalButton) and self.nihalHandler ~= nil then self.nihalButton.Entity:DisconnectEvent(ButtonClickEvent, self.nihalHandler) end
 		if isvalid(self.sailButton) and self.sailHandler ~= nil then self.sailButton.Entity:DisconnectEvent(ButtonClickEvent, self.sailHandler) end
 		if isvalid(self.closeMapButton) and self.closeHandler ~= nil then self.closeMapButton.Entity:DisconnectEvent(ButtonClickEvent, self.closeHandler) end
 		if isvalid(self.shopCloseButton) and self.shopCloseHandler ~= nil then self.shopCloseButton.Entity:DisconnectEvent(ButtonClickEvent, self.shopCloseHandler) end

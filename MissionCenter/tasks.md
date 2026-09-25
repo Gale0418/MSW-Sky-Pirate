@@ -1,5 +1,5 @@
 # Tasks
-> 狀態備註：2026-08-06 E8 Wave 1 三場景、自製船、自然移動與舊原型隔離已通過 Maker 與 Terra 零批評複審，GV-T2 進行中。
+> 狀態備註：2026-09-25，26/36 tasks Done；GV-M1-P1/P2 待審，P3 進行四港／甲板／交易回歸與使用者視覺驗收，L10 已校正繁中原文、待跨語言驗收；E8 已完成。M1 遭遇中 60 秒倒數持續，已通過森林→天空之城「不擊殺仍抵港」實測。
 
 
 | ID | Title | Type | Parent | Priority | Status | Owner | Depends on | Next action | Verification | Estimate | Labels | Comments |
@@ -29,10 +29,13 @@
 | AC-T6 | A+C 垂直切片整合驗證 | Task | E6 | P0 | Done | Codex | AC-T1,AC-T5 | 已完成交易→航線→飛行→甲板戰→結算 | ST-AC-FINAL-001 與 ST-AC-BG-RECHECK-006 通過 | S | verification, msw | 2026-07-15 官方三場景與 HUD 重驗通過 |
 | AC-T7 | 更多港口／貨物／路線怪、角色升級與技能書商店 | Task | E7 | P2 | Backlog | Codex | AC-T0 | 後續另立規格 | 後續獨立 smoke test | L | progression, shop, backlog | 本 Cycle 不實作；保留更多港口、貨物、路線怪與升級／技能書擴充 |
 | B-T1 | 高難航線玩家離船空戰 | Task | E5 | P2 | Backlog | Codex | AC-T6 | 另立空戰地圖、離船狀態與敵群規格 | 未來獨立垂直切片 smoke test | XL | combat, high-risk, backlog | 主人指定先記錄 |
-
 | AC-T8 | 恢復 MSW Maker MCP 並重驗官方三場景與 GreatVoyageHUD | Task | E6 | P0 | Done | Codex | AC-T3,AC-T6 | 已完成 refresh → build → Play → HUD 與三場景驗收 | ST-AC-BG-RECHECK-006：build 0、HUD 初始化、三場景截圖與切換 logs 通過 | S | verification, mcp, map, ui | 移除 6 個誤掛 SpawnLocationComponent 後 runtime 0 Error |
-
 | E8 | 三場景探索、啟航與 NPC 商店 | Epic |  | P0 | Done | Codex | E6,E7 | 三場景探索、專屬船啟航、世界地圖、甲板中繼與 NPC 商店均完成 | 三圖可走；自製船正確；雙港航行與楓谷藥水交易可用；build/runtime 0 Error；雙評審 PASS | L | execution, verification | 2026-08-06 完成；每波 Terra 嚴評，Wave2/3 Antigravity 視覺 PASS |
+| GV-M1 | Great Voyage M1：港口資料、世界地圖 UI 與整合 QA | Epic |  | P0 | In Progress | Codex | E8,GV-M1-P3 | 完成四港往返、戰鬥結算、交易與箭頭端點驗收，修正剩餘問題 | 四港／甲板／交易／HUD、60 秒遭遇持續倒數及 Maker 視覺證據齊全；再由主人確認主觀視覺 | L | m1, plan, execution, verification | 四港已加入；手機僅保留基本點按檢查，不作 M1 阻塞門檻；不做自由操船／空戰 |
+| GV-M1-P1 | Phase 1：Data & Geometry | Task | GV-M1 | P0 | Review | Codex | E8 | 重驗四港資料、直線幾何與空域分段；核對世界圖座標 | 四港與甲板 MapleTile mode／Body／入口、路線正反向與邊界測試有證據 | M | m1, data, geometry, msw, verification | 舊三圖快照不足以證明 M1 四港完成 |
+| GV-M1-P2 | Phase 2：World Map UI | Task | GV-M1 | P1 | Review | Codex | GV-M1-P1 | 重驗四港節點、箭頭起終點、視覺層級與提示文字 | UIBuilder／lint、四港合法目的地及 Maker 截圖證據一致 | M | m1, ui, world-map, msw, verification | 已實測森林→天空之城箭頭與木質商店；其他路線待驗 |
+| GV-M1-P3 | Phase 3：Ports Integration & QA | Task | GV-M1 | P0 | In Progress | Codex | GV-M1-P1,GV-M1-P2 | 補四港完整往返、怪物擊殺與交易回歸；處理驗收缺陷 | 四港皆可抵達／開商店／再次出航，遭遇倒數與船體保留有 Maker 證據 | L | m1, integration, qa, verification | 森林→天空之城存活抵港已過；其餘不得冒充通過 |
+| GV-M1-L10 | 校正繁中原文與多語言顯示 | Task | GV-M1 | P1 | In Progress | Codex | GV-M1-P2 | SourceLanguage 已由主人在 Maker 改為 zh-tw；下一步盤點文字元件與動態文案、建立關鍵譯文並於發佈版實測世界語言切換 | 航圖、商店、60 秒倒數、遭遇在繁中及至少一種其他語言下的截圖與 runtime logs；文字不溢出 | M | m1, localization, ui, verification | ST-GV-L10-001 僅通過原文設定與 Maker 啟動回歸；未驗證自動翻譯，不得 Done |
 | GV-T1 | 三張實體地圖與自製船配置 | Task | E8 | P0 | Done | Codex | AC-T8 | Wave 1 已完成；進入 GV-T2 靠船啟航與跨圖航行 | 三圖 TileMapMode=0；角色可走；魔森與天空城自製船可辨識；甲板可視；build/runtime 0 Error；Terra PASS 無剩餘批評 | M | execution, verification | 2026-08-06 Maker 三圖 Play/走動截圖通過；回歸修正後三圖自繪船統一 scale 0.40，天空城梯子可攀爬、登船點跟隨船 Transform/Scale、魔森舊船與 npc-5097 已清理 |
 | GV-T2 | 靠船啟航、世界地圖與跨圖航行 | Task | E8 | P0 | Done | Codex | GV-T1 | Wave 2 完成；雙港靠自製船開圖、甲板中繼與抵港均通過 | 魔森與天空城雙向可達；非靠船時按鈕隱藏；目標與日誌正確；Terra/Antigravity PASS | M | execution, ui, map | 2026-08-06 build 0、runtime 全 Info；自製船恢復 0.18 完整輪廓 |
 | GV-T3 | 港口 NPC 對話與交易 UI | Task | E8 | P0 | Done | Codex | GV-T1,GV-T2 | 兩港 NPC 2D 靠近交談與楓谷正式藥水商店完成 | 近 NPC 才顯示 E；紅/藍/橘藥水有官方圖示；買賣、金幣、貨艙與錯誤提示正確 | M | execution, ui, economy | 藍色藥水 sky 80G→forest 100G 實機交易；Terra 零批評 PASS |

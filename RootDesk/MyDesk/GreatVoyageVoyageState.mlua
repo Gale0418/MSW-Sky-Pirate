@@ -1,0 +1,476 @@
+@Logic
+script GreatVoyageVoyageState extends Logic
+
+	-- 狀態表以 playerId 為唯一索引；每位玩家各自持有航線與遭遇事件。
+	property table voyageByPlayer = {}
+	property number voyageDurationSeconds = 60
+	property number lastCleanupCheckAt = 0
+	-- Server 將目前玩家的快照以純量 RPC 推送到該玩家；客戶端只保留自己的投影。
+	property string clientSnapshotPlayerId = ""
+	property string clientSnapshotStatus = "idle"
+	property string clientSnapshotOriginId = ""
+	property string clientSnapshotDestinationId = ""
+	property number clientSnapshotDistanceTravelled = 0
+	property number clientSnapshotBudgetRemaining = 0
+	property number clientSnapshotPausedDistance = 0
+	property string clientSnapshotPendingEncounterId = ""
+	property integer clientSnapshotEncounterCount = 0
+	property string clientSnapshotCargoId = ""
+	property integer clientSnapshotCargoQuantity = 0
+	property number clientSnapshotHullDamage = 0
+	property number clientSnapshotRemainingSeconds = 60
+	property integer clientSnapshotRaidRemaining = 0
+	property string clientSnapshotLastReason = ""
+
+	method void OnBeginPlay()
+		-- Initialize per-player voyage state for this world session.
+		self.voyageByPlayer = {}
+		self.lastCleanupCheckAt = _UtilLogic.ServerElapsedSeconds
+		log("[VoyageState] ready player-isolated state")
+		if _GreatVoyageVoyageData ~= nil then _GreatVoyageVoyageData:RunGeometrySelfTest() end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnUpdate(number delta)
+		-- Reap abandoned deck encounters without depending on a disconnected client's heartbeat.
+		local now = _UtilLogic.ServerElapsedSeconds
+		if now - self.lastCleanupCheckAt < 1 then return end
+		self.lastCleanupCheckAt = now
+		for playerId, state in pairs(self.voyageByPlayer) do
+			if state.status == "sailing" and now - state.startedAt > 5 then
+				local player = _UserService:GetUserEntityByUserId(playerId)
+				if player == nil or player.CurrentMapName ~= "map_airship_deck" then
+					self:AbandonVoyage(playerId, state, player == nil)
+				end
+			end
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void AbandonVoyage(string playerId, any state, boolean disconnected)
+		-- Close the encounter before destroying monsters so removal callbacks cannot settle it twice.
+		state.status = "idle"
+		state.pendingEncounter = nil
+		state.raidRemaining = 0
+		state.pausedDistance = 0
+		for _, enemy in ipairs(state.raidEnemies or {}) do
+			if isvalid(enemy) then enemy:Destroy(0) end
+		end
+		state.raidEnemies = {}
+		state.route = nil
+		state.segments = {}
+		state.lastReason = "已離開甲板，航程取消"
+		log("[VoyageState] abandoned player=" .. playerId .. " disconnected=" .. tostring(disconnected))
+		if disconnected then
+			self.voyageByPlayer[playerId] = nil
+		else
+			self:PublishSnapshot(playerId, state)
+		end
+	end
+
+	method any GetOrCreateState(string playerId)
+		if self.voyageByPlayer[playerId] == nil then
+			self.voyageByPlayer[playerId] = { playerId = playerId, status = "idle", originId = "", destinationId = "", route = nil, segments = {}, distanceTravelled = 0, budgetRemaining = 0, pausedDistance = 0, pendingEncounter = nil, encounterCount = 0, cargo = {}, hullDamage = 0, elapsedSailingSeconds = 0, startedAt = -1, raidRemaining = 0, raidEnemies = {}, lastRaidDamageAt = -1, lastAdvanceAt = -1, lastReason = "" }
+		end
+		return self.voyageByPlayer[playerId]
+	end
+
+	method any CopySnapshot(any state)
+		local snapshot = {
+			playerId = state.playerId,
+			status = state.status,
+			originId = state.originId,
+			destinationId = state.destinationId,
+			distanceTravelled = state.distanceTravelled,
+			budgetRemaining = state.budgetRemaining,
+			pausedDistance = state.pausedDistance,
+			segments = state.segments,
+			pendingEncounter = state.pendingEncounter,
+			encounterCount = state.encounterCount,
+			cargo = state.cargo,
+			hullDamage = state.hullDamage,
+			remainingSeconds = math.max(0, self.voyageDurationSeconds - state.elapsedSailingSeconds),
+			raidRemaining = state.raidRemaining,
+			lastReason = state.lastReason,
+			route = state.route
+		}
+		return snapshot
+	end
+
+	@ExecSpace("ServerOnly")
+	method void PublishSnapshot(string playerId, any state)
+		-- 只傳送純量欄位，避免跨 RPC 傳遞 any/table；最後一個 playerId 是目標客戶端。
+		local pendingEncounterId = ""
+		if state.pendingEncounter ~= nil then pendingEncounterId = state.pendingEncounter.id end
+		local cargoId = ""
+		local cargoQuantity = 0
+		if state.cargo ~= nil then
+			cargoId = state.cargo.id or ""
+			cargoQuantity = state.cargo.quantity or 0
+		end
+		self:ReceiveVoyageSnapshot(playerId, state.status, state.originId, state.destinationId, state.distanceTravelled, state.budgetRemaining, state.pausedDistance, pendingEncounterId, state.encounterCount, cargoId, cargoQuantity, state.hullDamage, math.max(0, self.voyageDurationSeconds - state.elapsedSailingSeconds), state.raidRemaining, state.lastReason, playerId)
+	end
+
+	@ExecSpace("Client")
+	method void ReceiveVoyageSnapshot(string snapshotPlayerId, string status, string originId, string destinationId, number distanceTravelled, number budgetRemaining, number pausedDistance, string pendingEncounterId, integer encounterCount, string cargoId, integer cargoQuantity, number hullDamage, number remainingSeconds, integer raidRemaining, string lastReason)
+		-- 此 RPC 已由 Server 以最後一個 call-site 參數鎖定到該玩家。
+		local newDamage = math.max(0, hullDamage - self.clientSnapshotHullDamage)
+		local encounterChanged = pendingEncounterId ~= self.clientSnapshotPendingEncounterId
+		local raidChanged = raidRemaining ~= self.clientSnapshotRaidRemaining
+		local arrivedNow = status == "arrived" and self.clientSnapshotStatus ~= "arrived"
+		if newDamage > 0 and _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype:ApplyDamage(newDamage) end
+		self.clientSnapshotPlayerId = snapshotPlayerId
+		self.clientSnapshotStatus = status
+		self.clientSnapshotOriginId = originId
+		self.clientSnapshotDestinationId = destinationId
+		self.clientSnapshotDistanceTravelled = distanceTravelled
+		self.clientSnapshotBudgetRemaining = budgetRemaining
+		self.clientSnapshotPausedDistance = pausedDistance
+		self.clientSnapshotPendingEncounterId = pendingEncounterId
+		self.clientSnapshotEncounterCount = encounterCount
+		self.clientSnapshotCargoId = cargoId
+		self.clientSnapshotCargoQuantity = cargoQuantity
+		self.clientSnapshotHullDamage = hullDamage
+		self.clientSnapshotRemainingSeconds = remainingSeconds
+		self.clientSnapshotRaidRemaining = raidRemaining
+		self.clientSnapshotLastReason = lastReason
+		if encounterChanged or raidChanged or arrivedNow then
+			log("[VoyageState] client snapshot player=" .. snapshotPlayerId .. " status=" .. status .. " raidRemaining=" .. tostring(raidRemaining))
+		end
+	end
+
+	method any CopyClientSnapshot()
+		-- 由本地投影重建可供 UI 讀取的快照，不接觸 Server 狀態表。
+		local route = nil
+		local segments = {}
+		if self.clientSnapshotOriginId ~= "" and self.clientSnapshotDestinationId ~= "" then
+			route = self:PreviewDirectRoute(self.clientSnapshotOriginId, self.clientSnapshotDestinationId)
+			if route ~= nil and route.segments ~= nil then segments = route.segments end
+		end
+		local pendingEncounter = nil
+		if self.clientSnapshotPendingEncounterId ~= "" then pendingEncounter = { id = self.clientSnapshotPendingEncounterId } end
+		return {
+			playerId = self.clientSnapshotPlayerId,
+			status = self.clientSnapshotStatus,
+			originId = self.clientSnapshotOriginId,
+			destinationId = self.clientSnapshotDestinationId,
+			distanceTravelled = self.clientSnapshotDistanceTravelled,
+			budgetRemaining = self.clientSnapshotBudgetRemaining,
+			pausedDistance = self.clientSnapshotPausedDistance,
+			segments = segments,
+			pendingEncounter = pendingEncounter,
+			encounterCount = self.clientSnapshotEncounterCount,
+			cargo = { id = self.clientSnapshotCargoId, quantity = self.clientSnapshotCargoQuantity },
+			hullDamage = self.clientSnapshotHullDamage,
+			remainingSeconds = self.clientSnapshotRemainingSeconds,
+			raidRemaining = self.clientSnapshotRaidRemaining,
+			lastReason = self.clientSnapshotLastReason,
+			route = route
+		}
+	end
+
+	method any PreviewDirectRoute(string originId, string destinationId)
+		if _GreatVoyageVoyageData == nil then return { accepted = false, reason = "航線資料尚未就緒", distance = 0, risk = 0, expectedEncounter = 0, expectedEncounterCount = 0, segments = {} } end
+		return _GreatVoyageVoyageData:PreviewDirectRoute(originId, destinationId)
+	end
+
+	method string GetPortIdFromMap(string mapName)
+		if mapName == "map_forest_port" then return "forest" end
+		if mapName == "map_orbis_port" then return "sky" end
+		if mapName == "map_ludus_port" then return "ludus" end
+		if mapName == "map_nihal_port" then return "nihal" end
+		return ""
+	end
+
+	method boolean IsNearOwnShip(Entity player, string portId)
+		-- 與客戶端共用地面登船點；船圖中心可能懸在月台上方。
+		if player == nil or player.TransformComponent == nil then return false end
+		local mapName = player.CurrentMapName
+		if self:GetPortIdFromMap(mapName) ~= portId then return false end
+		local boardingPoint = _EntityService:GetEntityByPath("/maps/" .. mapName .. "/GV_ShipBoardInteractPoint")
+		if boardingPoint == nil or boardingPoint.TransformComponent == nil then return false end
+		local playerPosition = player.TransformComponent.WorldPosition
+		local boardingPosition = boardingPoint.TransformComponent.WorldPosition
+		local dx = playerPosition.x - boardingPosition.x
+		local dy = playerPosition.y - boardingPosition.y
+		return math.sqrt(dx * dx + dy * dy) <= 1.25
+	end
+
+	@ExecSpace("Server")
+	method void StartVoyage(string destinationId)
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then
+			log_warning("[VoyageState] start rejected: missing player id")
+			return
+		end
+		local state = self:GetOrCreateState(playerId)
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		local originId = ""
+		if player ~= nil then originId = self:GetPortIdFromMap(player.CurrentMapName) end
+		if player == nil or originId == "" or self:IsNearOwnShip(player, originId) == false then
+			state.lastReason = "必須先靠近自己的飛空船並登船"
+			self:PublishSnapshot(playerId, state)
+			log("[VoyageState] start rejected player=" .. playerId .. " reason=boarding_required")
+			return
+		end
+		local route = self:PreviewDirectRoute(originId, destinationId)
+		if route.accepted ~= true then
+			state.lastReason = route.reason
+			self:PublishSnapshot(playerId, state)
+			log("[VoyageState] start rejected player=" .. playerId .. " reason=" .. route.reason)
+			return
+		end
+		if state.status == "sailing" then
+			state.lastReason = "目前已有進行中的航程"
+			self:PublishSnapshot(playerId, state)
+			return
+		end
+		state.status = "sailing"
+		state.originId = route.originId
+		state.destinationId = route.destinationId
+		state.route = route
+		state.segments = route.segments
+		state.distanceTravelled = 0
+		state.budgetRemaining = route.distance
+		state.elapsedSailingSeconds = 0
+		state.encounterCount = 0
+		state.raidRemaining = 0
+		state.raidEnemies = {}
+		state.lastRaidDamageAt = -1
+		state.lastAdvanceAt = _UtilLogic.ServerElapsedSeconds
+		state.startedAt = state.lastAdvanceAt
+		state.pausedDistance = 0
+		state.pendingEncounter = nil
+		state.lastReason = "航程已開始"
+		self:PublishSnapshot(playerId, state)
+		log("[VoyageState] start player=" .. playerId .. " route=" .. state.originId .. "->" .. state.destinationId .. " distance=" .. tostring(route.distance))
+		if player.GreatVoyagePlayerAttack == nil then
+			local attack = player:AddComponent("script.GreatVoyagePlayerAttack")
+			if attack == nil then log_warning("[VoyageState] player attack component could not be added") end
+		end
+		if player.PlayerComponent ~= nil then player.PlayerComponent:MoveToMapPosition("map_airship_deck", Vector2(-0.5, -1.55)) end
+	end
+
+	method any GetSegmentForDistance(any state, number distance)
+		local passed = 0
+		for _, segment in ipairs(state.segments) do
+			passed = passed + segment.length
+			if distance <= passed then return segment end
+		end
+		return state.segments[#state.segments]
+	end
+
+	method number GetNextEncounterDistance(any state, integer expectedCount)
+		-- 第一張牌若航路經過維多利亞，就安排在該空域內，讓菇菇襲擊與畫面空域一致。
+		-- 其餘事件依整段航距等分；跨越邊界本身不觸發事件。
+		if expectedCount == 1 and state.encounterCount == 0 then
+			for _, segment in ipairs(state.segments) do
+				if segment.airspaceId == "victoria" then
+					return state.route.distance * (segment.startT + segment.finishT) * 0.5
+				end
+			end
+		end
+		return state.route.distance * (state.encounterCount + 1) / (expectedCount + 1)
+	end
+
+	@ExecSpace("Server")
+	method void RecordCargo(string cargoId, integer quantity)
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then return end
+		if quantity < 0 or quantity > 8 then return end
+		if quantity > 0 and (_GreatVoyageVoyageData == nil or _GreatVoyageVoyageData:GetGoodById(cargoId) == nil) then return end
+		if quantity == 0 then cargoId = "" end
+		local state = self:GetOrCreateState(playerId)
+		state.cargo = { id = cargoId, quantity = quantity }
+		self:PublishSnapshot(playerId, state)
+	end
+
+	@ExecSpace("Server")
+	method void RecordHullDamage(number amount)
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then return end
+		local state = self:GetOrCreateState(playerId)
+		-- 舊客戶端入口不再接受任意船損；實際傷害只由怪物在 Server 端寫入。
+		log_warning("[VoyageState] ignored client hull damage player=" .. playerId)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void StartRaidEncounter(string playerId, any state)
+		local parent = _EntityService:GetEntityByPath("/maps/map_airship_deck")
+		if parent == nil then
+			log_warning("[VoyageState] raid map missing")
+			return
+		end
+		state.raidRemaining = 0
+		state.raidEnemies = {}
+		for index, x in ipairs({ -3.2, -2.2, -1.2 }) do
+			local monster = _SpawnService:SpawnByModelId("greatvoyagedeckmushroom", "DeckMushroom_" .. playerId .. "_" .. tostring(index), Vector3(x, -1.4, 0), parent)
+			if monster ~= nil and monster.GreatVoyageDeckMushroom ~= nil then
+				monster.GreatVoyageDeckMushroom.ownerPlayerId = playerId
+				monster.GreatVoyageDeckMushroom.encounterId = state.pendingEncounter.id
+				if monster.HitComponent ~= nil then monster.HitComponent.CollisionGroup = CollisionGroups.Monster end
+				if monster.SpriteRendererComponent ~= nil then
+					monster.SpriteRendererComponent.SortingLayer = "MapLayer3"
+					monster.SpriteRendererComponent.OrderInLayer = 100
+				end
+				state.raidRemaining = state.raidRemaining + 1
+				table.insert(state.raidEnemies, monster)
+				log("[VoyageState] raid monster=" .. tostring(index) .. " x=" .. tostring(monster.TransformComponent.WorldPosition.x))
+			end
+		end
+		log("[VoyageState] raid spawned player=" .. playerId .. " count=" .. tostring(state.raidRemaining))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void MarkRaidEnemyRemoved(string playerId, string encounterId)
+		local state = self.voyageByPlayer[playerId]
+		if state == nil or state.pendingEncounter == nil or state.pendingEncounter.id ~= encounterId then return end
+		if state.pendingEncounter.card == nil or state.pendingEncounter.card.id ~= "victoria_mushroom_raid" then return end
+		state.raidRemaining = math.max(0, state.raidRemaining - 1)
+		if state.raidRemaining == 0 then
+			state.pendingEncounter = nil
+			state.pausedDistance = 0
+			state.encounterCount = state.encounterCount + 1
+			state.raidEnemies = {}
+			state.lastReason = "菇菇襲擊已結束，航程持續中"
+			log("[VoyageState] raid cleared player=" .. playerId)
+		end
+		self:PublishSnapshot(playerId, state)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void ApplyRaidDamage(string playerId, string encounterId)
+		local state = self.voyageByPlayer[playerId]
+		if state == nil or state.pendingEncounter == nil or state.pendingEncounter.id ~= encounterId then return end
+		if state.pendingEncounter.card == nil or state.pendingEncounter.card.id ~= "victoria_mushroom_raid" then return end
+		local now = _UtilLogic.ServerElapsedSeconds
+		if state.lastRaidDamageAt >= 0 and now - state.lastRaidDamageAt < 2.5 then return end
+		state.lastRaidDamageAt = now
+		state.hullDamage = state.hullDamage + 4
+		state.lastReason = "菇菇撞擊船體，損傷 +4"
+		self:PublishSnapshot(playerId, state)
+	end
+
+	@ExecSpace("Server")
+	method void AdvanceVoyage(number distance)
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then return end
+		local state = self:GetOrCreateState(playerId)
+		if state.status ~= "sailing" or state.route == nil then
+			state.lastReason = "目前沒有進行中的航程"
+			self:PublishSnapshot(playerId, state)
+			return
+		end
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		if player == nil or player.CurrentMapName ~= "map_airship_deck" then return end
+		if distance ~= distance or distance <= 0 then
+			state.lastReason = "前進距離必須大於零"
+			self:PublishSnapshot(playerId, state)
+			return
+		end
+		local now = _UtilLogic.ServerElapsedSeconds
+		if state.lastAdvanceAt < 0 then state.lastAdvanceAt = now end
+		local elapsed = now - state.lastAdvanceAt
+		if elapsed < 0.4 then return end
+		state.lastAdvanceAt = now
+		-- distance 僅保留舊公開介面；實際航速由伺服器時鐘與固定 60 秒航程決定。
+		-- 單次最多計入 2 秒，防止載入卡頓或惡意請求使航程瞬間跳完。
+		state.elapsedSailingSeconds = math.min(self.voyageDurationSeconds, state.elapsedSailingSeconds + math.max(0, math.min(elapsed, 2)))
+		local targetDistance = state.route.distance * state.elapsedSailingSeconds / self.voyageDurationSeconds
+		local expectedCount = state.route.expectedEncounterCount or state.route.expectedEncounter or 0
+		local nextEncounterDistance = self:GetNextEncounterDistance(state, expectedCount)
+		if state.pendingEncounter == nil and state.encounterCount < expectedCount and state.distanceTravelled < nextEncounterDistance and targetDistance >= nextEncounterDistance then
+			state.distanceTravelled = targetDistance
+			state.budgetRemaining = math.max(0, state.route.distance - targetDistance)
+			state.pausedDistance = nextEncounterDistance
+			local segment = self:GetSegmentForDistance(state, nextEncounterDistance)
+			local card = nil
+			if _GreatVoyageVoyageData ~= nil and segment ~= nil then card = _GreatVoyageVoyageData:GetEncounterCard(segment.airspaceId, state.encounterCount + 1) end
+			state.pendingEncounter = { id = "cloud_encounter_" .. tostring(state.encounterCount + 1), distance = nextEncounterDistance, airspaceId = segment and segment.airspaceId or "open_sea", card = card, risk = state.route.risk, expectedEncounter = expectedCount }
+			state.raidRemaining = 0
+			if card ~= nil and card.id == "victoria_mushroom_raid" then self:StartRaidEncounter(playerId, state) end
+			state.lastReason = "遭遇事件，倒數持續"
+			self:PublishSnapshot(playerId, state)
+			log("[VoyageState] encounter player=" .. playerId .. " distance=" .. tostring(nextEncounterDistance) .. " remaining=" .. tostring(self.voyageDurationSeconds - state.elapsedSailingSeconds))
+			return
+		end
+		state.distanceTravelled = targetDistance
+		state.budgetRemaining = math.max(0, state.route.distance - targetDistance)
+		if state.distanceTravelled >= state.route.distance then
+			state.status = "arrived"
+			if state.pendingEncounter ~= nil then
+				state.encounterCount = state.encounterCount + 1
+				log("[VoyageState] survived encounter player=" .. playerId .. " id=" .. state.pendingEncounter.id)
+			end
+			-- 先關閉事件再移除怪物，避免 Destroy 回呼將同一事件重複結算。
+			state.pendingEncounter = nil
+			state.raidRemaining = 0
+			for _, enemy in ipairs(state.raidEnemies or {}) do
+				if isvalid(enemy) then enemy:Destroy(0) end
+			end
+			state.raidEnemies = {}
+			state.pausedDistance = 0
+			state.lastReason = "已抵達目的港；甲板遭遇已結算"
+			local targetMap = "map_orbis_port"
+			local targetPosition = Vector2(0, 0)
+			if state.destinationId == "forest" then
+				targetMap = "map_forest_port"
+				targetPosition = Vector2(5.5, -0.25)
+			elseif state.destinationId == "ludus" then
+				targetMap = "map_ludus_port"
+				targetPosition = Vector2(0, -0.45)
+			elseif state.destinationId == "nihal" then
+				targetMap = "map_nihal_port"
+				targetPosition = Vector2(0.7, -0.45)
+			end
+			local player = _UserService:GetUserEntityByUserId(playerId)
+			if player ~= nil and player.PlayerComponent ~= nil then player.PlayerComponent:MoveToMapPosition(targetMap, targetPosition) end
+		else
+			state.lastReason = "航程前進"
+		end
+		self:PublishSnapshot(playerId, state)
+	end
+
+	@ExecSpace("Server")
+	method void ResolveEncounter(string outcome)
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then return end
+		local state = self:GetOrCreateState(playerId)
+		if state.status ~= "sailing" or state.route == nil then return end
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		if player == nil or player.CurrentMapName ~= "map_airship_deck" then return end
+		if outcome ~= "deck_resolved" then return end
+		local position = player.TransformComponent.WorldPosition
+		local wheelX = position.x - 0.35
+		local wheelY = position.y + 1.55
+		if wheelX * wheelX + wheelY * wheelY > 0.95 * 0.95 then
+			state.lastReason = "請靠近舵輪處理遭遇事件"
+			self:PublishSnapshot(playerId, state)
+			return
+		end
+		if state.pendingEncounter == nil then
+			state.lastReason = "目前沒有待處理事件"
+			self:PublishSnapshot(playerId, state)
+			return
+		end
+		if state.pendingEncounter.card ~= nil and state.pendingEncounter.card.id == "victoria_mushroom_raid" and state.raidRemaining > 0 then
+			state.lastReason = "先擊退甲板菇菇，或撐到抵港"
+			self:PublishSnapshot(playerId, state)
+			return
+		end
+		local encounterId = state.pendingEncounter.id
+		state.pendingEncounter = nil
+		state.raidRemaining = 0
+		state.pausedDistance = 0
+		state.encounterCount = state.encounterCount + 1
+		state.lastReason = "事件 " .. encounterId .. " 已處理：" .. outcome
+		log("[VoyageState] encounter resolved player=" .. playerId .. " outcome=" .. outcome)
+		if state.distanceTravelled >= state.route.distance then state.status = "arrived" end
+		self:PublishSnapshot(playerId, state)
+	end
+
+	@ExecSpace("ClientOnly")
+	method any GetVoyageSnapshot()
+		return self:CopyClientSnapshot()
+	end
+end

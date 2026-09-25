@@ -1,21 +1,11 @@
-# Snapshot
+# Execution Checkpoint
 
-Date: 2026-07-08
-
-Current checkpoint: MissionCenter 初始建立完成，Phase 0 方向已批准但尚未實作。
-
-Reopen instructions:
-
-1. 讀取 `MissionCenter/project.md`、`progress.md`、`tasks.md`、`decisions.md`、`notes.md`、`smoke-tests.md`。
-2. 從 `P0-T1` 定稿 Phase 0 設計規格開始。
-3. 若 MSW Maker MCP 已連線，先補充 MCP 能力與限制到 `notes.md`。
-
-Known risks:
-
-- MVP 仍可能膨脹，需守住 Phase 0 邊界。
-- MSW Maker MCP 與官方素材能力尚未確認。
-- 工作區目前不是 git repo，無法提交 MissionCenter 文件。
-
-## 下一個里程碑
-
-先完成 Maker MCP 的 workspace refresh、build log 與 Play 驗證，再進入 B 階段兩港口航線桌。
+- State: inactive
+- Captured at: 2026-08-14T02:23:14
+- Active task: None
+- Status: Inactive
+- Revision: 1da0d35efaebc5158b8d34aab3a7af3455819ed2
+- Fingerprint: b03263a5939f6a65fd1dabf973d552fa2304719153dc7a1286c616eb2573e215
+- Resume: No active task; resume from canonical task selection.
+- Notes:
+  - MissionCenter 0.3.1 契約遷移完成；歷史驗證債務已保留於 legacy-done-audit.json；未執行遊戲 runtime。

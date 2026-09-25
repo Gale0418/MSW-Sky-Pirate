@@ -1,0 +1,366 @@
+@Logic
+script GreatVoyageVoyageData extends Logic
+
+	-- M1 資料契約：座標一律為官方 640:472 地圖的 0..1 比例座標。
+	property number mapPixelWidth = 640
+	property number mapPixelHeight = 472
+	property number geometryEpsilon = 0.000001
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		log("[VoyageData] ready map=640:472 normalized=0..1")
+	end
+
+	method string NormalizePortId(string portId)
+		-- `sky` 是天空之城港的 canonical portId；`victoria` 僅保留為舊存檔相容 alias。
+		if portId == "victoria" then return "sky" end
+		return portId
+	end
+
+	method any GetPort(string portId)
+		local id = self:NormalizePortId(portId)
+		if id == "forest" then
+			return { id = "forest", displayName = "魔法森林", position = { x = 0.13, y = 0.66 }, mapName = "map_forest_port", goods = {
+				{ id = "victoria_herbs", displayName = "維多利亞藥草", price = 30, iconRuid = "fdbdb29b46a0463ea9f75b90db3124b5" },
+				{ id = "ellinia_wood", displayName = "魔法森林木材", price = 36, iconRuid = "33d308e410bf4b168e63229587f6a817" },
+				{ id = "mushroom_cloth", displayName = "菇菇織布", price = 42, iconRuid = "2d0ae85baa5745128b3c0e5afd40d82d" }
+			} }
+		elseif id == "sky" then
+			-- 官方世界圖中天空之城位於冰原雪山西緣；舊座標 0.29,0.77 誤指耶雷弗。
+			return { id = "sky", displayName = "天空之城", position = { x = 0.49, y = 0.67 }, mapName = "map_orbis_port", goods = {
+				{ id = "orbis_feather", displayName = "天空羽絨", price = 32, iconRuid = "aa87d506804d4b8080772ae794c98b17" },
+				{ id = "cloud_crystal", displayName = "雲海結晶", price = 38, iconRuid = "9c75f0ba34f64a34b85ac69c4ef9e3fc" },
+				{ id = "orbis_glass", displayName = "天空玻璃", price = 44, iconRuid = "5a1d188c60d149e0a3957ad3652b026f" }
+			} }
+		elseif id == "ludus" then
+			return { id = "ludus", displayName = "玩具城", position = { x = 0.42, y = 0.40 }, mapName = "map_ludus_port", goods = {
+				{ id = "clockwork_spring", displayName = "鐘塔發條", price = 28, iconRuid = "752a314d933a45f788b43b24ad42f7d0" },
+				{ id = "teddy_cotton", displayName = "熊熊棉花", price = 34, iconRuid = "2e7b56ddc71c4394aea01a68fbc076aa" },
+				{ id = "alien_parts", displayName = "外星零件", price = 40, iconRuid = "f3655531af3c4cb7a40919c80e34da99" }
+			} }
+		elseif id == "nihal" then
+			return { id = "nihal", displayName = "納希沙漠", position = { x = 0.60, y = 0.16 }, mapName = "map_nihal_port", goods = {
+				{ id = "cactus_fiber", displayName = "仙人掌纖維", price = 28, iconRuid = "1ec44b0b3abe454fbf486ce57aa9e016" },
+				{ id = "ariants_flask", displayName = "沙漠燒杯", price = 34, iconRuid = "2bd3b1542dc145d7a96354c6d40e384e" },
+				{ id = "alchemy_dew", displayName = "煉金露水", price = 40, iconRuid = "40a15832a52048da855199f373d4ccc2" }
+			} }
+		end
+		return nil
+	end
+
+	method string GetPortName(string portId)
+		local port = self:GetPort(portId)
+		if port == nil then return "未知港口" end
+		return port.displayName
+	end
+
+	method any GetRoute(string originId, string destinationId)
+		local normalizedOrigin = self:NormalizePortId(originId)
+		local normalizedDestination = self:NormalizePortId(destinationId)
+		if self:GetPort(normalizedOrigin) == nil or self:GetPort(normalizedDestination) == nil then return nil end
+		if normalizedOrigin == normalizedDestination then return nil end
+		local routeId = normalizedOrigin .. "_to_" .. normalizedDestination
+		return {
+			id = routeId,
+			routeId = routeId,
+			originId = normalizedOrigin,
+			destinationId = normalizedDestination,
+			returnRouteId = normalizedDestination .. "_to_" .. normalizedOrigin,
+			boardingRequired = true,
+			boardingCondition = "near_ship_and_interaction",
+			relayMapName = "map_airship_deck"
+		}
+	end
+
+	method string GetGoodName(integer index)
+		local good = self:GetLocalGood("forest", index)
+		if good ~= nil then return good.displayName end
+		return "未知商品"
+	end
+
+	method any GetLocalGood(string portId, integer index)
+		local port = self:GetPort(portId)
+		if port == nil or index < 1 or index > #port.goods then return nil end
+		return port.goods[index]
+	end
+
+	method any GetGoodById(string goodId)
+		for _, portId in ipairs({ "forest", "sky", "ludus", "nihal" }) do
+			local port = self:GetPort(portId)
+			for _, good in ipairs(port.goods) do
+				if good.id == goodId then
+					return { id = good.id, displayName = good.displayName, price = good.price, originId = portId }
+				end
+			end
+		end
+		return nil
+	end
+
+	method integer GetGoodPrice(string portId, integer index)
+		local good = self:GetLocalGood(portId, index)
+		if good == nil then return 0 end
+		return good.price
+	end
+
+	method integer GetSalePrice(string portId, string goodId)
+		local destination = self:GetPort(portId)
+		local good = self:GetGoodById(goodId)
+		if destination == nil or good == nil then return 0 end
+		-- 外港收購價高於產地買價；同港回售折價，防止原地套利。
+		if destination.id == good.originId then return math.floor(good.price * 0.8) end
+		local demand = { forest = 1.5, sky = 1.6, ludus = 1.7, nihal = 1.8 }
+		return math.floor(good.price * demand[destination.id] + 0.5)
+	end
+
+	method any GetAirspaces()
+		-- 七個命名空域刻意保留少量重疊與凹邊，測試 priority、凹多邊形及 open_sea fallback。
+		return {
+			{ id = "forest_wind", displayName = "森林風廊", shortName = "森林", priority = 10, risk = 0.08, encounterCards = {
+				{ id = "forest_wind_gust", title = "森林側風", text = "側風把帆面吹偏；到舵輪校正航向後續航。", outcome = "stabilized" }
+			}, polygon = {
+				{ x = 0.00, y = 0.99 }, { x = 0.25, y = 0.99 }, { x = 0.27, y = 0.91 }, { x = 0.12, y = 0.86 }, { x = 0.00, y = 0.88 }
+			} },
+			{ id = "victoria", displayName = "維多利亞航道", shortName = "維多利亞", priority = 30, risk = 0.16, encounterCards = {
+				{ id = "victoria_mushroom_raid", title = "菇菇襲擊", text = "熟悉的菇菇群從雲層竄出，撞向甲板護欄。", outcome = "defended" }
+			}, polygon = {
+			{ x = 0.07, y = 0.76 }, { x = 0.25, y = 0.76 }, { x = 0.29, y = 0.50 }, { x = 0.19, y = 0.47 }, { x = 0.07, y = 0.55 }
+			} },
+			{ id = "aqua", displayName = "水世界氣流", shortName = "水世界", priority = 35, risk = 0.24, encounterCards = {
+				{ id = "aqua_mist", title = "水霧航道", text = "水世界的濃霧遮住浮標；到舵輪確認航標後續航。", outcome = "charted" }
+			}, polygon = {
+			{ x = 0.22, y = 0.61 }, { x = 0.40, y = 0.61 }, { x = 0.41, y = 0.36 }, { x = 0.35, y = 0.33 }, { x = 0.22, y = 0.44 }
+			} },
+			{ id = "ludus", displayName = "玩具鐘塔航線", shortName = "路德斯湖", priority = 45, risk = 0.31, encounterCards = {
+				{ id = "ludus_drifting_cargo", title = "漂流貨箱", text = "鐘塔航線飄來無主貨箱；本次不回收，到舵輪確認航線後續航。", outcome = "passed" }
+			}, polygon = {
+			{ x = 0.34, y = 0.49 }, { x = 0.53, y = 0.49 }, { x = 0.56, y = 0.26 }, { x = 0.48, y = 0.22 }, { x = 0.38, y = 0.27 }, { x = 0.40, y = 0.37 }
+			} },
+			{ id = "nihal", displayName = "納希沙漠熱風", shortName = "納希", priority = 50, risk = 0.36, encounterCards = {
+				{ id = "nihal_heat_haze", title = "沙海熱浪", text = "沙漠熱浪讓船體升溫；到舵輪調整航向避開熱流。", outcome = "cooled" }
+			}, polygon = {
+			{ x = 0.48, y = 0.32 }, { x = 0.79, y = 0.32 }, { x = 0.79, y = 0.04 }, { x = 0.47, y = 0.04 }, { x = 0.45, y = 0.19 }
+			} },
+			{ id = "orbis_highwind", displayName = "天空高風", shortName = "天空", priority = 20, risk = 0.12, encounterCards = {
+				{ id = "orbis_highwind_crosswind", title = "天空高風", text = "高空風切突然增強；到舵輪收束航向後續航。", outcome = "trimmed" }
+			}, polygon = {
+			{ x = 0.22, y = 0.87 }, { x = 0.39, y = 0.87 }, { x = 0.38, y = 0.69 }, { x = 0.23, y = 0.69 }
+			} },
+			{ id = "ellinia_cloud", displayName = "艾利涅雲海", shortName = "艾利涅", priority = 25, risk = 0.20, encounterCards = {
+				{ id = "ellinia_cloud_drift", title = "艾利涅漂雲", text = "柔軟雲團形成漂移帶；到舵輪微調航向後續航。", outcome = "steered" }
+			}, polygon = {
+				{ x = 0.06, y = 0.35 }, { x = 0.22, y = 0.46 }, { x = 0.38, y = 0.35 }, { x = 0.30, y = 0.14 }, { x = 0.12, y = 0.16 }
+			} }
+		}
+	end
+
+	method number Cross(any a, any b)
+		return a.x * b.y - a.y * b.x
+	end
+
+	method number Dot(any a, any b)
+		return a.x * b.x + a.y * b.y
+	end
+
+	method boolean NearlyEqual(number a, number b)
+		return math.abs(a - b) <= self.geometryEpsilon
+	end
+
+	method boolean PointOnSegment(any point, any a, any b)
+		local ab = { x = b.x - a.x, y = b.y - a.y }
+		local ap = { x = point.x - a.x, y = point.y - a.y }
+		if math.abs(self:Cross(ab, ap)) > self.geometryEpsilon then return false end
+		local projection = self:Dot(ap, ab)
+		local lengthSquared = self:Dot(ab, ab)
+		return projection >= -self.geometryEpsilon and projection <= lengthSquared + self.geometryEpsilon
+	end
+
+	method boolean PointInPolygon(any point, any polygon)
+		local inside = false
+		local previous = polygon[#polygon]
+		for index, current in ipairs(polygon) do
+			if self:PointOnSegment(point, previous, current) then return true end
+			local crosses = ((current.y > point.y) ~= (previous.y > point.y))
+			if crosses then
+				local xAtRay = (previous.x - current.x) * (point.y - current.y) / (previous.y - current.y) + current.x
+				if point.x < xAtRay then inside = not inside end
+			end
+			previous = current
+		end
+		return inside
+	end
+
+	method number SegmentBoundaryT(any startPoint, any finishPoint, any edgeStart, any edgeFinish)
+		local direction = { x = finishPoint.x - startPoint.x, y = finishPoint.y - startPoint.y }
+		local edge = { x = edgeFinish.x - edgeStart.x, y = edgeFinish.y - edgeStart.y }
+		local offset = { x = edgeStart.x - startPoint.x, y = edgeStart.y - startPoint.y }
+		local denominator = self:Cross(direction, edge)
+		if math.abs(denominator) <= self.geometryEpsilon then return -1 end
+		local routeT = self:Cross(offset, edge) / denominator
+		local edgeT = self:Cross(offset, direction) / denominator
+		if routeT >= -self.geometryEpsilon and routeT <= 1 + self.geometryEpsilon and edgeT >= -self.geometryEpsilon and edgeT <= 1 + self.geometryEpsilon then
+			return math.max(0, math.min(1, routeT))
+		end
+		return -1
+	end
+
+	method any ClassifyPoint(any point)
+		local chosen = nil
+		for _, zone in ipairs(self:GetAirspaces()) do
+			if self:PointInPolygon(point, zone.polygon) then
+				if chosen == nil or zone.priority > chosen.priority then chosen = zone end
+			end
+		end
+		if chosen == nil then return { id = "open_sea", displayName = "開放空域", shortName = "開放空域", priority = 0, risk = 0.05 } end
+		return chosen
+	end
+
+	method any SortAndDeduplicate(any values)
+		-- mLua 可攜性優先：使用插入排序，不依賴匿名 comparator 的註冊行為。
+		for index = 2, #values do
+			local current = values[index]
+			local cursor = index - 1
+			while cursor >= 1 and values[cursor] > current do
+				values[cursor + 1] = values[cursor]
+				cursor = cursor - 1
+			end
+			values[cursor + 1] = current
+		end
+		local result = {}
+		for _, value in ipairs(values) do
+			if value >= -self.geometryEpsilon and value <= 1 + self.geometryEpsilon then
+				local clamped = math.max(0, math.min(1, value))
+				if #result == 0 or math.abs(clamped - result[#result]) > self.geometryEpsilon then table.insert(result, clamped) end
+			end
+		end
+		if #result == 0 or result[1] > self.geometryEpsilon then table.insert(result, 1, 0) end
+		if result[#result] < 1 - self.geometryEpsilon then table.insert(result, 1) end
+		return result
+	end
+
+	method any SplitRoute(any startPoint, any finishPoint)
+		local boundaries = { 0, 1 }
+		for _, zone in ipairs(self:GetAirspaces()) do
+			local polygon = zone.polygon
+			for index, edgeStart in ipairs(polygon) do
+				local edgeFinish = polygon[index + 1]
+				if edgeFinish == nil then edgeFinish = polygon[1] end
+				local routeT = self:SegmentBoundaryT(startPoint, finishPoint, edgeStart, edgeFinish)
+				if routeT >= 0 then table.insert(boundaries, routeT) end
+			end
+		end
+		boundaries = self:SortAndDeduplicate(boundaries)
+		local result = {}
+		local dx = finishPoint.x - startPoint.x
+		local dy = finishPoint.y - startPoint.y
+		for index = 1, #boundaries - 1 do
+			local startT = boundaries[index]
+			local finishT = boundaries[index + 1]
+			if finishT - startT > self.geometryEpsilon then
+				local middleT = (startT + finishT) * 0.5
+				local middle = { x = startPoint.x + dx * middleT, y = startPoint.y + dy * middleT }
+				local zone = self:ClassifyPoint(middle)
+				local lengthX = dx * (finishT - startT) * self.mapPixelWidth
+				local lengthY = dy * (finishT - startT) * self.mapPixelHeight
+				local length = math.sqrt(lengthX * lengthX + lengthY * lengthY)
+				if length > self.geometryEpsilon then
+					local previous = result[#result]
+					if previous ~= nil and previous.airspaceId == zone.id then
+						previous.finishT = finishT
+						previous.length = previous.length + length
+					else
+						table.insert(result, { airspaceId = zone.id, displayName = zone.displayName, shortName = zone.shortName or zone.displayName, startT = startT, finishT = finishT, length = length, risk = zone.risk })
+					end
+				end
+			end
+		end
+		return result
+	end
+
+	method any PreviewDirectRoute(string originId, string destinationId)
+		local origin = self:GetPort(originId)
+		local destination = self:GetPort(destinationId)
+		local route = self:GetRoute(originId, destinationId)
+		local preview = { accepted = false, routeId = "", returnRouteId = "", boardingRequired = true, boardingCondition = "near_ship_and_interaction", originId = self:NormalizePortId(originId), destinationId = self:NormalizePortId(destinationId), distance = 0, risk = 0, expectedEncounter = 0, segments = {}, reason = "" }
+		if origin == nil or destination == nil then
+			preview.reason = "未知港口"
+			return preview
+		end
+		if origin.id == destination.id then
+			preview.reason = "目的港不可與目前港口相同"
+			return preview
+		end
+		preview.routeId = route.routeId
+		preview.returnRouteId = route.returnRouteId
+		preview.accepted = true
+		local dx = (destination.position.x - origin.position.x) * self.mapPixelWidth
+		local dy = (destination.position.y - origin.position.y) * self.mapPixelHeight
+		preview.distance = math.sqrt(dx * dx + dy * dy)
+		preview.segments = self:SplitRoute(origin.position, destination.position)
+		for _, segment in ipairs(preview.segments) do
+			preview.risk = preview.risk + segment.length * segment.risk
+			-- 事件量以各區實際通過距離 × 該區 risk 計算；不採整條航線平均值。
+			preview.expectedEncounter = preview.expectedEncounter + segment.length * segment.risk
+		end
+		if preview.distance > 0 then
+			preview.risk = preview.risk / preview.distance
+			-- Encounter quantity is distance-weighted; unlike risk it is not an average.
+			-- M1 每趟至少有一次航程事件；額外事件仍由穿越各空域的距離與風險決定。
+			-- 跨界本身不抽牌，短暫擦過單一空域仍可能完全沒有該區事件。
+			preview.expectedEncounter = math.max(1, math.floor(preview.expectedEncounter / 100 + 0.5))
+		end
+		preview.expectedEncounterCount = preview.expectedEncounter
+		preview.reason = "ok"
+		return preview
+	end
+
+	method any GetEncounterCard(string airspaceId, integer index)
+		for _, zone in ipairs(self:GetAirspaces()) do
+			if zone.id == airspaceId and zone.encounterCards ~= nil and #zone.encounterCards > 0 then
+				local cardIndex = index
+				if cardIndex < 1 then cardIndex = 1 end
+				cardIndex = ((cardIndex - 1) % #zone.encounterCards) + 1
+				return zone.encounterCards[cardIndex]
+			end
+		end
+		return { id = "open_sea_cloudbank", title = "雲海靜流", text = "雲海氣流暫時平穩；到舵輪確認航線後續航。", outcome = "charted" }
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean RunGeometrySelfTest()
+		local direct = self:SplitRoute(self:GetPort("forest").position, self:GetPort("nihal").position)
+		local expected = { "victoria", "aqua", "ludus", "nihal" }
+		local found = {}
+		for _, segment in ipairs(direct) do
+			if segment.airspaceId ~= "open_sea" and (#found == 0 or found[#found] ~= segment.airspaceId) then table.insert(found, segment.airspaceId) end
+		end
+		local orderOK = #found >= #expected
+		for index, id in ipairs(expected) do if found[index] ~= id then orderOK = false end end
+		local reverse = self:SplitRoute(self:GetPort("nihal").position, self:GetPort("forest").position)
+		local reverseDistance = 0
+		local reverseFound = {}
+		for _, segment in ipairs(reverse) do
+			reverseDistance = reverseDistance + segment.length
+			if segment.airspaceId ~= "open_sea" and (#reverseFound == 0 or reverseFound[#reverseFound] ~= segment.airspaceId) then table.insert(reverseFound, segment.airspaceId) end
+		end
+		local reverseOrderOK = #reverseFound >= #expected
+		for index, id in ipairs(expected) do if reverseFound[index] ~= expected[#expected - index + 1] then reverseOrderOK = false end end
+		local directDistance = 0
+		for _, segment in ipairs(direct) do directDistance = directDistance + segment.length end
+		local distanceOK = math.abs(reverseDistance - directDistance) <= 0.001
+		local tangent = self:SplitRoute({ x = 0.12, y = 0.86 }, { x = 0.21, y = 0.86 })
+		local vertex = self:SplitRoute({ x = 0.18, y = 0.72 }, { x = 0.34, y = 0.44 })
+		local tangentBoundary = self:ClassifyPoint({ x = 0.12, y = 0.86 })
+		local tangentExit = self:ClassifyPoint({ x = 0.21, y = 0.86 })
+		local overlap = self:ClassifyPoint({ x = 0.36, y = 0.60 })
+		local fallback = self:ClassifyPoint({ x = 0.93, y = 0.85 })
+		local airspaces = self:GetAirspaces()
+		local concaveInside = self:PointInPolygon({ x = 0.45, y = 0.40 }, airspaces[4].polygon)
+		local concavePocketOutside = self:PointInPolygon({ x = 0.39, y = 0.34 }, airspaces[4].polygon) == false
+		local noZero = true
+		for _, segment in ipairs(direct) do if segment.length <= self.geometryEpsilon then noZero = false end end
+		local tangentOK = #tangent > 0 and tangentBoundary.id == "forest_wind" and tangentExit.id == "open_sea"
+		local passed = orderOK and reverseOrderOK and distanceOK and tangentOK and #vertex > 0 and concaveInside and concavePocketOutside and overlap.id == "aqua" and fallback.id == "open_sea" and noZero
+		log("[VoyageData][SelfTest] order=" .. tostring(orderOK) .. " reverseOrder=" .. tostring(reverseOrderOK) .. " distance=" .. tostring(distanceOK) .. " tangent=" .. tostring(tangentOK) .. " vertex=" .. tostring(#vertex) .. " concave=" .. tostring(concaveInside and concavePocketOutside) .. " overlap=" .. overlap.id .. " fallback=" .. fallback.id .. " noZero=" .. tostring(noZero))
+		return passed
+	end
+end

@@ -264,12 +264,12 @@
                     }
                   },
                   {
-                    "Length": 3.04,
+                    "Length": 1.29333333,
                     "NextFootholdId": 0,
                     "PreviousFootholdId": 9,
                     "groupID": 6,
                     "layer": 1,
-                    "sortingLayerName": "MapLayer1",
+                    "sortingLayerName": "MapLayer6",
                     "attribute": {
                       "walk": 1,
                       "force": 0,
@@ -279,15 +279,15 @@
                       "isCustomFoothold": true,
                       "inertiaOption": 0
                     },
-                    "OwnerId": "61b08bc7-af9a-48e1-920f-88f0e0bc75ae",
+                    "OwnerId": "fb5e4cb2-30d0-43ab-9fd9-18584e8af4f8",
                     "Id": 8,
                     "StartPoint": {
-                      "x": -2.56,
-                      "y": -1.66
+                      "x": -1.33333333,
+                      "y": -1.462
                     },
                     "EndPoint": {
-                      "x": 0.48,
-                      "y": -1.66
+                      "x": -0.04,
+                      "y": -1.462
                     },
                     "Variance": {
                       "x": 1,
@@ -295,12 +295,12 @@
                     }
                   },
                   {
-                    "Length": 1.83273017,
+                    "Length": 1.29333333,
                     "NextFootholdId": 8,
                     "PreviousFootholdId": 10,
                     "groupID": 6,
                     "layer": 1,
-                    "sortingLayerName": "MapLayer1",
+                    "sortingLayerName": "MapLayer6",
                     "attribute": {
                       "walk": 1,
                       "force": 0,
@@ -310,28 +310,28 @@
                       "isCustomFoothold": true,
                       "inertiaOption": 0
                     },
-                    "OwnerId": "61b08bc7-af9a-48e1-920f-88f0e0bc75ae",
+                    "OwnerId": "fb5e4cb2-30d0-43ab-9fd9-18584e8af4f8",
                     "Id": 9,
                     "StartPoint": {
-                      "x": -4.39,
-                      "y": -1.56
+                      "x": -2.62666667,
+                      "y": -1.462
                     },
                     "EndPoint": {
-                      "x": -2.56,
-                      "y": -1.66
+                      "x": -1.33333333,
+                      "y": -1.462
                     },
                     "Variance": {
-                      "x": 0.9985103,
-                      "y": -0.054563418
+                      "x": 1,
+                      "y": 0
                     }
                   },
                   {
-                    "Length": 3.32789731,
+                    "Length": 1.29333333,
                     "NextFootholdId": 9,
                     "PreviousFootholdId": 0,
                     "groupID": 6,
                     "layer": 1,
-                    "sortingLayerName": "MapLayer1",
+                    "sortingLayerName": "MapLayer6",
                     "attribute": {
                       "walk": 1,
                       "force": 0,
@@ -341,19 +341,19 @@
                       "isCustomFoothold": true,
                       "inertiaOption": 0
                     },
-                    "OwnerId": "61b08bc7-af9a-48e1-920f-88f0e0bc75ae",
+                    "OwnerId": "fb5e4cb2-30d0-43ab-9fd9-18584e8af4f8",
                     "Id": 10,
                     "StartPoint": {
-                      "x": -7.69,
-                      "y": -1.13
+                      "x": -3.92,
+                      "y": -1.462
                     },
                     "EndPoint": {
-                      "x": -4.39,
-                      "y": -1.56
+                      "x": -2.62666667,
+                      "y": -1.462
                     },
                     "Variance": {
-                      "x": 0.9916172,
-                      "y": -0.1292107
+                      "x": 1,
+                      "y": 0
                     }
                   },
                   {
@@ -2969,7 +2969,7 @@
       {
         "id": "fb5e4cb2-30d0-43ab-9fd9-18584e8af4f8",
         "path": "/maps/map_airship_deck/GV_PlayerShip",
-        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.CustomFootholdComponent",
         "jsonString": {
           "name": "GV_PlayerShip",
           "path": "/maps/map_airship_deck/GV_PlayerShip",
@@ -3004,7 +3004,7 @@
             },
             {
               "@type": "MOD.Core.SpriteRendererComponent",
-              "SpriteRUID": "753b0027bfc44c33a0267cd11379bc91",
+              "SpriteRUID": "b4973e0def274436a33d0a6e9dad5fe8",
               "Color": {
                 "r": 1,
                 "g": 1,
@@ -3015,11 +3015,16 @@
               "FlipX": false,
               "FlipY": false,
               "PlayRate": 1,
-              "OrderInLayer": 20,
+              "OrderInLayer": 0,
               "StartFrameIndex": 0,
               "EndFrameIndex": 2147483647,
               "Enable": true,
               "SortingLayer": "MapLayer6"
+            },
+            {
+              "@type": "MOD.Core.CustomFootholdComponent",
+              "edgeLists": [[{"x": -5.3, "y": -0.905}, {"x": -2.066666675, "y": -0.905}, {"x": 1.166666675, "y": -0.905}, {"x": 4.4, "y": -0.905}]],
+              "Enable": true
             }
           ],
           "@version": 1,
@@ -3030,6 +3035,65 @@
             "root_entity_id": "fb5e4cb2-30d0-43ab-9fd9-18584e8af4f8",
             "replaced_model_id": null
           }
+        }
+      },
+      {
+        "id": "fbd235ec-4488-48b6-826c-4607292f00d2",
+        "path": "/maps/map_airship_deck/GV_PlayerShipFront",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "jsonString": {
+          "name": "GV_PlayerShipFront",
+          "path": "/maps/map_airship_deck/GV_PlayerShipFront",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 41,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": null,
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": -1.8,
+                "y": -1.1,
+                "z": 999.9
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 0.4,
+                "y": 0.4,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "eb4c963ffb754ce3847d2dac46efffb1",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": false,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 10,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": true,
+              "SortingLayer": "MapLayer6"
+            }
+          ],
+          "@version": 1
         }
       }
     ]

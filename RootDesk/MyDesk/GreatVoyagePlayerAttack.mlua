@@ -2,6 +2,7 @@
 script GreatVoyagePlayerAttack extends AttackComponent
 
 	property any keyHandler = nil
+	property number lastAttackAt = -1
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
@@ -30,7 +31,16 @@ script GreatVoyagePlayerAttack extends AttackComponent
 
 	@ExecSpace("Server")
 	method void PerformAttack()
-		local hits = self:Attack(Vector2(1.0, 1.2), Vector2(0, 0.25), nil)
-		log("[PlayerAttack] attack dispatched")
+		local player = self.Entity.PlayerComponent
+		if player == nil or player.UserId ~= senderUserId or self.Entity.CurrentMapName ~= "map_airship_deck" then return end
+		local state = _GreatVoyageVoyageState:GetOrCreateState(senderUserId)
+		if state.pendingEncounter == nil or state.pendingEncounter.card == nil or state.pendingEncounter.card.id ~= "victoria_mushroom_raid" or state.raidRemaining <= 0 then return end
+		local now = _UtilLogic.ServerElapsedSeconds
+		if self.lastAttackAt >= 0 and now - self.lastAttackAt < 0.35 then return end
+		self.lastAttackAt = now
+		local facing = 1
+		if self.Entity.PlayerControllerComponent ~= nil and self.Entity.PlayerControllerComponent.LookDirectionX < 0 then facing = -1 end
+		self:Attack(Vector2(1.1, 1.2), Vector2(facing * 0.5, 0.25), "deck_mushroom", CollisionGroups.Monster)
+		log("[PlayerAttack] deck raid attack player=" .. senderUserId)
 	end
 end

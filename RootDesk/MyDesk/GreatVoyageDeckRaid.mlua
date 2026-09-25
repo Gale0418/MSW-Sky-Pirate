@@ -6,6 +6,7 @@ script GreatVoyageDeckRaid extends Logic
 	property any cloudFarA = nil
 	property any cloudFarB = nil
 	property any keyHandler = nil
+	property number voyageAdvanceElapsed = 0
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
@@ -48,9 +49,9 @@ script GreatVoyageDeckRaid extends Logic
 
 	@ExecSpace("Server")
 	method void StartRaid()
-		local parent = _EntityService:GetEntityByPath("/maps/map01")
+		local parent = _EntityService:GetEntityByPath("/maps/map_airship_deck")
 		if parent == nil then
-			log_warning("[DeckRaid] map01 parent missing")
+			log_warning("[DeckRaid] airship deck parent missing")
 			return
 		end
 		local p1 = _SpawnService:SpawnByModelId("greatvoyagedeckmushroom", "DeckMushroomA", Vector3(-1.4, -1.4, 0), parent)
@@ -67,6 +68,10 @@ script GreatVoyageDeckRaid extends Logic
 	method void DamageShip(number amount)
 		if _Phase0VoyagePrototype ~= nil then
 			local result = _Phase0VoyagePrototype:ApplyDamage(amount)
+			if _GreatVoyageVoyageState ~= nil then
+				-- RecordHullDamage 的 Server RPC 以 senderUserId 鎖定本次請求者。
+				_GreatVoyageVoyageState:RecordHullDamage(amount)
+			end
 			log("[DeckRaid] ship damaged: " .. result)
 		end
 	end
@@ -82,9 +87,17 @@ script GreatVoyageDeckRaid extends Logic
 	end
 	@ExecSpace("ClientOnly")
 	method void OnUpdate(number delta)
-		if self.raidActive == false then
-			return
+		-- 客戶端只發送節拍請求；Server 依實際經過秒數推進 60 秒航程。
+		self.voyageAdvanceElapsed = self.voyageAdvanceElapsed + delta
+		if self.voyageAdvanceElapsed >= 0.5 then
+			self.voyageAdvanceElapsed = 0
+			local player = _UserService.LocalPlayer
+			if player ~= nil and player.PlayerComponent ~= nil and _GreatVoyageVoyageState ~= nil
+				and _GreatVoyageVoyageState.clientSnapshotStatus == "sailing" then
+				_GreatVoyageVoyageState:AdvanceVoyage(1)
+			end
 		end
+		if self.raidActive == false then return end
 		self.elapsed = self.elapsed + delta
 		if self.cloudFarA ~= nil then
 			self.cloudFarA.TransformComponent.Position = self.cloudFarA.TransformComponent.Position + Vector3(-delta * 0.6, 0, 0)

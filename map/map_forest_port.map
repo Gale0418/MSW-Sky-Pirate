@@ -389,6 +389,39 @@
                       "y": 1.0
                     }
                   }
+                ],
+                "3": [
+                  {
+                    "Length": 3.88,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 0,
+                    "groupID": 10,
+                    "layer": 3,
+                    "sortingLayerName": "MapLayer6",
+                    "attribute": {
+                      "walk": 1.0,
+                      "force": 0.0,
+                      "drag": 1.0,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "0ee76e45-48ee-4ff1-aa18-ba9917191af5",
+                    "Id": 12,
+                    "StartPoint": {
+                      "x": 14.1431,
+                      "y": 1.7553
+                    },
+                    "EndPoint": {
+                      "x": 18.0231,
+                      "y": 1.7553
+                    },
+                    "Variance": {
+                      "x": 1.0,
+                      "y": 0.0
+                    }
+                  }
                 ]
               },
               "Enable": true
@@ -4195,7 +4228,7 @@
       {
         "id": "0ee76e45-48ee-4ff1-aa18-ba9917191af5",
         "path": "/maps/map_forest_port/GV_PlayerShip",
-        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.CustomFootholdComponent",
         "jsonString": {
           "name": "GV_PlayerShip",
           "path": "/maps/map_forest_port/GV_PlayerShip",
@@ -4248,11 +4281,11 @@
               "EndFrameIndex": 2147483647,
               "FlipX": true,
               "FlipY": false,
-              "OrderInLayer": 20,
+              "OrderInLayer": 0,
               "PlayRate": 1.0,
               "RenderSetting": 0,
               "SortingLayer": "MapLayer6",
-              "SpriteRUID": "753b0027bfc44c33a0267cd11379bc91",
+              "SpriteRUID": "b4973e0def274436a33d0a6e9dad5fe8",
               "StartFrameIndex": 0,
               "Color": {
                 "r": 1.0,
@@ -4260,6 +4293,142 @@
                 "b": 1.0,
                 "a": 1.0
               },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.CustomFootholdComponent",
+              "edgeLists": [
+                [
+                  {
+                    "x": -4.4,
+                    "y": -0.905
+                  },
+                  {
+                    "x": 5.3,
+                    "y": -0.905
+                  }
+                ]
+              ],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "5d5b47f2-1113-4189-ac35-08998f1a2961",
+        "path": "/maps/map_forest_port/GV_PlayerShipFront",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "jsonString": {
+          "name": "GV_PlayerShipFront",
+          "path": "/maps/map_forest_port/GV_PlayerShipFront",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 64,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": null,
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "Position": {
+                "x": 16.263092,
+                "y": 2.11727786,
+                "z": 999.9
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Scale": {
+                "x": 0.4,
+                "y": 0.4,
+                "z": 1.0
+              },
+              "ZRotation": 0.0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "DrawMode": 0,
+              "EndFrameIndex": 2147483647,
+              "FlipX": true,
+              "FlipY": false,
+              "OrderInLayer": 10,
+              "PlayRate": 1.0,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer6",
+              "SpriteRUID": "eb4c963ffb754ce3847d2dac46efffb1",
+              "StartFrameIndex": 0,
+              "Color": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              },
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "eca5f79f-9d9b-4e08-ae74-f95890630af8",
+        "path": "/maps/map_forest_port/GV_ShipBoardInteractPoint",
+        "componentNames": "MOD.Core.TransformComponent",
+        "jsonString": {
+          "name": "GV_ShipBoardInteractPoint",
+          "path": "/maps/map_forest_port/GV_ShipBoardInteractPoint",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 65,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "mapempty",
+            "sub_entity_id": null,
+            "root_entity_id": "eca5f79f-9d9b-4e08-ae74-f95890630af8",
+            "replaced_model_id": null
+          },
+          "modelId": "mapempty",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "Position": {
+                "x": 16.35,
+                "y": -0.83,
+                "z": 999.9
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "ZRotation": 0.0,
               "Enable": true
             }
           ],

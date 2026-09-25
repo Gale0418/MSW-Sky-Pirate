@@ -24,13 +24,8 @@ script Phase0VoyagePrototype extends Logic
 	property integer cargoCapacity = 8
 	property integer quantity = 0
 	property integer cargoGoodIndex = 0
+	property string cargoGoodId = ""
 	property integer cargoBuyPrice = 0
-	property integer forestRedPotionPrice = 50
-	property integer forestBluePotionPrice = 100
-	property integer forestOrangePotionPrice = 160
-	property integer skyRedPotionPrice = 70
-	property integer skyBluePotionPrice = 80
-	property integer skyOrangePotionPrice = 210
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
@@ -73,6 +68,7 @@ script Phase0VoyagePrototype extends Logic
 		self.tradeQuantity = 1
 		self.quantity = 0
 		self.cargoGoodIndex = 0
+		self.cargoGoodId = ""
 		self.cargoBuyPrice = 0
 		self:Notify("Phase 0 已重置：魔法森林起航，按 1 出航；5選商品 6買 7賣。")
 		self:LogStatus()
@@ -231,9 +227,11 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method string GetPortName(string portId)
-		if portId == "forest" then
-			return "魔法森林"
+		if _GreatVoyageVoyageData ~= nil then
+			local dataName = _GreatVoyageVoyageData:GetPortName(portId)
+			if dataName ~= "未知港口" then return dataName end
 		end
+		if portId == "forest" then return "魔法森林" end
 		return "天空之城"
 	end
 
@@ -252,30 +250,37 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method string GetGoodName(integer index)
-		if index == 1 then
-			return "紅色藥水"
-		elseif index == 2 then
-			return "藍色藥水"
+		if _GreatVoyageVoyageData ~= nil then
+			local good = _GreatVoyageVoyageData:GetLocalGood(self.currentPortId, index)
+			if good ~= nil then return good.displayName end
 		end
-		return "橘色藥水"
+		return "未知商品"
+	end
+
+	@ExecSpace("ClientOnly")
+	method string GetCargoGoodName()
+		-- 貨艙以商品 ID 記錄，換港後仍可顯示原產地商品。
+		if _GreatVoyageVoyageData ~= nil then
+			local good = _GreatVoyageVoyageData:GetGoodById(self.cargoGoodId)
+			if good ~= nil then return good.displayName end
+		end
+		return "未知商品"
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer GetCargoSalePrice()
+		-- 外港的買入需求決定賣價，不依當地貨架索引。
+		if _GreatVoyageVoyageData == nil then return 0 end
+		return _GreatVoyageVoyageData:GetSalePrice(self.currentPortId, self.cargoGoodId)
 	end
 
 	@ExecSpace("ClientOnly")
 	method integer GetCurrentMarketPrice(integer index)
-		if self.currentPortId == "forest" then
-			if index == 1 then
-				return self.forestRedPotionPrice
-			elseif index == 2 then
-				return self.forestBluePotionPrice
-			end
-			return self.forestOrangePotionPrice
+		if _GreatVoyageVoyageData ~= nil then
+			local dataPrice = _GreatVoyageVoyageData:GetGoodPrice(self.currentPortId, index)
+			return dataPrice
 		end
-		if index == 1 then
-			return self.skyRedPotionPrice
-		elseif index == 2 then
-			return self.skyBluePotionPrice
-		end
-		return self.skyOrangePotionPrice
+		return 0
 	end
 
 	@ExecSpace("ClientOnly")
@@ -296,11 +301,15 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void BuySelectedGood()
+		-- 限定本港上架商品，成功後以固定 ID 保留貨物身份。
+		if _GreatVoyageVoyageData == nil then return end
 		if self.quantity > 0 then
 			self:Notify("一次只能攜帶一種貨物，請先賣出目前貨物。")
 			return
 		end
 		local price = self:GetCurrentMarketPrice(self.selectedGoodIndex)
+		local good = _GreatVoyageVoyageData:GetLocalGood(self.currentPortId, self.selectedGoodIndex)
+		if good == nil or price <= 0 then return end
 		local total = price * self.tradeQuantity
 		if self.quantity + self.tradeQuantity > self.cargoCapacity then
 			self:Notify("貨艙容量不足。")
@@ -313,6 +322,7 @@ script Phase0VoyagePrototype extends Logic
 		self.money = self.money - total
 		self.quantity = self.tradeQuantity
 		self.cargoGoodIndex = self.selectedGoodIndex
+		self.cargoGoodId = good.id
 		self.cargoBuyPrice = price
 		self:Notify("買入 " .. self:GetGoodName(self.cargoGoodIndex) .. " x" .. tostring(self.quantity) .. "，花費 " .. tostring(total) .. "G")
 		self:LogStatus()
@@ -320,16 +330,21 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void SellCargo()
+		-- 貨物可在任一港出售；同港回售會折價。
 		if self.quantity <= 0 then
 			self:Notify("貨艙目前沒有貨物。")
 			return
 		end
-		local price = self:GetCurrentMarketPrice(self.cargoGoodIndex)
+		local price = self:GetCargoSalePrice()
+		if price <= 0 then return end
 		local total = price * self.quantity
 		self.money = self.money + total
-		self:Notify("賣出 " .. self:GetGoodName(self.cargoGoodIndex) .. " x" .. tostring(self.quantity) .. "，收入 " .. tostring(total) .. "G")
+		local profit = (price - self.cargoBuyPrice) * self.quantity
+		self:Notify("賣出 " .. self:GetCargoGoodName() .. " x" .. tostring(self.quantity) .. "，收入 " .. tostring(total) .. "G；貨物價差 " .. tostring(profit) .. "G")
+		log("[Trade] sold port=" .. self.currentPortId .. " good=" .. self.cargoGoodId .. " qty=" .. tostring(self.quantity) .. " sale=" .. tostring(price) .. " profit=" .. tostring(profit))
 		self.quantity = 0
 		self.cargoGoodIndex = 0
+		self.cargoGoodId = ""
 		self.cargoBuyPrice = 0
 		self:LogStatus()
 	end
@@ -344,7 +359,7 @@ script Phase0VoyagePrototype extends Logic
 		if self.quantity <= 0 then
 			return "貨艙 0/" .. tostring(self.cargoCapacity)
 		end
-		return "貨艙 " .. self:GetGoodName(self.cargoGoodIndex) .. " x" .. tostring(self.quantity) .. "/" .. tostring(self.cargoCapacity)
+		return "貨艙 " .. self:GetCargoGoodName() .. " x" .. tostring(self.quantity) .. "/" .. tostring(self.cargoCapacity) .. "｜本港收購 " .. tostring(self:GetCargoSalePrice()) .. "G/件"
 	end
 
 	@ExecSpace("ClientOnly")

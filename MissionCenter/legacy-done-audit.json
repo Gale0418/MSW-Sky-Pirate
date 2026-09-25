@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "recordedAt": "2026-08-14",
+  "reason": "Imported before standardized single-task smoke links; no passing evidence was fabricated for legacy Done tasks.",
+  "taskIds": [
+    "E1",
+    "P0-T0",
+    "P0-T1",
+    "P0-T2",
+    "P0-T3",
+    "E6",
+    "E7",
+    "AC-T0",
+    "E8",
+    "GV-T4"
+  ]
+}

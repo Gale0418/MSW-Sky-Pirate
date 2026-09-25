@@ -1,5 +1,21 @@
 # Notes
 
+## 2026-09-25 M1 現況覆蓋提醒
+
+- 下方同日「SourceLanguage=ko／WorldConfig 未修改」是修改前的歷史快照，**現值為 `zh-tw`**；繁中原文啟動回歸通過，但其他語言未測。
+- M1 現有魔法森林、天空之城、玩具城、納希沙漠四港與甲板，並非下方舊決策中的雙港／三圖。森林→天空之城航程已實測遭遇菇菇時 60 秒倒數繼續，不擊殺仍抵港；完整四港往返及擊殺結算仍待驗。
+- 另一份 Gemini 視覺審查提到「雙長方形港口、黑底藍粉商店、缺關閉 X」，與 2026-09-25 Maker 截圖不符；現畫面已有四個圓形港口徽章及木框象牙底商店與 X，故不把這些過期描述列為待修 Bug。可保留其圖層、文字對比、點擊區建議供後續實測。
+
+## 2026-09-25 MSW／GitHub 技能及本地化查核
+
+- 官方技能庫：https://github.com/MSW-Git/msw-ai-coding-plugins-official 。本地已具 general、scripting、UI、search、sprite RUID、painter、packages、combat、avatar、DefaultPlayer、behaviourtree、planning；GitHub 額外 `maplestory-skill-maker` 偏特定玩家技能架構，暫不直接移植。
+- 官方功能套件：https://github.com/MSW-Git/MSWPackages 。有 UI 資源包及通用 shop／inventory／dialog 等；現有商店是地方貨物／價差／貨艙系統，先讀套件 README 再決定是否引用視覺素材或整合。
+- 自動翻譯官方說明：https://maplestoryworlds-creators.nexon.com/ko/docs/?postId=1072 。需要正確 `SourceLanguage`、支援文字元件的 `AllowAutomaticTranslation`、發佈語言設定及玩家選擇；不是所有 UI 字串無條件自動翻。2025-04-23 官方更新確認繁中可選作 SourceLanguage：https://maplestoryworlds-creators.nexon.com/en/community/5479/5488/2838585 。
+- 本地事實：`Global/WorldConfig.config` 第 20 行為 `ko`；`RootDesk/MyDesk/UI/GreatVoyageAdventureController.mlua` 等動態寫入繁中 UI 文案；專案未找到 `.localedataset` 或 `.csv`。因此遊戲多語言尚未完成驗收。下一步在 Maker 校正原文語言，建立／套用譯文資料，逐頁實測航圖、商店、倒數、遭遇及文字溢出。
+- GitHub `SkillTranslator`、`skill-i18n` 類工具主要翻 Agent SKILL 文件；Crowdin skills 有翻譯流程但非 MSW 即插即用。本輪未安裝任何第三方技能。
+- 2026-09-25 電腦操作續查：`sky.list_apps()` 找到唯一 `MapleStory Worlds-楓谷空賊王` 視窗（msw.exe）；`get_window_state` 擷取連續兩次回報 `SetIsBorderRequired failed: 不支援此種介面 (0x80004002)`。依 computer-use 復原規則停止 UI 輸入；WorldConfig 未修改，需主人於 Maker 手動設為繁體中文，或電腦擷取介面修復後續辦。
+- 2026-09-25 原文設定更新：主人回覆 OK 後，唯讀確認 `Global/WorldConfig.config:20` 已為 `zh-tw`。Maker 當前在 `map_forest_port` 編輯模式；refresh 成功，build logs 10 筆皆 Info（舊時間戳 17:53，無 Error），Play 後 normal logs 565 筆皆 Info，包含 VoyageData SelfTest、Adventure 與 HUD 初始化；已 stop。這只驗證設定落盤和啟動回歸，沒有證明自動翻譯或其他語言 UI 正確。
+
 # Open questions
 
 - 官方素材庫中可用飛空船、甲板、天空背景、巴洛古或空賊相關素材需要進 Maker 實際確認。
