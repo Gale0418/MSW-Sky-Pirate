@@ -2469,7 +2469,7 @@
                 ],
                 "3": [
                   {
-                    "Length": 11.6919994,
+                    "Length": 6.32,
                     "NextFootholdId": 0,
                     "PreviousFootholdId": 0,
                     "groupID": 17,
@@ -2487,43 +2487,12 @@
                     "OwnerId": "1044f4bf-05ee-4eee-829e-0dd4b5de6458",
                     "Id": 40,
                     "StartPoint": {
-                      "x": -11.346,
+                      "x": 2.14,
                       "y": -1.01
                     },
                     "EndPoint": {
-                      "x": 0.346,
+                      "x": 8.46,
                       "y": -1.01
-                    },
-                    "Variance": {
-                      "x": 1,
-                      "y": 0
-                    }
-                  },
-                  {
-                    "Length": 3.88,
-                    "NextFootholdId": 0,
-                    "PreviousFootholdId": 0,
-                    "groupID": 18,
-                    "layer": 3,
-                    "sortingLayerName": "MapLayer6",
-                    "attribute": {
-                      "walk": 1,
-                      "force": 0,
-                      "drag": 1,
-                      "isBlockVertical": false,
-                      "isDynamic": false,
-                      "isCustomFoothold": true,
-                      "inertiaOption": 0
-                    },
-                    "OwnerId": "f510c3e1-4a44-4585-8776-c8294d999438",
-                    "Id": 41,
-                    "StartPoint": {
-                      "x": -7.26,
-                      "y": 0.428
-                    },
-                    "EndPoint": {
-                      "x": -3.38,
-                      "y": 0.428
                     },
                     "Variance": {
                       "x": 1,
@@ -4136,7 +4105,7 @@
               "SortingLayer": "MapLayer1",
               "SpriteRUID": "eb5eb2c8128e4ce6a7611d2960d5fe37",
               "StartFrameIndex": 0,
-              "Enable": true
+              "Enable": false
             }
           ],
           "@version": 1
@@ -8652,7 +8621,7 @@
                 "z": 0
               },
               "Position": {
-                "x": -5.5,
+                "x": 5.3,
                 "y": -1.252,
                 "z": 999.9
               },
@@ -8663,7 +8632,7 @@
                 "w": 1
               },
               "Scale": {
-                "x": 3.7,
+                "x": 2,
                 "y": 0.55,
                 "z": 1
               },
@@ -8714,7 +8683,7 @@
       {
         "id": "f510c3e1-4a44-4585-8776-c8294d999438",
         "path": "/maps/map_ludus_port/GV_PlayerShip",
-        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.CustomFootholdComponent",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
         "jsonString": {
           "name": "GV_PlayerShip",
           "path": "/maps/map_ludus_port/GV_PlayerShip",
@@ -8742,7 +8711,7 @@
                 "z": 0
               },
               "Position": {
-                "x": -4.2,
+                "x": 5.59,
                 "y": 0.09,
                 "z": 999.9
               },
@@ -8780,22 +8749,6 @@
                 "a": 1
               },
               "Enable": true
-            },
-            {
-              "@type": "MOD.Core.CustomFootholdComponent",
-              "edgeLists": [
-                [
-                  {
-                    "x": -4.4,
-                    "y": -0.905
-                  },
-                  {
-                    "x": 5.3,
-                    "y": -0.905
-                  }
-                ]
-              ],
-              "Enable": true
             }
           ],
           "@version": 1
@@ -8825,7 +8778,7 @@
                 "z": 0
               },
               "Position": {
-                "x": -4.2,
+                "x": 5.59,
                 "y": 0.09,
                 "z": 999.9
               },
@@ -8899,7 +8852,7 @@
                 "z": 0
               },
               "Position": {
-                "x": -5.05,
+                "x": 5.7,
                 "y": -1.01,
                 "z": 999.9
               },
