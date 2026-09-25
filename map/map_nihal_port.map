@@ -7137,6 +7137,74 @@
             "replaced_model_id": null
           }
         }
+      },
+      {
+        "id": "268a11f3-9029-4ee7-b72d-2fea5025aa14",
+        "path": "/maps/map_nihal_port/GV_NihalSignText",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.TextRendererComponent",
+        "jsonString": {
+          "name": "GV_NihalSignText",
+          "path": "/maps/map_nihal_port/GV_NihalSignText",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 44,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": null,
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 3.2,
+                "y": 1.1,
+                "z": 999.9
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 0.15,
+                "y": 0.15,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextRendererComponent",
+              "Text": "納希沙漠空港",
+              "FontSize": 20,
+              "FontColor": {
+                "r": 0.98,
+                "g": 0.88,
+                "b": 0.64,
+                "a": 1
+              },
+              "OutlineColor": {
+                "r": 0.2,
+                "g": 0.1,
+                "b": 0.04,
+                "a": 1
+              },
+              "OutlineWidth": 0.15,
+              "RectSize": {
+                "x": 18,
+                "y": 4
+              },
+              "HorizontalAlignment": 2,
+              "VerticalAlignment": 2,
+              "SortingLayer": "MapLayer7",
+              "OrderInLayer": 10,
+              "Enable": true,
+              "AllowAutomaticTranslation": true
+            }
+          ],
+          "@version": 1
+        }
       }
     ]
   }
