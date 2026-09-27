@@ -7,6 +7,15 @@ script GreatVoyageDeckRaid extends Logic
 	property any cloudFarB = nil
 	property any keyHandler = nil
 	property number voyageAdvanceElapsed = 0
+	property boolean deckCameraActive = false
+	property any deckCameraPlayer = nil
+	property any deckShipEntity = nil
+	property any previousCameraOffset = nil
+	property any previousScreenOffset = nil
+	property any previousCameraDamping = nil
+	property any previousCameraDeadZone = nil
+	property any previousCameraSoftZone = nil
+	property boolean previousCameraConfine = true
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
@@ -80,13 +89,78 @@ script GreatVoyageDeckRaid extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void OnEndPlay()
+		self:RestoreDeckCamera()
 		if self.keyHandler ~= nil then
 			_InputService:DisconnectEvent(KeyDownEvent, self.keyHandler)
 			self.keyHandler = nil
 		end
 	end
+
+	@ExecSpace("ClientOnly")
+	method void RestoreDeckCamera()
+		-- 離開飛船甲板後還原玩家原本的鏡頭追蹤設定。
+		if self.deckCameraActive == false then return end
+		local player = self.deckCameraPlayer
+		if player ~= nil and isvalid(player) and player.CameraComponent ~= nil then
+			local camera = player.CameraComponent
+			camera.CameraOffset = self.previousCameraOffset
+			camera.ScreenOffset = self.previousScreenOffset
+			camera.Damping = self.previousCameraDamping
+			camera.DeadZone = self.previousCameraDeadZone
+			camera.SoftZone = self.previousCameraSoftZone
+			camera.ConfineCameraArea = self.previousCameraConfine
+		end
+		self.deckCameraActive = false
+		self.deckCameraPlayer = nil
+		self.deckShipEntity = nil
+		self.previousCameraOffset = nil
+		self.previousScreenOffset = nil
+		self.previousCameraDamping = nil
+		self.previousCameraDeadZone = nil
+		self.previousCameraSoftZone = nil
+		log("[DeckRaid] deck camera restored")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void UpdateDeckCamera()
+		-- 航行時鏡頭固定在船身，玩家能在甲板上移動但不推動船的畫面位置。
+		local player = _UserService.LocalPlayer
+		if player == nil or player.CurrentMapName ~= "map_airship_deck" or player.CameraComponent == nil or player.TransformComponent == nil then
+			self:RestoreDeckCamera()
+			return
+		end
+		local camera = player.CameraComponent
+		if self.deckCameraActive and self.deckCameraPlayer ~= player then self:RestoreDeckCamera() end
+		if self.deckCameraActive == false then
+			self.previousCameraOffset = camera.CameraOffset
+			self.previousScreenOffset = camera.ScreenOffset
+			self.previousCameraDamping = camera.Damping
+			self.previousCameraDeadZone = camera.DeadZone
+			self.previousCameraSoftZone = camera.SoftZone
+			self.previousCameraConfine = camera.ConfineCameraArea
+			self.deckCameraPlayer = player
+			self.deckCameraActive = true
+			camera.ConfineCameraArea = false
+			camera.ScreenOffset = Vector2(0.5, 0.5)
+			camera.Damping = Vector2(0, 0)
+			camera.DeadZone = Vector2(0, 0)
+			camera.SoftZone = Vector2(0, 0)
+			log("[DeckRaid] deck camera centered without player-follow smoothing")
+		end
+		if self.deckShipEntity == nil or not isvalid(self.deckShipEntity) then
+			self.deckShipEntity = _EntityService:GetEntityByPath("/maps/map_airship_deck/GV_PlayerShip")
+		end
+		local ship = self.deckShipEntity
+		if ship == nil or ship.TransformComponent == nil then return end
+		local shipPosition = ship.TransformComponent.WorldPosition
+		local playerPosition = player.TransformComponent.WorldPosition
+		-- 原畫作的可見船身中心略偏向船錨點左下；鏡頭鎖住船而非玩家。
+		camera.CameraOffset = Vector2(shipPosition.x - 0.63 - playerPosition.x, shipPosition.y - 0.49 - playerPosition.y)
+	end
+
 	@ExecSpace("ClientOnly")
 	method void OnUpdate(number delta)
+		self:UpdateDeckCamera()
 		-- 客戶端只發送節拍請求；Server 依實際經過秒數推進 60 秒航程。
 		self.voyageAdvanceElapsed = self.voyageAdvanceElapsed + delta
 		if self.voyageAdvanceElapsed >= 0.5 then

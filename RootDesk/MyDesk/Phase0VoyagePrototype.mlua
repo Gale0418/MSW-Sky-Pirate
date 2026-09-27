@@ -259,9 +259,12 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method string GetCargoGoodName()
-		-- 貨艙以商品 ID 記錄，換港後仍可顯示原產地商品。
-		if _GreatVoyageVoyageData ~= nil then
-			local good = _GreatVoyageVoyageData:GetGoodById(self.cargoGoodId)
+		-- M1 貨艙只讀取 Server 私有快照；Phase0 本地欄位不再代表可交易資產。
+		if _GreatVoyageVoyageState ~= nil and _GreatVoyageVoyageData ~= nil then
+			local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+			local goodId = ""
+			if snapshot.cargo ~= nil then goodId = snapshot.cargo.id or "" end
+			local good = _GreatVoyageVoyageData:GetGoodById(goodId)
 			if good ~= nil then return good.displayName end
 		end
 		return "未知商品"
@@ -269,9 +272,11 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method integer GetCargoSalePrice()
-		-- 外港的買入需求決定賣價，不依當地貨架索引。
-		if _GreatVoyageVoyageData == nil then return 0 end
-		return _GreatVoyageVoyageData:GetSalePrice(self.currentPortId, self.cargoGoodId)
+		-- 價格只作 UI 預覽；結算一律由 Server 依玩家實際所在港重算。
+		if _GreatVoyageVoyageData == nil or _GreatVoyageVoyageState == nil then return 0 end
+		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+		if snapshot.cargo == nil or snapshot.cargo.quantity <= 0 then return 0 end
+		return _GreatVoyageVoyageData:GetSalePrice(self.currentPortId, snapshot.cargo.id)
 	end
 
 	@ExecSpace("ClientOnly")
@@ -301,52 +306,26 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void BuySelectedGood()
-		-- 限定本港上架商品，成功後以固定 ID 保留貨物身份。
-		if _GreatVoyageVoyageData == nil then return end
-		if self.quantity > 0 then
-			self:Notify("一次只能攜帶一種貨物，請先賣出目前貨物。")
+		-- 客戶端只送出意圖；商品上架、價格、錢包與貨艙由 Server 驗證及提交。
+		if _GreatVoyageVoyageState == nil or _GreatVoyageVoyageData == nil then
+			self:Notify("伺服器商店尚未就緒，無法交易。")
 			return
 		end
-		local price = self:GetCurrentMarketPrice(self.selectedGoodIndex)
 		local good = _GreatVoyageVoyageData:GetLocalGood(self.currentPortId, self.selectedGoodIndex)
-		if good == nil or price <= 0 then return end
-		local total = price * self.tradeQuantity
-		if self.quantity + self.tradeQuantity > self.cargoCapacity then
-			self:Notify("貨艙容量不足。")
-			return
-		end
-		if self.money < total then
-			self:Notify("金幣不足：需要 " .. tostring(total) .. "G")
-			return
-		end
-		self.money = self.money - total
-		self.quantity = self.tradeQuantity
-		self.cargoGoodIndex = self.selectedGoodIndex
-		self.cargoGoodId = good.id
-		self.cargoBuyPrice = price
-		self:Notify("買入 " .. self:GetGoodName(self.cargoGoodIndex) .. " x" .. tostring(self.quantity) .. "，花費 " .. tostring(total) .. "G")
-		self:LogStatus()
+		if good == nil then return end
+		_GreatVoyageVoyageState:BuyGood(good.id, self.tradeQuantity)
+		self:Notify("交易請求已送至伺服器，等待確認。")
 	end
 
 	@ExecSpace("ClientOnly")
 	method void SellCargo()
-		-- 貨物可在任一港出售；同港回售會折價。
-		if self.quantity <= 0 then
-			self:Notify("貨艙目前沒有貨物。")
+		-- 舊入口保留給既有 UI，但不再以 ClientOnly 錢包或貨艙自行結算。
+		if _GreatVoyageVoyageState == nil then
+			self:Notify("伺服器商店尚未就緒，無法交易。")
 			return
 		end
-		local price = self:GetCargoSalePrice()
-		if price <= 0 then return end
-		local total = price * self.quantity
-		self.money = self.money + total
-		local profit = (price - self.cargoBuyPrice) * self.quantity
-		self:Notify("賣出 " .. self:GetCargoGoodName() .. " x" .. tostring(self.quantity) .. "，收入 " .. tostring(total) .. "G；貨物價差 " .. tostring(profit) .. "G")
-		log("[Trade] sold port=" .. self.currentPortId .. " good=" .. self.cargoGoodId .. " qty=" .. tostring(self.quantity) .. " sale=" .. tostring(price) .. " profit=" .. tostring(profit))
-		self.quantity = 0
-		self.cargoGoodIndex = 0
-		self.cargoGoodId = ""
-		self.cargoBuyPrice = 0
-		self:LogStatus()
+		_GreatVoyageVoyageState:SellCargo()
+		self:Notify("賣出請求已送至伺服器，等待確認。")
 	end
 
 	@ExecSpace("ClientOnly")
@@ -356,10 +335,12 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method string GetCargoText()
-		if self.quantity <= 0 then
-			return "貨艙 0/" .. tostring(self.cargoCapacity)
-		end
-		return "貨艙 " .. self:GetCargoGoodName() .. " x" .. tostring(self.quantity) .. "/" .. tostring(self.cargoCapacity) .. "｜本港收購 " .. tostring(self:GetCargoSalePrice()) .. "G/件"
+		if _GreatVoyageVoyageState == nil then return "貨艙等待伺服器同步" end
+		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+		local quantity = 0
+		if snapshot.cargo ~= nil then quantity = snapshot.cargo.quantity or 0 end
+		if quantity <= 0 then return "貨艙 0/" .. tostring(self.cargoCapacity) end
+		return "貨艙 " .. self:GetCargoGoodName() .. " x" .. tostring(quantity) .. "/" .. tostring(self.cargoCapacity) .. "｜本港收購 " .. tostring(self:GetCargoSalePrice()) .. "G/件"
 	end
 
 	@ExecSpace("ClientOnly")
