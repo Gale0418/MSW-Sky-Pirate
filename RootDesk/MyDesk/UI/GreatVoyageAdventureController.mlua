@@ -666,8 +666,10 @@ script GreatVoyageAdventureController extends Logic
 					targetPosition = Vector2(5.5, -0.25)
 				elseif self.pendingDestinationId == "ludus" then
 					targetMap = "map_ludus_port"
+					targetPosition = Vector2(0, -0.45)
 				elseif self.pendingDestinationId == "nihal" then
 					targetMap = "map_nihal_port"
+					targetPosition = Vector2(0.7, -0.45)
 				end
 				player.PlayerComponent:MoveToMapPosition(targetMap, targetPosition)
 			end

@@ -74,7 +74,7 @@ script GreatVoyageVoyageState extends Logic
 
 	method any GetOrCreateState(string playerId)
 		if self.voyageByPlayer[playerId] == nil then
-			self.voyageByPlayer[playerId] = { playerId = playerId, status = "idle", originId = "", destinationId = "", route = nil, segments = {}, distanceTravelled = 0, budgetRemaining = 0, pausedDistance = 0, pendingEncounter = nil, encounterCount = 0, cargo = { id = "", quantity = 0, buyPrice = 0 }, money = 120, tradeBusy = false, economyRevision = 0, economyMessage = "", hullDamage = 0, elapsedSailingSeconds = 0, startedAt = -1, raidRemaining = 0, raidEnemies = {}, lastRaidDamageAt = -1, lastAdvanceAt = -1, lastReason = "" }
+			self.voyageByPlayer[playerId] = { playerId = playerId, status = "idle", originId = "", destinationId = "", route = nil, segments = {}, distanceTravelled = 0, budgetRemaining = 0, pausedDistance = 0, pendingEncounter = nil, encounterCount = 0, cargo = { id = "", quantity = 0, buyPrice = 0 }, money = 120, economyRevision = 0, economyMessage = "", hullDamage = 0, elapsedSailingSeconds = 0, startedAt = -1, raidRemaining = 0, raidEnemies = {}, lastRaidDamageAt = -1, lastAdvanceAt = -1, lastReason = "" }
 		end
 		return self.voyageByPlayer[playerId]
 	end
@@ -310,7 +310,6 @@ script GreatVoyageVoyageState extends Logic
 
 	@ExecSpace("ServerOnly")
 	method void CompleteEconomyRequest(string playerId, any state, string message)
-		state.tradeBusy = false
 		state.economyRevision = state.economyRevision + 1
 		state.economyMessage = message
 		self:PublishSnapshot(playerId, state)
@@ -331,8 +330,6 @@ script GreatVoyageVoyageState extends Logic
 		local playerId = senderUserId
 		if playerId == nil or playerId == "" then return end
 		local state = self:GetOrCreateState(playerId)
-		if state.tradeBusy then return end
-		state.tradeBusy = true
 		if quantity < 1 or quantity > 8 then self:CompleteEconomyRequest(playerId, state, "交易數量無效（1–8 件）。") return end
 		if state.status == "sailing" then self:CompleteEconomyRequest(playerId, state, "航行中無法交易。") return end
 		local player = _UserService:GetUserEntityByUserId(playerId)
@@ -362,8 +359,6 @@ script GreatVoyageVoyageState extends Logic
 		local playerId = senderUserId
 		if playerId == nil or playerId == "" then return end
 		local state = self:GetOrCreateState(playerId)
-		if state.tradeBusy then return end
-		state.tradeBusy = true
 		if state.status == "sailing" then self:CompleteEconomyRequest(playerId, state, "航行中無法交易。") return end
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		local portId = ""
@@ -381,15 +376,6 @@ script GreatVoyageVoyageState extends Logic
 		state.cargo = { id = "", quantity = 0, buyPrice = 0 }
 		self:CompleteEconomyRequest(playerId, state, "賣出 " .. good.displayName .. " ×" .. tostring(cargo.quantity) .. "，收入 " .. tostring(total) .. " G；價差 " .. tostring(profit) .. " G。")
 		log("[VoyageState] server sell player=" .. playerId .. " port=" .. portId .. " good=" .. good.id .. " qty=" .. tostring(cargo.quantity) .. " revenue=" .. tostring(total) .. " profit=" .. tostring(profit))
-	end
-
-	@ExecSpace("Server")
-	method void RecordHullDamage(number amount)
-		local playerId = senderUserId
-		if playerId == nil or playerId == "" then return end
-		local state = self:GetOrCreateState(playerId)
-		-- 舊客戶端入口不再接受任意船損；實際傷害只由怪物在 Server 端寫入。
-		log_warning("[VoyageState] ignored client hull damage player=" .. playerId)
 	end
 
 	@ExecSpace("ServerOnly")

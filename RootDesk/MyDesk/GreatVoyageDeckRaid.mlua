@@ -73,20 +73,6 @@ script GreatVoyageDeckRaid extends Logic
 		end
 	end
 
-	@ExecSpace("Client")
-	method void DamageShip(number amount)
-		if _Phase0VoyagePrototype ~= nil then
-			local result = _Phase0VoyagePrototype:ApplyDamage(amount)
-			if _GreatVoyageVoyageState ~= nil then
-				-- RecordHullDamage 的 Server RPC 以 senderUserId 鎖定本次請求者。
-				_GreatVoyageVoyageState:RecordHullDamage(amount)
-			end
-			log("[DeckRaid] ship damaged: " .. result)
-		end
-	end
-
-
-
 	@ExecSpace("ClientOnly")
 	method void OnEndPlay()
 		self:RestoreDeckCamera()
