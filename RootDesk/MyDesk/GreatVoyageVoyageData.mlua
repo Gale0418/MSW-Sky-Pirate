@@ -18,32 +18,141 @@ script GreatVoyageVoyageData extends Logic
 	end
 
 	method any GetPort(string portId)
+		-- 四個已開放港口沿用既有座標，貨架改由原作商品圖鑑提供。
 		local id = self:NormalizePortId(portId)
-		if id == "forest" then
-			return { id = "forest", displayName = "魔法森林", position = { x = 0.13, y = 0.66 }, mapName = "map_forest_port", goods = {
-				{ id = "victoria_herbs", displayName = "維多利亞藥草", price = 30, iconRuid = "fdbdb29b46a0463ea9f75b90db3124b5" },
-				{ id = "ellinia_wood", displayName = "魔法森林木材", price = 36, iconRuid = "33d308e410bf4b168e63229587f6a817" },
-				{ id = "mushroom_cloth", displayName = "菇菇織布", price = 42, iconRuid = "2d0ae85baa5745128b3c0e5afd40d82d" }
-			} }
-		elseif id == "sky" then
-			-- 官方世界圖中天空之城位於冰原雪山西緣；舊座標 0.29,0.77 誤指耶雷弗。
-			return { id = "sky", displayName = "天空之城", position = { x = 0.49, y = 0.67 }, mapName = "map_orbis_port", goods = {
-				{ id = "orbis_feather", displayName = "天空羽絨", price = 32, iconRuid = "aa87d506804d4b8080772ae794c98b17" },
-				{ id = "cloud_crystal", displayName = "雲海結晶", price = 38, iconRuid = "9c75f0ba34f64a34b85ac69c4ef9e3fc" },
-				{ id = "orbis_glass", displayName = "天空玻璃", price = 44, iconRuid = "5a1d188c60d149e0a3957ad3652b026f" }
-			} }
-		elseif id == "ludus" then
-			return { id = "ludus", displayName = "玩具城", position = { x = 0.42, y = 0.40 }, mapName = "map_ludus_port", goods = {
-				{ id = "clockwork_spring", displayName = "鐘塔發條", price = 28, iconRuid = "752a314d933a45f788b43b24ad42f7d0" },
-				{ id = "teddy_cotton", displayName = "熊熊棉花", price = 34, iconRuid = "2e7b56ddc71c4394aea01a68fbc076aa" },
-				{ id = "alien_parts", displayName = "外星零件", price = 40, iconRuid = "f3655531af3c4cb7a40919c80e34da99" }
-			} }
-		elseif id == "nihal" then
-			return { id = "nihal", displayName = "納希沙漠", position = { x = 0.60, y = 0.16 }, mapName = "map_nihal_port", goods = {
-				{ id = "cactus_fiber", displayName = "仙人掌纖維", price = 28, iconRuid = "1ec44b0b3abe454fbf486ce57aa9e016" },
-				{ id = "ariants_flask", displayName = "沙漠燒杯", price = 34, iconRuid = "2bd3b1542dc145d7a96354c6d40e384e" },
-				{ id = "alchemy_dew", displayName = "煉金露水", price = 40, iconRuid = "40a15832a52048da855199f373d4ccc2" }
-			} }
+		local ports = {
+			forest = { id = "forest", displayName = "魔法森林", position = { x = 0.13, y = 0.66 }, mapName = "map_forest_port" },
+			sky = { id = "sky", displayName = "天空之城", position = { x = 0.49, y = 0.67 }, mapName = "map_orbis_port" },
+			ludus = { id = "ludus", displayName = "玩具城", position = { x = 0.42, y = 0.40 }, mapName = "map_ludus_port" },
+			nihal = { id = "nihal", displayName = "納希沙漠", position = { x = 0.60, y = 0.16 }, mapName = "map_nihal_port" }
+		}
+		local port = ports[id]
+		if port == nil then return nil end
+		port.goods = {}
+		if _GreatVoyageCommodityCatalog ~= nil then port.goods = _GreatVoyageCommodityCatalog:GetForPort(id) end
+		return port
+	end
+
+	method any GetShipCatalog()
+		-- 唯一的船型定義來源；Client 可用來顯示商店，Server 也用來驗證價格與能力。
+		local baseHull = 120
+		local baseShield = 24
+		local baseArmor = 48
+		local baseCargo = 8
+		return {
+			{ id = "small_sampan", name = "小風帆", tier = 0, price = 0, spriteRuid = "6db8a51bb2024f14b3f22fe5a890a979", description = "新手船；可在四港免費維修。", maxHull = 100, maxShield = 20, maxArmor = 40, cargoCapacity = baseCargo, hullMultiplier = 1, cannonMultiplier = 1, durationMultiplier = 1 },
+			{ id = "forest", name = "森芽號", tier = 1, price = 50000, spriteRuid = "9d3adbd593454f9dbd0fffa1f5eda00e", description = "T1 基礎船體上限 +20%。", maxHull = math.floor(baseHull * 1.2), maxShield = baseShield, maxArmor = baseArmor, cargoCapacity = baseCargo, hullMultiplier = 1.2, cannonMultiplier = 1, durationMultiplier = 1 },
+			{ id = "red", name = "赤帆號", tier = 1, price = 50000, spriteRuid = "55c74934367840d39687eb4b66ae2310", description = "炮擊傷害 +10%。", maxHull = baseHull, maxShield = baseShield, maxArmor = baseArmor, cargoCapacity = baseCargo, hullMultiplier = 1, cannonMultiplier = 1.1, durationMultiplier = 1 },
+			{ id = "gear", name = "齒輪號", tier = 1, price = 50000, spriteRuid = "2e64df1c16764058b235658a8f379b71", description = "航程時間縮短 10%。", maxHull = baseHull, maxShield = baseShield, maxArmor = baseArmor, cargoCapacity = baseCargo, hullMultiplier = 1, cannonMultiplier = 1, durationMultiplier = 0.9 },
+			{ id = "merchant", name = "行商號", tier = 1, price = 50000, spriteRuid = "5884e53005c44038b0ddd3587591b55d", description = "貨艙容量 +25%，航程時間 +10%。", maxHull = baseHull, maxShield = baseShield, maxArmor = baseArmor, cargoCapacity = math.floor(baseCargo * 1.25), hullMultiplier = 1, cannonMultiplier = 1, durationMultiplier = 1.1 }
+		}
+	end
+
+	method any GetShipById(string shipId)
+		-- 只從 catalog 回傳合法船型，避免客戶端自帶價格或能力值。
+		for _, ship in ipairs(self:GetShipCatalog()) do
+			if ship.id == shipId then return ship end
+		end
+		return nil
+	end
+
+	method any GetShipUpgradeCards()
+		-- 每張卡都有完整商店／圖鑑欄位；被前置鎖定者仍顯示，但伺服器禁止安裝。
+		local cards = {
+			{ id = "fire", name = "火力卡", description = "炮擊傷害 +5%（每張）", price = 30, sellPrice = 15, available = true, requirement = "", fireBonus = 0.05 },
+			{ id = "speed", name = "航速卡", description = "航速 +5%（每張）", price = 30, sellPrice = 15, available = true, requirement = "", speedBonus = 0.05 },
+			{ id = "cargo", name = "貨艙卡", description = "貨艙容量 +1 格", price = 35, sellPrice = 17, available = true, requirement = "", cargoBonus = 1 },
+			{ id = "rack", name = "擴建貨架", description = "基礎貨艙 +25%，航速 -8%", price = 90, sellPrice = 45, available = true, requirement = "", cargoMultiplier = 0.25, speedPenalty = 0.08 },
+			{ id = "light_hull", name = "輕量船殼", description = "航速 +15%，最大船體 -12%", price = 90, sellPrice = 45, available = true, requirement = "", speedBonus = 0.15, maxHullMultiplier = -0.12 },
+			{ id = "keel", name = "強化龍骨", description = "最大船體 +25%，航速 -10%", price = 90, sellPrice = 45, available = true, requirement = "", maxHullMultiplier = 0.25, speedPenalty = 0.10 },
+			{ id = "hull", name = "加固船殼", description = "最大船體 +10%", price = 60, sellPrice = 30, available = true, requirement = "", maxHullMultiplier = 0.10 },
+			{ id = "armor", name = "裝甲板", description = "最大裝甲 +20%", price = 60, sellPrice = 30, available = true, requirement = "", maxArmorMultiplier = 0.20 },
+			{ id = "shield", name = "護盾線圈", description = "最大護盾 +20%", price = 60, sellPrice = 30, available = true, requirement = "", maxShieldMultiplier = 0.20 },
+			{ id = "regen", name = "修復奈米蜂群", description = "每趟依航程進度修復最多 3% 基礎船體", price = 100, sellPrice = 50, available = true, requirement = "", regenPercent = 0.03 },
+			{ id = "transmission", name = "高壓傳動", description = "航速 +10%，修船費 +50%", price = 100, sellPrice = 50, available = true, requirement = "", speedBonus = 0.10, repairCostMultiplier = 0.50 },
+			{ id = "modular_deck", name = "模組化甲板", description = "修船費 -25%", price = 100, sellPrice = 50, available = true, requirement = "", repairCostMultiplier = -0.25 },
+			{ id = "powder", name = "高爆火藥", description = "炮擊傷害 +20%，承受傷害 +10%", price = 110, sellPrice = 55, available = true, requirement = "", fireBonus = 0.20, incomingDamageMultiplier = 0.10 },
+			{ id = "wing", name = "偏折翼片", description = "有 10% 機率閃避敵方飛行砲彈，最大裝甲 -10%", price = 100, sellPrice = 50, available = true, requirement = "", dodgeChance = 0.10, maxArmorMultiplier = -0.10 },
+			{ id = "boiler", name = "過熱鍋爐", description = "航程前 20% 航速 +25%，跨過 20% 時受 5% 基礎船體熱傷害", price = 110, sellPrice = 55, available = true, requirement = "", boilerSpeedBonus = 0.25, boilerHeatPercent = 0.05 },
+			{ id = "stealth", name = "靜音螺旋槳", description = "敵人遭遇率 -40%，航速 -10%", price = 100, sellPrice = 50, available = true, requirement = "", encounterMultiplier = -0.40, speedPenalty = 0.10 },
+			{ id = "lure", name = "誘敵信標", description = "敵人遭遇率 +50%", price = 100, sellPrice = 50, available = true, requirement = "", encounterMultiplier = 0.50 },
+			{ id = "fog", name = "雲海偽裝", description = "雲海與水域遭遇率 -30%", price = 90, sellPrice = 45, available = true, requirement = "", fogEncounterMultiplier = -0.30 },
+			{ id = "monster_bait", name = "飛怪誘餌", description = "野生飛行敵池遭遇率 +35%", price = 90, sellPrice = 45, available = true, requirement = "", monsterEncounterMultiplier = 0.35 },
+			{ id = "magic_resonator", name = "魔力共鳴器", description = "魔法飛行敵空域遭遇率 +50%", price = 100, sellPrice = 50, available = true, requirement = "", magicEncounterMultiplier = 0.50 },
+			{ id = "stabilizer", name = "穩定炮架", description = "提高炮擊穩定與射程", price = 0, sellPrice = 0, available = false, requirement = "命中率與射程系統尚未開放" },
+			{ id = "folding_cabin", name = "折疊客艙", description = "擴充乘客服務空間", price = 0, sellPrice = 0, available = false, requirement = "客運與乘客艙位尚未開放" },
+			{ id = "fire_compartment", name = "防火隔艙", description = "隔離船上火災", price = 0, sellPrice = 0, available = false, requirement = "火災事件與滅火系統尚未開放" },
+			{ id = "boarding", name = "接舷爪鉤", description = "登上敵方船隻", price = 0, sellPrice = 0, available = false, requirement = "接舷戰系統尚未開放" },
+			{ id = "civil_disguise", name = "民用偽裝", description = "降低民用航線戒備", price = 0, sellPrice = 0, available = false, requirement = "民船與警戒系統尚未開放" },
+			{ id = "false_flag", name = "假旗", description = "冒用其他勢力旗幟", price = 0, sellPrice = 0, available = false, requirement = "勢力辨識與警戒系統尚未開放" },
+			{ id = "fake_gold", name = "鍍金假貨", description = "以假貨混淆貨物鑑定", price = 0, sellPrice = 0, available = false, requirement = "貨物鑑定與走私系統尚未開放" },
+			{ id = "giant_lure", name = "巨型誘餌", description = "引來巨型飛行生物", price = 0, sellPrice = 0, available = false, requirement = "巨型飛行敵人事件尚未開放" },
+			{ id = "distress_beacon", name = "求救信標", description = "呼叫附近船隊支援", price = 0, sellPrice = 0, available = false, requirement = "救援船隊與求救事件尚未開放" }
+		}
+		for _, card in ipairs(cards) do
+			card.artRuid = self:GetUpgradeCardArtRuid(card.id)
+			card.price = card.price * self:GetEconomyScale()
+			card.sellPrice = card.sellPrice * self:GetEconomyScale()
+		end
+		return cards
+	end
+
+	method string GetUpgradeCardArtRuid(string cardId)
+		-- 卡面來自本專案 image 素材，文字由 UI 顯示。
+		local cardArt = {
+			fire = "e545df0e5c124aae9a549f23ff1d9687",
+			speed = "9187780b006c42c2a62bba35269bb0a6",
+			cargo = "f719bf91ee7844db949b2d71b81f7368",
+			rack = "1252519e3aa7447e92d3172c6a0344c5",
+			keel = "23431468a8694aa68b71e6494d9e8121",
+			hull = "61d2c4cc11e944f084048a381772e04a",
+			light_hull = "b85fa6d69ef740f8a66e024398fd552a",
+			armor = "f7c188d2368b4f44a64e7a9766be5b17",
+			shield = "1059fbc7f51c44a8a6afb494ea2931b8",
+			regen = "c4c756c4883c44c38a4aeef8a54f15e5",
+			transmission = "11e1d5db32c748749da15a84a97d806f",
+			modular_deck = "ee1fe86ac0e049529ad19bf3f55af83f",
+			powder = "8ef8c02a8869455caa58b803aa293854",
+			wing = "4f2b6fa2194843ac99fc3721f91c287d",
+			boiler = "7c6ceedb2d1c454cb895cd5391985f79",
+			stealth = "76844d62176549b4ad01af4a2286d75c",
+			lure = "7039ee56536c4008aae61a7c7ca5d9ca",
+			fog = "2a7c4ac5c93346418b57c65820ff11f2",
+			monster_bait = "e39979a1e7d94e6b8fb934044f195d5a",
+			magic_resonator = "909238e31e0f43799d20f818523238ae",
+			stabilizer = "2b07655af5064390b50fcf26646db440",
+			folding_cabin = "a9402a97c9ad430eb30d8ba9d18f2880",
+			fire_compartment = "6a5b3bbc54184a879d788e2bc9898adb",
+			boarding = "0479fd26edb74c529a663c9c18dc383c",
+			civil_disguise = "17a46a95410242f5a7acb758e2c6e0b8",
+			false_flag = "7842ca73402d4582bd0b1709293c5a6b",
+			fake_gold = "7b0e5238a1534c8bb53b11c1324c2cd0",
+			giant_lure = "950bc16061c447d78016e514a9a6e775",
+			distress_beacon = "a2c3edca094340488910240c9c4082ec"
+		}
+		return cardArt[cardId] or ""
+	end
+
+	method string GetCardSlotRuid()
+		-- 三個通用槽與卡面共用直式比例。
+		return "4e145218d5e3404586496c969504f3df"
+	end
+
+	method integer GetRepairQuote(any ship)
+		if ship == nil then return 0 end
+		local missing = math.max(0, (ship.maxHull or 0) - (ship.hull or 0))
+		missing = missing + math.max(0, (ship.maxShield or 0) - (ship.shield or 0))
+		missing = missing + math.max(0, (ship.maxArmor or 0) - (ship.armor or 0))
+		if ship.id == "small_sampan" then return 0 end
+		local multiplier = 1
+		if ship.stats ~= nil and ship.stats.repairCostMultiplier ~= nil then multiplier = ship.stats.repairCostMultiplier end
+		return math.ceil(missing * 0.5 * math.max(0, multiplier) * self:GetEconomyScale())
+	end
+
+	method any GetShipUpgradeCardById(string cardId)
+		-- 僅接受目前 catalog 內的卡片 ID。
+		for _, card in ipairs(self:GetShipUpgradeCards()) do
+			if card.id == cardId then return card end
 		end
 		return nil
 	end
@@ -85,14 +194,10 @@ script GreatVoyageVoyageData extends Logic
 	end
 
 	method any GetGoodById(string goodId)
-		for _, portId in ipairs({ "forest", "sky", "ludus", "nihal" }) do
-			local port = self:GetPort(portId)
-			for _, good in ipairs(port.goods) do
-				if good.id == goodId then
-					return { id = good.id, displayName = good.displayName, price = good.price, originId = portId }
-				end
-			end
-		end
+		-- 交易使用唯一來源 ID，未核實商品不可買賣。
+		if _GreatVoyageCommodityCatalog == nil then return nil end
+		local good = _GreatVoyageCommodityCatalog:GetById(goodId)
+		if good ~= nil and good.verified then return good end
 		return nil
 	end
 
@@ -103,54 +208,74 @@ script GreatVoyageVoyageData extends Logic
 	end
 
 	method integer GetSalePrice(string portId, string goodId)
+		-- 本港折價回收；外港依草案需求計價，行情基準固定為 1。
 		local destination = self:GetPort(portId)
 		local good = self:GetGoodById(goodId)
 		if destination == nil or good == nil then return 0 end
-		-- 外港收購價高於產地買價；同港回售折價，防止原地套利。
 		if destination.id == good.originId then return math.floor(good.price * 0.8) end
-		local demand = { forest = 1.5, sky = 1.6, ludus = 1.7, nihal = 1.8 }
-		return math.floor(good.price * demand[destination.id] + 0.5)
+		local demand = (good.demands or {})[destination.id] or 1
+		return math.floor(good.price * demand + 0.5)
 	end
 
 	method any GetAirspaces()
 		-- 七個命名空域刻意保留少量重疊與凹邊，測試 priority、凹多邊形及 open_sea fallback。
 		return {
-			{ id = "forest_wind", displayName = "森林風廊", shortName = "森林", priority = 10, risk = 0.08, encounterCards = {
+			{ id = "forest_wind", displayName = "森林風廊", shortName = "森林", priority = 10, risk = 0.08, airBattleEnemyId = "stirge", encounterCards = {
 				{ id = "forest_wind_gust", title = "森林側風", text = "側風把帆面吹偏；到舵輪校正航向後續航。", outcome = "stabilized" }
 			}, polygon = {
 				{ x = 0.00, y = 0.99 }, { x = 0.25, y = 0.99 }, { x = 0.27, y = 0.91 }, { x = 0.12, y = 0.86 }, { x = 0.00, y = 0.88 }
 			} },
-			{ id = "victoria", displayName = "維多利亞航道", shortName = "維多利亞", priority = 30, risk = 0.16, encounterCards = {
+			{ id = "victoria", displayName = "維多利亞航道", shortName = "維多利亞", priority = 30, risk = 0.16, airBattleEnemyId = "stirge", encounterCards = {
 				{ id = "victoria_mushroom_raid", title = "菇菇襲擊", text = "熟悉的菇菇群從雲層竄出，撞向甲板護欄。", outcome = "defended" }
 			}, polygon = {
 			{ x = 0.07, y = 0.76 }, { x = 0.25, y = 0.76 }, { x = 0.29, y = 0.50 }, { x = 0.19, y = 0.47 }, { x = 0.07, y = 0.55 }
 			} },
-			{ id = "aqua", displayName = "水世界氣流", shortName = "水世界", priority = 35, risk = 0.24, encounterCards = {
+			{ id = "aqua", displayName = "水世界氣流", shortName = "水世界", priority = 35, risk = 0.24, airBattleEnemyId = "bubble_fish", encounterCards = {
 				{ id = "aqua_mist", title = "水霧航道", text = "水世界的濃霧遮住浮標；到舵輪確認航標後續航。", outcome = "charted" }
 			}, polygon = {
 			{ x = 0.22, y = 0.61 }, { x = 0.40, y = 0.61 }, { x = 0.41, y = 0.36 }, { x = 0.35, y = 0.33 }, { x = 0.22, y = 0.44 }
 			} },
-			{ id = "ludus", displayName = "玩具鐘塔航線", shortName = "路德斯湖", priority = 45, risk = 0.31, encounterCards = {
+			{ id = "ludus", displayName = "玩具鐘塔航線", shortName = "路德斯湖", priority = 45, risk = 0.31, airBattleEnemyId = "yellow_plane", encounterCards = {
 				{ id = "ludus_drifting_cargo", title = "漂流貨箱", text = "鐘塔航線飄來無主貨箱；本次不回收，到舵輪確認航線後續航。", outcome = "passed" }
 			}, polygon = {
 			{ x = 0.34, y = 0.49 }, { x = 0.53, y = 0.49 }, { x = 0.56, y = 0.26 }, { x = 0.48, y = 0.22 }, { x = 0.38, y = 0.27 }, { x = 0.40, y = 0.37 }
 			} },
-			{ id = "nihal", displayName = "納希沙漠熱風", shortName = "納希", priority = 50, risk = 0.36, encounterCards = {
+			{ id = "nihal", displayName = "納希沙漠熱風", shortName = "納希", priority = 50, risk = 0.36, airBattleEnemyId = "kiyo", encounterCards = {
 				{ id = "nihal_heat_haze", title = "沙海熱浪", text = "沙漠熱浪讓船體升溫；到舵輪調整航向避開熱流。", outcome = "cooled" }
 			}, polygon = {
 			{ x = 0.48, y = 0.32 }, { x = 0.79, y = 0.32 }, { x = 0.79, y = 0.04 }, { x = 0.47, y = 0.04 }, { x = 0.45, y = 0.19 }
 			} },
-			{ id = "orbis_highwind", displayName = "天空高風", shortName = "天空", priority = 20, risk = 0.12, encounterCards = {
+			{ id = "orbis_highwind", displayName = "天空高風", shortName = "天空", priority = 20, risk = 0.12, airBattleEnemyId = "star_pixie", encounterCards = {
 				{ id = "orbis_highwind_crosswind", title = "天空高風", text = "高空風切突然增強；到舵輪收束航向後續航。", outcome = "trimmed" }
 			}, polygon = {
 			{ x = 0.22, y = 0.87 }, { x = 0.39, y = 0.87 }, { x = 0.38, y = 0.69 }, { x = 0.23, y = 0.69 }
 			} },
-			{ id = "ellinia_cloud", displayName = "艾利涅雲海", shortName = "艾利涅", priority = 25, risk = 0.20, encounterCards = {
+			{ id = "ellinia_cloud", displayName = "艾利涅雲海", shortName = "艾利涅", priority = 25, risk = 0.20, airBattleEnemyId = "stirge", encounterCards = {
 				{ id = "ellinia_cloud_drift", title = "艾利涅漂雲", text = "柔軟雲團形成漂移帶；到舵輪微調航向後續航。", outcome = "steered" }
 			}, polygon = {
 				{ x = 0.06, y = 0.35 }, { x = 0.22, y = 0.46 }, { x = 0.38, y = 0.35 }, { x = 0.30, y = 0.14 }, { x = 0.12, y = 0.16 }
 			} }
 		}
+	end
+
+	method any GetAirBattleDefinition(string airspaceId)
+		-- M1 空戰每段航路使用該空域指定的一種已驗證怪物；不沿用舊遭遇卡牌。
+		local enemyId = ""
+		if airspaceId == "open_sea" then
+			enemyId = "bubble_fish"
+		else
+			for _, airspace in ipairs(self:GetAirspaces()) do
+				if airspace.id == airspaceId then enemyId = airspace.airBattleEnemyId or "" break end
+			end
+		end
+		local definitions = {
+			stirge = { id = "stirge", name = "蝙蝠", maxHp = 120, attackDamage = 8, attackIntervalSeconds = 2 },
+			star_pixie = { id = "star_pixie", name = "星光精靈", maxHp = 120, attackDamage = 10, attackIntervalSeconds = 2 },
+			bubble_fish = { id = "bubble_fish", name = "泡泡魚", maxHp = 120, attackDamage = 12, attackIntervalSeconds = 2 },
+			yellow_plane = { id = "yellow_plane", name = "黃色戰鬥機", maxHp = 120, attackDamage = 14, attackIntervalSeconds = 2 },
+			kiyo = { id = "kiyo", name = "禿鷹", maxHp = 120, attackDamage = 16, attackIntervalSeconds = 2 }
+		}
+		return definitions[enemyId]
 	end
 
 	method number Cross(any a, any b)
@@ -363,4 +488,21 @@ script GreatVoyageVoyageData extends Logic
 		log("[VoyageData][SelfTest] order=" .. tostring(orderOK) .. " reverseOrder=" .. tostring(reverseOrderOK) .. " distance=" .. tostring(distanceOK) .. " tangent=" .. tostring(tangentOK) .. " vertex=" .. tostring(#vertex) .. " concave=" .. tostring(concaveInside and concavePocketOutside) .. " overlap=" .. overlap.id .. " fallback=" .. fallback.id .. " noZero=" .. tostring(noZero))
 		return passed
 	end
+
+	method integer GetStartingMoney()
+		-- 草案原價所需的新手航海本金。
+		return 12000
+	end
+
+	method integer GetEconomyScale()
+		-- 船、改裝卡與整備共用倍率；商品逐筆保留草案原價。
+		return 100
+	end
+
+	method any GetCommodityCatalog()
+		-- 圖鑑可檢視未開放港口及待核實資料，不允許圖鑑直接交易。
+		if _GreatVoyageCommodityCatalog == nil then return {} end
+		return _GreatVoyageCommodityCatalog:GetAll()
+	end
+
 end

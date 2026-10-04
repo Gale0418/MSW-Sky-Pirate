@@ -18,34 +18,57 @@ script GreatVoyageVoyageState extends Logic
 	property string clientSnapshotCargoId = ""
 	property integer clientSnapshotCargoQuantity = 0
 	property integer clientSnapshotCargoBuyPrice = 0
-	property integer clientSnapshotMoney = 120
+	property integer clientSnapshotMoney = 12000
 	property integer clientSnapshotEconomyRevision = 0
 	property string clientSnapshotEconomyMessage = ""
 	property number clientSnapshotHullDamage = 0
 	property number clientSnapshotRemainingSeconds = 60
 	property integer clientSnapshotRaidRemaining = 0
 	property string clientSnapshotLastReason = ""
+	property table clientShip = {}
+	property table clientOwnedShips = {}
+	property table clientCardInventory = {}
+	property table clientCardMarketByPort = {}
+	property integer clientCardInventoryRevision = 0
 
 	method void OnBeginPlay()
 		-- Initialize per-player voyage state for this world session.
 		self.voyageByPlayer = {}
+		self._T.cardMarketByPlayer = {}
 		self.lastCleanupCheckAt = _UtilLogic.ServerElapsedSeconds
+		self._T.lastIdleCleanupCheckAt = self.lastCleanupCheckAt
 		log("[VoyageState] ready player-isolated state")
 		if _GreatVoyageVoyageData ~= nil then _GreatVoyageVoyageData:RunGeometrySelfTest() end
 	end
 
+	@ExecSpace("ClientOnly")
+	method void OnEndPlay()
+		-- 清除本地貨架投影，避免下次世界工作階段沿用舊港口清單。
+		self.clientCardMarketByPort = {}
+	end
+
 	@ExecSpace("ServerOnly")
 	method void OnUpdate(number delta)
-		-- Reap abandoned deck encounters without depending on a disconnected client's heartbeat.
+		-- 航行斷線快速取消；低頻回收港口離線暫存，避免世界長駐時累積玩家資料。
 		local now = _UtilLogic.ServerElapsedSeconds
-		if now - self.lastCleanupCheckAt < 1 then return end
+		if now - self.lastCleanupCheckAt < 0.1 then return end
 		self.lastCleanupCheckAt = now
+		local pruneIdle = now - (self._T.lastIdleCleanupCheckAt or now) >= 30
+		if pruneIdle then self._T.lastIdleCleanupCheckAt = now end
 		for playerId, state in pairs(self.voyageByPlayer) do
-			if state.status == "sailing" and now - state.startedAt > 5 then
+			if pruneIdle and state.status ~= "sailing" then
+				if _UserService:GetUserEntityByUserId(playerId) == nil then
+					self.voyageByPlayer[playerId] = nil
+					if self._T.cardMarketByPlayer ~= nil then self._T.cardMarketByPlayer[playerId] = nil end
+				end
+			elseif state.status == "sailing" and now - state.startedAt > 5 then
 				local player = _UserService:GetUserEntityByUserId(playerId)
 				if player == nil or player.CurrentMapName ~= "map_airship_deck" then
 					self:AbandonVoyage(playerId, state, player == nil)
 				end
+			end
+			if state.status == "sailing" and state.airBattle ~= nil and state.airBattle.phase == "active" then
+				self:AdvanceAirBattle(playerId, state, now)
 			end
 		end
 	end
@@ -54,6 +77,11 @@ script GreatVoyageVoyageState extends Logic
 	method void AbandonVoyage(string playerId, any state, boolean disconnected)
 		-- Close the encounter before destroying monsters so removal callbacks cannot settle it twice.
 		state.status = "idle"
+		if state.airBattle ~= nil and state.airBattle.phase == "active" then
+			state.airBattle.phase = "none"
+			state.airBattle.outcome = ""
+			state.airBattle.settled = true
+		end
 		state.pendingEncounter = nil
 		state.raidRemaining = 0
 		state.pausedDistance = 0
@@ -67,16 +95,127 @@ script GreatVoyageVoyageState extends Logic
 		log("[VoyageState] abandoned player=" .. playerId .. " disconnected=" .. tostring(disconnected))
 		if disconnected then
 			self.voyageByPlayer[playerId] = nil
+			if self._T.cardMarketByPlayer ~= nil then self._T.cardMarketByPlayer[playerId] = nil end
 		else
 			self:PublishSnapshot(playerId, state)
 		end
 	end
 
+	@ExecSpace("ServerOnly")
 	method any GetOrCreateState(string playerId)
+		-- 建立新航程狀態時採用資料層起始金，資料尚未就緒時回退到契約預設值。
 		if self.voyageByPlayer[playerId] == nil then
-			self.voyageByPlayer[playerId] = { playerId = playerId, status = "idle", originId = "", destinationId = "", route = nil, segments = {}, distanceTravelled = 0, budgetRemaining = 0, pausedDistance = 0, pendingEncounter = nil, encounterCount = 0, cargo = { id = "", quantity = 0, buyPrice = 0 }, money = 120, economyRevision = 0, economyMessage = "", hullDamage = 0, elapsedSailingSeconds = 0, startedAt = -1, raidRemaining = 0, raidEnemies = {}, lastRaidDamageAt = -1, lastAdvanceAt = -1, lastReason = "" }
+			local startingMoney = 12000
+			if _GreatVoyageVoyageData ~= nil then
+				local dataStartingMoney = _GreatVoyageVoyageData:GetStartingMoney()
+				if dataStartingMoney ~= nil then startingMoney = dataStartingMoney end
+			end
+			self.voyageByPlayer[playerId] = { playerId = playerId, status = "idle", originId = "", destinationId = "", route = nil, segments = {}, distanceTravelled = 0, budgetRemaining = 0, pausedDistance = 0, pendingEncounter = nil, encounterCount = 0, cargo = { id = "", quantity = 0, buyPrice = 0 }, money = startingMoney, economyRevision = 0, economyMessage = "", hullDamage = 0, elapsedSailingSeconds = 0, voyageDurationSeconds = self.voyageDurationSeconds, startedAt = -1, raidRemaining = 0, raidEnemies = {}, lastRaidDamageAt = -1, lastAdvanceAt = -1, lastReason = "", cardInventory = {}, cardInventoryRevision = 0 }
 		end
-		return self.voyageByPlayer[playerId]
+		local state = self.voyageByPlayer[playerId]
+		if state.ship == nil then
+			state.ship = { id = "small_sampan", name = "小風帆", hull = 100, maxHull = 100, baseHull = 100, shield = 20, maxShield = 20, armor = 40, maxArmor = 40, baseCargoCapacity = 8, baseCannonMultiplier = 1, baseDurationMultiplier = 1, cargoCapacity = 8, cannonMultiplier = 1, durationMultiplier = 1, slots = { "", "", "" } }
+			state.shipRevision = 0
+			state.shipMessage = "新手小風帆可在四港免費維修。"
+		end
+		if state.ship.slots == nil then state.ship.slots = { "", "", "" } end
+		if state.ship.baseCargoCapacity == nil then state.ship.baseCargoCapacity = state.ship.cargoCapacity end
+		if state.ship.baseCannonMultiplier == nil then state.ship.baseCannonMultiplier = state.ship.cannonMultiplier or 1 end
+		if state.ship.baseDurationMultiplier == nil then state.ship.baseDurationMultiplier = state.ship.durationMultiplier or 1 end
+		if state.ownedShips == nil then state.ownedShips = {} end
+		if state.cardInventory == nil then state.cardInventory = {} end
+		if state.cardInventoryRevision == nil then state.cardInventoryRevision = 0 end
+		state.ownedShips[state.ship.id] = state.ship
+		state.activeShipId = state.ship.id
+		if state.voyageDurationSeconds == nil then state.voyageDurationSeconds = self.voyageDurationSeconds end
+		if state.ship.stats == nil and _GreatVoyageVoyageData ~= nil then
+			local upgrades = self:CalculateShipUpgrades(state.ship.id, state.ship.slots)
+			if upgrades ~= nil then self:ApplyShipUpgrades(state.ship, upgrades) end
+		end
+		return state
+	end
+
+	@ExecSpace("ServerOnly")
+	method any CreateOwnedShip(any definition)
+		-- 建立單艘船獨立船況；新購時採滿狀態，日後切換只取回已保存數值。
+		local ship = { id = definition.id, name = definition.name, hull = definition.maxHull, maxHull = definition.maxHull, baseHull = definition.maxHull, shield = definition.maxShield, maxShield = definition.maxShield, armor = definition.maxArmor, maxArmor = definition.maxArmor, baseCargoCapacity = definition.cargoCapacity, baseCannonMultiplier = definition.cannonMultiplier, baseDurationMultiplier = definition.durationMultiplier, cargoCapacity = definition.cargoCapacity, cannonMultiplier = definition.cannonMultiplier, durationMultiplier = definition.durationMultiplier, slots = { "", "", "" } }
+		return ship
+	end
+
+	@ExecSpace("ServerOnly")
+	method any CalculateShipUpgrades(string shipId, any slots)
+		-- 從船型基礎值與卡片定義重算有效能力，切船與重複插拔不會累積漂移。
+		local definition = _GreatVoyageVoyageData:GetShipById(shipId)
+		if definition == nil then return nil end
+		local fireBonus = 0
+		local speedBonus = 0
+		local speedPenalty = 0
+		local cargoBonus = 0
+		local cargoMultiplier = 0
+		local hullMultiplier = 0
+		local armorMultiplier = 0
+		local shieldMultiplier = 0
+		local repairCostMultiplier = 0
+		local regenPercent = 0
+		local dodgeChance = 0
+		local incomingDamageMultiplier = 0
+		local encounterMultiplier = 0
+		local fogEncounterMultiplier = 0
+		local monsterEncounterMultiplier = 0
+		local magicEncounterMultiplier = 0
+		local boilerSpeedBonus = 0
+		local boilerHeatPercent = 0
+		for slotIndex = 1, 3 do
+			local cardId = slots[slotIndex] or ""
+			if cardId ~= "" then
+				local card = _GreatVoyageVoyageData:GetShipUpgradeCardById(cardId)
+				if card ~= nil then
+					fireBonus = fireBonus + (card.fireBonus or 0)
+					speedBonus = speedBonus + (card.speedBonus or 0)
+					speedPenalty = speedPenalty + (card.speedPenalty or 0)
+					cargoBonus = cargoBonus + (card.cargoBonus or 0)
+					cargoMultiplier = cargoMultiplier + (card.cargoMultiplier or 0)
+					hullMultiplier = hullMultiplier + (card.maxHullMultiplier or 0)
+					armorMultiplier = armorMultiplier + (card.maxArmorMultiplier or 0)
+					shieldMultiplier = shieldMultiplier + (card.maxShieldMultiplier or 0)
+					repairCostMultiplier = repairCostMultiplier + (card.repairCostMultiplier or 0)
+					regenPercent = regenPercent + (card.regenPercent or 0)
+					dodgeChance = dodgeChance + (card.dodgeChance or 0)
+					incomingDamageMultiplier = incomingDamageMultiplier + (card.incomingDamageMultiplier or 0)
+					encounterMultiplier = encounterMultiplier + (card.encounterMultiplier or 0)
+					fogEncounterMultiplier = fogEncounterMultiplier + (card.fogEncounterMultiplier or 0)
+					monsterEncounterMultiplier = monsterEncounterMultiplier + (card.monsterEncounterMultiplier or 0)
+					magicEncounterMultiplier = magicEncounterMultiplier + (card.magicEncounterMultiplier or 0)
+					boilerSpeedBonus = boilerSpeedBonus + (card.boilerSpeedBonus or 0)
+					boilerHeatPercent = boilerHeatPercent + (card.boilerHeatPercent or 0)
+				end
+			end
+		end
+		local speedMultiplier = math.max(0.25, 1 + speedBonus - speedPenalty)
+		local repairMultiplier = math.max(0.25, 1 + repairCostMultiplier)
+		local maxHull = math.max(1, math.floor(definition.maxHull * math.max(0.25, 1 + hullMultiplier) + 0.5))
+		local maxArmor = math.max(0, math.floor(definition.maxArmor * math.max(0.25, 1 + armorMultiplier) + 0.5))
+		local maxShield = math.max(0, math.floor(definition.maxShield * math.max(0.25, 1 + shieldMultiplier) + 0.5))
+		local cargoCapacity = math.max(1, math.floor(definition.cargoCapacity * (1 + cargoMultiplier) + 0.5) + cargoBonus)
+		return { baseCannonMultiplier = definition.cannonMultiplier, baseDurationMultiplier = definition.durationMultiplier, baseCargoCapacity = definition.cargoCapacity, cannonMultiplier = definition.cannonMultiplier * (1 + fireBonus), durationMultiplier = definition.durationMultiplier / speedMultiplier, cargoCapacity = cargoCapacity, maxHull = maxHull, maxArmor = maxArmor, maxShield = maxShield, stats = { speedMultiplier = speedMultiplier, repairCostMultiplier = repairMultiplier, regenPercent = regenPercent, dodgeChance = math.min(0.75, dodgeChance), incomingDamageMultiplier = incomingDamageMultiplier, encounterMultiplier = encounterMultiplier, fogEncounterMultiplier = fogEncounterMultiplier, monsterEncounterMultiplier = monsterEncounterMultiplier, magicEncounterMultiplier = magicEncounterMultiplier, boilerSpeedBonus = boilerSpeedBonus, boilerHeatPercent = boilerHeatPercent } }
+	end
+
+	@ExecSpace("ServerOnly")
+	method void ApplyShipUpgrades(any ship, any upgrades)
+		-- 僅更新衍生能力；船體、護盾、裝甲與其受損值維持原狀。
+		ship.baseCannonMultiplier = upgrades.baseCannonMultiplier
+		ship.baseDurationMultiplier = upgrades.baseDurationMultiplier
+		ship.baseCargoCapacity = upgrades.baseCargoCapacity
+		ship.cannonMultiplier = upgrades.cannonMultiplier
+		ship.durationMultiplier = upgrades.durationMultiplier
+		ship.cargoCapacity = upgrades.cargoCapacity
+		ship.hull = math.min(ship.hull or 0, upgrades.maxHull)
+		ship.maxHull = upgrades.maxHull
+		ship.armor = math.min(ship.armor or 0, upgrades.maxArmor)
+		ship.maxArmor = upgrades.maxArmor
+		ship.shield = math.min(ship.shield or 0, upgrades.maxShield)
+		ship.maxShield = upgrades.maxShield
+		ship.stats = upgrades.stats
 	end
 
 	method any CopySnapshot(any state)
@@ -93,12 +232,60 @@ script GreatVoyageVoyageState extends Logic
 			encounterCount = state.encounterCount,
 			cargo = state.cargo,
 			hullDamage = state.hullDamage,
-			remainingSeconds = math.max(0, self.voyageDurationSeconds - state.elapsedSailingSeconds),
+			remainingSeconds = math.max(0, (state.voyageDurationSeconds or self.voyageDurationSeconds) - state.elapsedSailingSeconds),
 			raidRemaining = state.raidRemaining,
 			lastReason = state.lastReason,
+			cardInventory = state.cardInventory or {},
+			cardInventoryRevision = state.cardInventoryRevision or 0,
 			route = state.route
 		}
 		return snapshot
+	end
+
+	@ExecSpace("ServerOnly")
+	method void PublishAirBattleSnapshot(string playerId, any state)
+		local battle = state.airBattle
+		local phase = "none"
+		local battleId = ""
+		local airspaceId = ""
+		local enemyId = ""
+		local enemyName = ""
+		local enemyHp = 0
+		local enemyMaxHp = 0
+		local remainingSeconds = 0
+		local outcome = ""
+		local playerShotSequence = 0
+		local enemyShotSequence = 0
+		local playerShotElapsed = 1
+		local enemyShotElapsed = 1
+		if battle ~= nil then
+			phase = battle.phase or "none"
+			battleId = battle.id or ""
+			airspaceId = battle.airspaceId or ""
+			enemyId = battle.enemyId or ""
+			enemyName = battle.enemyName or ""
+			enemyHp = battle.enemyHp or 0
+			enemyMaxHp = battle.enemyMaxHp or 0
+			outcome = battle.outcome or ""
+			playerShotSequence = battle.playerShotSequence or 0
+			enemyShotSequence = battle.enemyShotSequence or 0
+			if battle.lastPlayerShotAt ~= nil then playerShotElapsed = math.max(0, _UtilLogic.ServerElapsedSeconds - battle.lastPlayerShotAt) end
+			if battle.lastEnemyShotAt ~= nil then enemyShotElapsed = math.max(0, _UtilLogic.ServerElapsedSeconds - battle.lastEnemyShotAt) end
+			if phase == "active" then remainingSeconds = math.max(0, (battle.endsAt or _UtilLogic.ServerElapsedSeconds) - _UtilLogic.ServerElapsedSeconds) end
+		end
+		local ship = state.ship or {}
+		self:ReceiveAirBattleSnapshot(battleId, phase, airspaceId, enemyId, enemyName, enemyHp, enemyMaxHp, ship.hull or 0, ship.maxHull or 0, remainingSeconds, outcome, playerShotSequence, enemyShotSequence, playerShotElapsed, enemyShotElapsed, playerId, playerId)
+	end
+
+	@ExecSpace("Client")
+	method void ReceiveAirBattleSnapshot(string battleId, string phase, string airspaceId, string enemyId, string enemyName, number enemyHp, number enemyMaxHp, number playerHp, number playerMaxHp, number remainingSeconds, string outcome, number playerShotSequence, number enemyShotSequence, number playerShotElapsed, number enemyShotElapsed, string snapshotPlayerId)
+		-- Forward the matching player's launch timeline together with authoritative HP.
+		local player = _UserService.LocalPlayer
+		if not isvalid(player) or player.PlayerComponent == nil or player.PlayerComponent.UserId ~= snapshotPlayerId then return end
+		local controller = _GreatVoyageAdventureController
+		if controller ~= nil then
+			controller:ReceiveAirBattleSnapshot(battleId, phase, airspaceId, enemyId, enemyName, enemyHp, enemyMaxHp, playerHp, playerMaxHp, remainingSeconds, outcome, playerShotSequence, enemyShotSequence, playerShotElapsed, enemyShotElapsed, snapshotPlayerId)
+		end
 	end
 
 	@ExecSpace("ServerOnly")
@@ -114,17 +301,455 @@ script GreatVoyageVoyageState extends Logic
 			cargoQuantity = state.cargo.quantity or 0
 			cargoBuyPrice = state.cargo.buyPrice or 0
 		end
-		self:ReceiveVoyageSnapshot(playerId, state.status, state.originId, state.destinationId, state.distanceTravelled, state.budgetRemaining, state.pausedDistance, pendingEncounterId, state.encounterCount, cargoId, cargoQuantity, cargoBuyPrice, state.money, state.economyRevision, state.economyMessage, state.hullDamage, math.max(0, self.voyageDurationSeconds - state.elapsedSailingSeconds), state.raidRemaining, state.lastReason, playerId)
+		self:ReceiveVoyageSnapshot(playerId, state.status, state.originId, state.destinationId, state.distanceTravelled, state.budgetRemaining, state.pausedDistance, pendingEncounterId, state.encounterCount, cargoId, cargoQuantity, cargoBuyPrice, state.money, state.economyRevision, state.economyMessage, state.hullDamage, math.max(0, (state.voyageDurationSeconds or self.voyageDurationSeconds) - state.elapsedSailingSeconds), state.raidRemaining, state.lastReason, playerId)
+		if state.lastPublishedInventoryRevision ~= state.cardInventoryRevision then
+			local inventoryParts = {}
+			if _GreatVoyageVoyageData ~= nil then
+				for _, card in ipairs(_GreatVoyageVoyageData:GetShipUpgradeCards()) do
+					local quantity = state.cardInventory[card.id] or 0
+					if quantity > 0 then table.insert(inventoryParts, card.id .. "=" .. tostring(quantity)) end
+				end
+			end
+			self:ReceiveCardInventorySnapshot(table.concat(inventoryParts, ";"), state.cardInventoryRevision, playerId, playerId)
+			state.lastPublishedInventoryRevision = state.cardInventoryRevision
+		end
+		if state.lastPublishedShipRevision ~= state.shipRevision then
+			local ship = state.ship
+			local slots = ship.slots or { "", "", "" }
+			self:ReceiveShipSnapshot(ship.id, ship.name, ship.hull, ship.maxHull, ship.shield, ship.maxShield, ship.armor, ship.maxArmor, ship.cargoCapacity, ship.cannonMultiplier or 1, ship.durationMultiplier or 1, ship.baseCannonMultiplier or 1, ship.baseDurationMultiplier or 1, ship.baseCargoCapacity or ship.cargoCapacity, slots[1] or "", slots[2] or "", slots[3] or "", state.shipRevision, state.shipMessage, playerId)
+			local stats = ship.stats or {}
+			local statsPayload = "repairCostMultiplier=" .. tostring(stats.repairCostMultiplier or 1) .. ";speedMultiplier=" .. tostring(stats.speedMultiplier or 1) .. ";regenPercent=" .. tostring(stats.regenPercent or 0) .. ";dodgeChance=" .. tostring(stats.dodgeChance or 0) .. ";incomingDamageMultiplier=" .. tostring(stats.incomingDamageMultiplier or 0) .. ";encounterMultiplier=" .. tostring(stats.encounterMultiplier or 0) .. ";fogEncounterMultiplier=" .. tostring(stats.fogEncounterMultiplier or 0) .. ";monsterEncounterMultiplier=" .. tostring(stats.monsterEncounterMultiplier or 0) .. ";magicEncounterMultiplier=" .. tostring(stats.magicEncounterMultiplier or 0) .. ";boilerSpeedBonus=" .. tostring(stats.boilerSpeedBonus or 0) .. ";boilerHeatPercent=" .. tostring(stats.boilerHeatPercent or 0)
+			self:ReceiveShipStatsSnapshot(ship.id, statsPayload, state.shipRevision, playerId, playerId)
+			if _GreatVoyageVoyageData ~= nil then
+				for _, definition in ipairs(_GreatVoyageVoyageData:GetShipCatalog()) do
+					local ownedShip = state.ownedShips[definition.id]
+					if ownedShip ~= nil then
+						local ownedSlots = ownedShip.slots or { "", "", "" }
+						self:ReceiveOwnedShipSnapshot(ownedShip.id, true, ownedShip.id == state.activeShipId, ownedShip.name, ownedShip.hull, ownedShip.maxHull, ownedShip.shield, ownedShip.maxShield, ownedShip.armor, ownedShip.maxArmor, ownedShip.cargoCapacity, ownedShip.cannonMultiplier or 1, ownedShip.durationMultiplier or 1, ownedShip.baseCannonMultiplier or 1, ownedShip.baseDurationMultiplier or 1, ownedShip.baseCargoCapacity or ownedShip.cargoCapacity, ownedSlots[1] or "", ownedSlots[2] or "", ownedSlots[3] or "", state.shipRevision, playerId)
+					else
+						self:ReceiveOwnedShipSnapshot(definition.id, false, false, definition.name, definition.maxHull, definition.maxHull, definition.maxShield, definition.maxShield, definition.maxArmor, definition.maxArmor, definition.cargoCapacity, definition.cannonMultiplier, definition.durationMultiplier, definition.cannonMultiplier, definition.durationMultiplier, definition.cargoCapacity, "", "", "", state.shipRevision, playerId)
+					end
+				end
+			end
+			state.lastPublishedShipRevision = state.shipRevision
+		end
+		self:PublishAirBattleSnapshot(playerId, state)
+	end
+
+	@ExecSpace("Client")
+	method void ReceiveShipSnapshot(string shipId, string shipName, number hull, number maxHull, number shield, number maxShield, number armor, number maxArmor, integer capacity, number cannonMultiplier, number durationMultiplier, number baseCannonMultiplier, number baseDurationMultiplier, integer baseCargoCapacity, string slot1, string slot2, string slot3, integer revision, string message)
+		-- 接收目前啟用船的伺服器投影，名稱與數值都由伺服器指定。
+		self.clientShip = { id = shipId, name = shipName, hull = hull, maxHull = maxHull, shield = shield, maxShield = maxShield, armor = armor, maxArmor = maxArmor, cargoCapacity = capacity, cannonMultiplier = cannonMultiplier, durationMultiplier = durationMultiplier, baseCannonMultiplier = baseCannonMultiplier, baseDurationMultiplier = baseDurationMultiplier, baseCargoCapacity = baseCargoCapacity, slots = { slot1 = slot1, slot2 = slot2, slot3 = slot3 }, revision = revision, message = message }
+		-- 舊 HUD 只鏡射伺服器船況，不再重播累積損傷。
+		if _Phase0VoyagePrototype ~= nil then
+			local game = _Phase0VoyagePrototype
+			game.hull = hull
+			game.structure = hull
+			game.maxHull = maxHull
+			game.maxStructure = maxHull
+			game.shield = shield
+			game.maxShield = maxShield
+			game.armor = armor
+			game.maxArmor = maxArmor
+			game.cargoCapacity = capacity
+		end
+	end
+
+	@ExecSpace("Client")
+	method void ReceiveShipStatsSnapshot(string shipId, string payload, integer revision, string snapshotPlayerId)
+		local player = _UserService.LocalPlayer
+		if not isvalid(player) or player.PlayerComponent == nil or player.PlayerComponent.UserId ~= snapshotPlayerId then return end
+		if self.clientShip == nil or self.clientShip.id ~= shipId or self.clientShip.revision ~= revision then return end
+		local stats = {}
+		for key, value in string.gmatch(payload, "([^=;]+)=([^;]+)") do stats[key] = tonumber(value) or 0 end
+		self.clientShip.stats = stats
+	end
+
+	@ExecSpace("Client")
+	method void ReceiveCardInventorySnapshot(string payload, integer revision, string snapshotPlayerId)
+		local player = _UserService.LocalPlayer
+		if not isvalid(player) or player.PlayerComponent == nil or player.PlayerComponent.UserId ~= snapshotPlayerId then return end
+		if revision < (self.clientCardInventoryRevision or 0) then return end
+		local inventory = {}
+		for cardId, quantity in string.gmatch(payload, "([^=;]+)=(%d+)") do inventory[cardId] = tonumber(quantity) or 0 end
+		self.clientCardInventory = inventory
+		self.clientCardInventoryRevision = revision
+	end
+
+	@ExecSpace("Client")
+	method void ReceiveCardMarket(string portId, table cardIds)
+		-- 接收伺服器為本玩家與港口固定抽出的改裝卡清單。
+		if self.clientCardMarketByPort == nil then self.clientCardMarketByPort = {} end
+		local cardIdCopy = {}
+		for _, cardId in ipairs(cardIds or {}) do table.insert(cardIdCopy, cardId) end
+		self.clientCardMarketByPort[portId] = cardIdCopy
+	end
+
+	@ExecSpace("ClientOnly")
+	method table GetClientCardMarket(string portId)
+		-- 回傳指定港口已收到的貨架卡片 ID 副本；未同步時提供空清單。
+		local cardIds = self.clientCardMarketByPort[portId]
+		if cardIds == nil then return {} end
+		local cardIdCopy = {}
+		for _, cardId in ipairs(cardIds) do table.insert(cardIdCopy, cardId) end
+		return cardIdCopy
+	end
+
+	@ExecSpace("Client")
+	method void ReceiveOwnedShipSnapshot(string shipId, boolean owned, boolean isActive, string shipName, number hull, number maxHull, number shield, number maxShield, number armor, number maxArmor, integer capacity, number cannonMultiplier, number durationMultiplier, number baseCannonMultiplier, number baseDurationMultiplier, integer baseCargoCapacity, string slot1, string slot2, string slot3, integer revision)
+		-- 將每艘船獨立船況投影給 UI；未持有船不放入 ownedShips。
+		if self.clientOwnedShips == nil then self.clientOwnedShips = {} end
+		if owned then
+			self.clientOwnedShips[shipId] = { id = shipId, owned = true, isActive = isActive, name = shipName, hull = hull, maxHull = maxHull, shield = shield, maxShield = maxShield, armor = armor, maxArmor = maxArmor, cargoCapacity = capacity, cannonMultiplier = cannonMultiplier, durationMultiplier = durationMultiplier, baseCannonMultiplier = baseCannonMultiplier, baseDurationMultiplier = baseDurationMultiplier, baseCargoCapacity = baseCargoCapacity, slots = { slot1 = slot1, slot2 = slot2, slot3 = slot3 }, revision = revision }
+		else
+			self.clientOwnedShips[shipId] = nil
+		end
+	end
+
+	@ExecSpace("Server")
+	method void RequestShipSnapshot()
+		-- 回傳呼叫者本人的船況與船庫投影。
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" or _UserService:GetUserEntityByUserId(playerId) == nil then return end
+		local state = self:GetOrCreateState(playerId)
+		state.lastPublishedShipRevision = -1
+		state.lastPublishedInventoryRevision = -1
+		self:PublishSnapshot(playerId, state)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void CompleteShipRequest(string playerId, any state, string message)
+		-- 成功與拒絕都增加 revision，讓 UI 能辨認伺服器已回覆本次操作。
+		state.shipRevision = state.shipRevision + 1
+		state.shipMessage = message
+		state.shipRequestInProgress = false
+		self:PublishSnapshot(playerId, state)
+	end
+
+	@ExecSpace("Server")
+	method void BuyShip(string shipId)
+		-- 只依 RPC sender 查找玩家與金幣；客戶端不能指定價格、能力或持有狀態。
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then return end
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		if player == nil then return end
+		local state = self:GetOrCreateState(playerId)
+		if state.shipRequestInProgress == true then return end
+		state.shipRequestInProgress = true
+		if state.status == "sailing" then self:CompleteShipRequest(playerId, state, "航行中無法購買船隻。") return end
+		local portId = self:GetPortIdFromMap(player.CurrentMapName)
+		if portId == "" or self:IsAtShop(player, portId) == false then self:CompleteShipRequest(playerId, state, "請在港口商人附近購買船隻。") return end
+		if _GreatVoyageVoyageData == nil then self:CompleteShipRequest(playerId, state, "船隻資料尚未就緒。") return end
+		local definition = _GreatVoyageVoyageData:GetShipById(shipId)
+		if definition == nil then self:CompleteShipRequest(playerId, state, "未知船型，購買已拒絕。") return end
+		if state.ownedShips[shipId] ~= nil then self:CompleteShipRequest(playerId, state, "已持有「" .. definition.name .. "」，不會重複扣款。") return end
+		if state.money < definition.price then self:CompleteShipRequest(playerId, state, "金幣不足，購買「" .. definition.name .. "」需要 " .. tostring(definition.price) .. " G。") return end
+		local ownedShip = self:CreateOwnedShip(definition)
+		state.money = state.money - definition.price
+		state.ownedShips[shipId] = ownedShip
+		state.economyRevision = state.economyRevision + 1
+		state.economyMessage = "購買「" .. definition.name .. "」，花費 " .. tostring(definition.price) .. " G。"
+		self:CompleteShipRequest(playerId, state, state.economyMessage)
+		log("[Ship] purchased player=" .. playerId .. " ship=" .. shipId .. " cost=" .. tostring(definition.price))
+	end
+
+	@ExecSpace("Server")
+	method void SelectShip(string shipId)
+		-- 切換只選擇玩家已持有的船，並保留各船自己的受損數值。
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then return end
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		if player == nil then return end
+		local state = self:GetOrCreateState(playerId)
+		if state.shipRequestInProgress == true then return end
+		state.shipRequestInProgress = true
+		if state.status == "sailing" then self:CompleteShipRequest(playerId, state, "航行中無法更換船隻。") return end
+		local portId = self:GetPortIdFromMap(player.CurrentMapName)
+		if portId == "" or self:IsAtShop(player, portId) == false then self:CompleteShipRequest(playerId, state, "請在港口商人附近更換船隻。") return end
+		local ship = state.ownedShips[shipId]
+		if ship == nil then self:CompleteShipRequest(playerId, state, "尚未持有這艘船，無法啟用。") return end
+		local cargoQuantity = 0
+		if state.cargo ~= nil then cargoQuantity = state.cargo.quantity or 0 end
+		if cargoQuantity > ship.cargoCapacity then self:CompleteShipRequest(playerId, state, "目前貨物超過「" .. ship.name .. "」容量，請先卸貨再更換。") return end
+		if shipId == state.activeShipId then self:CompleteShipRequest(playerId, state, "「" .. ship.name .. "」已是目前啟用的船。") return end
+		if ship.stats == nil and _GreatVoyageVoyageData ~= nil then
+			local upgrades = self:CalculateShipUpgrades(ship.id, ship.slots or { "", "", "" })
+			if upgrades ~= nil then self:ApplyShipUpgrades(ship, upgrades) end
+		end
+		state.activeShipId = shipId
+		state.ship = ship
+		state.hullDamage = math.max(0, ship.maxHull - ship.hull)
+		self:CompleteShipRequest(playerId, state, "已啟用「" .. ship.name .. "」。")
+		log("[Ship] selected player=" .. playerId .. " ship=" .. shipId)
+	end
+
+	@ExecSpace("Server")
+	method void ConfigureShipSlot(string shipId, integer slotIndex, string cardId)
+		-- 伺服器驗證本人、港口、船型、槽位與卡片，再套用整組有效能力。
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then return end
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		if player == nil then return end
+		local state = self:GetOrCreateState(playerId)
+		if state.shipRequestInProgress == true then return end
+		state.shipRequestInProgress = true
+		if state.status == "sailing" then self:CompleteShipRequest(playerId, state, "航行中無法調整改裝卡。") return end
+		local portId = self:GetPortIdFromMap(player.CurrentMapName)
+		if portId == "" or self:IsAtShop(player, portId) == false then self:CompleteShipRequest(playerId, state, "請在港口商人附近調整改裝卡。") return end
+		if _GreatVoyageVoyageData == nil then self:CompleteShipRequest(playerId, state, "改裝資料尚未就緒。") return end
+		local ship = state.ownedShips[shipId]
+		if ship == nil then self:CompleteShipRequest(playerId, state, "尚未持有這艘船，無法改裝。") return end
+		local definition = _GreatVoyageVoyageData:GetShipById(shipId)
+		if definition == nil or definition.tier ~= 1 then self:CompleteShipRequest(playerId, state, "只有 T1 船隻可以安裝改裝卡。") return end
+		if slotIndex < 1 or slotIndex > 3 then self:CompleteShipRequest(playerId, state, "改裝槽位必須是 1 到 3。") return end
+		local selectedCard = nil
+		if cardId ~= "" then
+			selectedCard = _GreatVoyageVoyageData:GetShipUpgradeCardById(cardId)
+			if selectedCard == nil then self:CompleteShipRequest(playerId, state, "未知改裝卡，設定已拒絕。") return end
+			if selectedCard.available ~= true then self:CompleteShipRequest(playerId, state, selectedCard.requirement or "此改裝卡尚未開放。") return end
+		end
+		local slots = ship.slots or { "", "", "" }
+		local nextSlots = { slots[1] or "", slots[2] or "", slots[3] or "" }
+		local previousCardId = nextSlots[slotIndex]
+		if previousCardId == cardId then
+			self:CompleteShipRequest(playerId, state, "此槽已安裝該卡，不會重複消耗。")
+			return
+		end
+		nextSlots[slotIndex] = cardId
+		local upgrades = self:CalculateShipUpgrades(shipId, nextSlots)
+		if upgrades == nil then self:CompleteShipRequest(playerId, state, "改裝資料無效，設定已拒絕。") return end
+		local cargoQuantity = 0
+		if state.cargo ~= nil then cargoQuantity = state.cargo.quantity or 0 end
+		if shipId == state.activeShipId and cargoQuantity > upgrades.cargoCapacity then
+			self:CompleteShipRequest(playerId, state, "改裝後貨艙容量不足，請先卸貨再調整。")
+			return
+		end
+		if cardId ~= "" and (state.cardInventory[cardId] or 0) < 1 then
+			self:CompleteShipRequest(playerId, state, "沒有可安裝的未裝配卡片副本。")
+			return
+		end
+		-- 所有拒絕條件先檢查完，以下才同時回收舊卡及消耗新卡。
+		if previousCardId ~= "" then state.cardInventory[previousCardId] = (state.cardInventory[previousCardId] or 0) + 1 end
+		if cardId ~= "" then state.cardInventory[cardId] = state.cardInventory[cardId] - 1 end
+		state.cardInventoryRevision = state.cardInventoryRevision + 1
+		ship.slots = nextSlots
+		self:ApplyShipUpgrades(ship, upgrades)
+		if shipId == state.activeShipId then state.hullDamage = math.max(0, ship.maxHull - ship.hull) end
+		self:CompleteShipRequest(playerId, state, "「" .. ship.name .. "」第 " .. tostring(slotIndex) .. " 格改裝已更新。")
+		log("[Ship] configured player=" .. playerId .. " ship=" .. shipId .. " slot=" .. tostring(slotIndex) .. " card=" .. cardId)
+	end
+
+	@ExecSpace("Server")
+	method void BuyUpgradeCard(string cardId, integer quantity)
+		-- 僅允許購買此玩家在實際所在港口的固定上架卡片。
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then return end
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		if player == nil then return end
+		local state = self:GetOrCreateState(playerId)
+		if state.shipRequestInProgress == true then return end
+		state.shipRequestInProgress = true
+		if quantity < 1 or quantity > 99 or quantity ~= math.floor(quantity) then self:CompleteShipRequest(playerId, state, "改裝卡購買數量必須是 1 到 99。") return end
+		if state.status == "sailing" then self:CompleteShipRequest(playerId, state, "航行中無法購買改裝卡。") return end
+		local portId = self:GetPortIdFromMap(player.CurrentMapName)
+		if portId == "" or self:IsAtShop(player, portId) == false then self:CompleteShipRequest(playerId, state, "請在港口商人附近購買改裝卡。") return end
+		if _GreatVoyageVoyageData == nil then self:CompleteShipRequest(playerId, state, "改裝卡資料尚未就緒。") return end
+		local cardMarket = self:GetOrCreateCardMarket(playerId, portId)
+		local isListed = false
+		for _, listedCardId in ipairs(cardMarket) do
+			if listedCardId == cardId then isListed = true break end
+		end
+		if isListed == false then self:CompleteShipRequest(playerId, state, "此港口目前沒有上架該改裝卡。") return end
+		local card = _GreatVoyageVoyageData:GetShipUpgradeCardById(cardId)
+		if card == nil or card.available ~= true or card.price == nil or card.price <= 0 then self:CompleteShipRequest(playerId, state, "此改裝卡目前不可購買。") return end
+		local total = card.price * quantity
+		-- 上限包含所有船上已裝的副本；拆卡只改所在位置，不會被滿庫存卡住。
+		local ownedQuantity = state.cardInventory[cardId] or 0
+		for _, ownedShip in pairs(state.ownedShips) do
+			for _, installedCardId in ipairs(ownedShip.slots or {}) do
+				if installedCardId == cardId then ownedQuantity = ownedQuantity + 1 end
+			end
+		end
+		if ownedQuantity + quantity > 99 then self:CompleteShipRequest(playerId, state, "每種改裝卡最多持有 99 張（含已裝配副本）。") return end
+		if state.money < total then self:CompleteShipRequest(playerId, state, "金幣不足，需要 " .. tostring(total) .. " G。") return end
+		state.money = state.money - total
+		state.cardInventory[cardId] = (state.cardInventory[cardId] or 0) + quantity
+		state.cardInventoryRevision = state.cardInventoryRevision + 1
+		state.economyRevision = state.economyRevision + 1
+		state.economyMessage = "買入 " .. card.name .. " ×" .. tostring(quantity) .. "，花費 " .. tostring(total) .. " G。"
+		self:CompleteShipRequest(playerId, state, state.economyMessage)
+		log("[ShipUpgrade] bought player=" .. playerId .. " card=" .. cardId .. " qty=" .. tostring(quantity) .. " total=" .. tostring(total))
+	end
+
+	@ExecSpace("ServerOnly")
+	method table GetOrCreateCardMarket(string playerId, string portId)
+		-- 首次查詢時抽出六張不同卡片，後續所有開關店請求共用同一份伺服器清單。
+		if self._T.cardMarketByPlayer == nil then self._T.cardMarketByPlayer = {} end
+		local markets = self._T.cardMarketByPlayer[playerId]
+		if markets == nil then
+			markets = {}
+			self._T.cardMarketByPlayer[playerId] = markets
+		end
+		if markets[portId] ~= nil then return markets[portId] end
+		if _GreatVoyageVoyageData == nil then return {} end
+		local cardPool = _GreatVoyageVoyageData:GetShipUpgradeCards()
+		if cardPool == nil then return {} end
+		local candidates = {}
+		local seenCardIds = {}
+		for _, card in ipairs(cardPool) do
+			if card ~= nil and card.id ~= nil and card.id ~= "" and seenCardIds[card.id] ~= true and card.available == true and card.price ~= nil and card.price > 0 then
+				seenCardIds[card.id] = true
+				table.insert(candidates, card)
+			end
+		end
+		local selectedCards = {}
+		local drawCount = math.min(6, #candidates)
+		for _ = 1, drawCount do
+			local randomIndex = _UtilLogic:RandomIntegerRange(1, #candidates)
+			table.insert(selectedCards, table.remove(candidates, randomIndex))
+		end
+		table.sort(selectedCards, function(left, right)
+			if left.price == right.price then return left.id < right.id end
+			return left.price < right.price
+		end)
+		local cardIds = {}
+		for _, card in ipairs(selectedCards) do table.insert(cardIds, card.id) end
+		if #cardIds > 0 then markets[portId] = cardIds end
+		log("[CardMarket] port=" .. portId .. " count=" .. tostring(#cardIds))
+		return cardIds
+	end
+
+	@ExecSpace("Server")
+	method void RequestCardMarket()
+		-- 僅在呼叫者實際位於港口商店時回傳其固定貨架清單。
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then return end
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		if player == nil then return end
+		local portId = self:GetPortIdFromMap(player.CurrentMapName)
+		if portId == "" or self:IsAtShop(player, portId) == false then return end
+		if _GreatVoyageVoyageData == nil then return end
+		self:GetOrCreateState(playerId)
+		local cardIds = self:GetOrCreateCardMarket(playerId, portId)
+		self:ReceiveCardMarket(portId, cardIds, playerId)
+	end
+
+	@ExecSpace("Server")
+	method void SellUpgradeCard(string cardId, integer quantity)
+		-- 出售改裝卡前確認收入仍可由同步金幣整數安全表示。
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then return end
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		if player == nil then return end
+		local state = self:GetOrCreateState(playerId)
+		if state.shipRequestInProgress == true then return end
+		state.shipRequestInProgress = true
+		if quantity < 1 or quantity > 99 or quantity ~= math.floor(quantity) then self:CompleteShipRequest(playerId, state, "改裝卡出售數量必須是 1 到 99。") return end
+		if state.status == "sailing" then self:CompleteShipRequest(playerId, state, "航行中無法出售改裝卡。") return end
+		local portId = self:GetPortIdFromMap(player.CurrentMapName)
+		if portId == "" or self:IsAtShop(player, portId) == false then self:CompleteShipRequest(playerId, state, "請在港口商人附近出售改裝卡。") return end
+		if _GreatVoyageVoyageData == nil then self:CompleteShipRequest(playerId, state, "改裝卡資料尚未就緒。") return end
+		local card = _GreatVoyageVoyageData:GetShipUpgradeCardById(cardId)
+		if card == nil or card.available ~= true or card.sellPrice == nil or card.sellPrice <= 0 then self:CompleteShipRequest(playerId, state, "此改裝卡目前不可出售。") return end
+		if (state.cardInventory[cardId] or 0) < quantity then self:CompleteShipRequest(playerId, state, "未裝配的改裝卡副本不足。") return end
+		local total = card.sellPrice * quantity
+		if total > 2147483647 or state.money > 2147483647 - total then self:CompleteShipRequest(playerId, state, "出售收入會超出金幣整數上限，請先使用金幣。") return end
+		state.cardInventory[cardId] = state.cardInventory[cardId] - quantity
+		state.cardInventoryRevision = state.cardInventoryRevision + 1
+		state.money = state.money + total
+		state.economyRevision = state.economyRevision + 1
+		state.economyMessage = "賣出 " .. card.name .. " ×" .. tostring(quantity) .. "，收入 " .. tostring(total) .. " G。"
+		self:CompleteShipRequest(playerId, state, state.economyMessage)
+		log("[ShipUpgrade] sold player=" .. playerId .. " card=" .. cardId .. " qty=" .. tostring(quantity) .. " total=" .. tostring(total))
+	end
+
+	@ExecSpace("Server")
+	method void RepairShip()
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then return end
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		if player == nil then return end
+		local state = self:GetOrCreateState(playerId)
+		if state.shipRequestInProgress == true then return end
+		state.shipRequestInProgress = true
+		if state.status == "sailing" then self:CompleteShipRequest(playerId, state, "航行中無法維修船隻。") return end
+		local portId = self:GetPortIdFromMap(player.CurrentMapName)
+		if portId == "" or self:IsAtShop(player, portId) == false then self:CompleteShipRequest(playerId, state, "請在港口商人附近維修船隻。") return end
+		if _GreatVoyageVoyageData == nil then self:CompleteShipRequest(playerId, state, "維修資料尚未就緒。") return end
+		local ship = state.ship
+		local price = _GreatVoyageVoyageData:GetRepairQuote(ship)
+		local missing = (ship.maxHull - ship.hull) + (ship.maxShield - ship.shield) + (ship.maxArmor - ship.armor)
+		if missing <= 0 then self:CompleteShipRequest(playerId, state, "船隻狀態良好，不需要維修。") return end
+		if state.money < price then self:CompleteShipRequest(playerId, state, "金幣不足，完整維修需要 " .. tostring(price) .. " G。") return end
+		state.money = state.money - price
+		ship.hull = ship.maxHull
+		ship.shield = ship.maxShield
+		ship.armor = ship.maxArmor
+		state.hullDamage = 0
+		state.economyRevision = state.economyRevision + 1
+		state.economyMessage = "船隻已修復，花費 " .. tostring(price) .. " G。"
+		self:CompleteShipRequest(playerId, state, state.economyMessage)
+		log("[Ship] repaired player=" .. playerId .. " ship=" .. ship.id .. " cost=" .. tostring(price))
+	end
+
+	@ExecSpace("Server")
+	method void RepairStarterShip()
+		-- 免費修復新手船後，立即重算目前啟用船的衍生損傷。
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then return end
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		if player == nil then return end
+		local state = self:GetOrCreateState(playerId)
+		local ship = state.ship
+		state.shipRevision = state.shipRevision + 1
+		if state.status == "sailing" or self:GetPortIdFromMap(player.CurrentMapName) == "" then
+			state.shipMessage = "請回到港口維修，航行中無法修船。"
+		elseif ship.id ~= "small_sampan" then
+			state.shipMessage = "免費維修僅適用於新手小風帆。"
+		else
+			ship.hull = ship.maxHull
+			ship.shield = ship.maxShield
+			ship.armor = ship.maxArmor
+			state.hullDamage = math.max(0, ship.maxHull - ship.hull)
+			state.shipMessage = "小風帆已修復，花費 0 G。"
+			log("[Ship] repaired player=" .. playerId .. " cost=0")
+		end
+		self:PublishSnapshot(playerId, state)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void ApplyShipDamage(any state, number damage)
+		-- 船體受損後維持航程快照的衍生損傷與船況一致。
+		local ship = state.ship
+		local stats = ship.stats or {}
+		if (stats.dodgeChance or 0) > 0 and math.random() < stats.dodgeChance then
+			state.shipMessage = "偏折翼片閃開了敵方砲彈。"
+			state.shipRevision = state.shipRevision + 1
+			return
+		end
+		local remaining = math.max(0, damage)
+		local absorbed = math.min(ship.shield, remaining)
+		ship.shield = ship.shield - absorbed
+		remaining = remaining - absorbed
+		absorbed = math.min(ship.armor, remaining)
+		ship.armor = ship.armor - absorbed
+		remaining = remaining - absorbed
+		ship.hull = math.max(0, ship.hull - remaining)
+		state.hullDamage = math.max(0, ship.maxHull - ship.hull)
+		state.shipRevision = state.shipRevision + 1
+		if ship.id == "small_sampan" then
+			state.shipMessage = "小風帆受損；抵港後可免費維修。"
+		else
+			state.shipMessage = "T1 船隻受損；抵港可付費維修或更換其他船隻。"
+		end
 	end
 
 	@ExecSpace("Client")
 	method void ReceiveVoyageSnapshot(string snapshotPlayerId, string status, string originId, string destinationId, number distanceTravelled, number budgetRemaining, number pausedDistance, string pendingEncounterId, integer encounterCount, string cargoId, integer cargoQuantity, integer cargoBuyPrice, integer money, integer economyRevision, string economyMessage, number hullDamage, number remainingSeconds, integer raidRemaining, string lastReason)
 		-- 此 RPC 已由 Server 以最後一個 call-site 參數鎖定到該玩家。
-		local newDamage = math.max(0, hullDamage - self.clientSnapshotHullDamage)
 		local encounterChanged = pendingEncounterId ~= self.clientSnapshotPendingEncounterId
 		local raidChanged = raidRemaining ~= self.clientSnapshotRaidRemaining
 		local arrivedNow = status == "arrived" and self.clientSnapshotStatus ~= "arrived"
-		if newDamage > 0 and _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype:ApplyDamage(newDamage) end
 		self.clientSnapshotPlayerId = snapshotPlayerId
 		self.clientSnapshotStatus = status
 		self.clientSnapshotOriginId = originId
@@ -179,6 +804,10 @@ script GreatVoyageVoyageState extends Logic
 			remainingSeconds = self.clientSnapshotRemainingSeconds,
 			raidRemaining = self.clientSnapshotRaidRemaining,
 			lastReason = self.clientSnapshotLastReason,
+			ship = self.clientShip,
+			cardInventory = self.clientCardInventory or {},
+			cardInventoryRevision = self.clientCardInventoryRevision or 0,
+			ownedShips = self.clientOwnedShips,
 			route = route
 		}
 	end
@@ -194,6 +823,25 @@ script GreatVoyageVoyageState extends Logic
 		if mapName == "map_ludus_port" then return "ludus" end
 		if mapName == "map_nihal_port" then return "nihal" end
 		return ""
+	end
+
+	@ExecSpace("ServerOnly")
+	method void MovePlayerToPort(string playerId, string portId)
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		if player == nil or player.PlayerComponent == nil then return end
+		local targetMap = "map_orbis_port"
+		local targetPosition = Vector2(0, 0)
+		if portId == "forest" then
+			targetMap = "map_forest_port"
+			targetPosition = Vector2(5.5, -0.25)
+		elseif portId == "ludus" then
+			targetMap = "map_ludus_port"
+			targetPosition = Vector2(0, -0.45)
+		elseif portId == "nihal" then
+			targetMap = "map_nihal_port"
+			targetPosition = Vector2(0.7, -0.45)
+		end
+		player.PlayerComponent:MoveToMapPosition(targetMap, targetPosition)
 	end
 
 	method boolean IsNearOwnShip(Entity player, string portId)
@@ -239,13 +887,35 @@ script GreatVoyageVoyageState extends Logic
 			self:PublishSnapshot(playerId, state)
 			return
 		end
+		if state.ship.hull <= 0 then
+			if state.ship.id == "small_sampan" then
+				state.lastReason = "新手小風帆船體已損毀，請回港免費維修。"
+			else
+				state.lastReason = "船體已損毀，請改用其他可航行船隻。"
+			end
+			self:PublishSnapshot(playerId, state)
+			return
+		end
 		state.status = "sailing"
+		self:ClearLegacyEncounter(state)
+		state.voyageSequence = (state.voyageSequence or 0) + 1
+		state.airBattle = nil
+		state.airBattleCount = 0
+		state.nextAirBattleSegmentIndex = 1
+		state.segmentEncounterRolls = {}
+		state.regenGranted = 0
+		state.boilerHeatApplied = false
 		state.originId = route.originId
 		state.destinationId = route.destinationId
 		state.route = route
 		state.segments = route.segments
 		state.distanceTravelled = 0
 		state.budgetRemaining = route.distance
+		local stats = state.ship.stats or {}
+		local baseVoyageDuration = self.voyageDurationSeconds * (state.ship.durationMultiplier or 1)
+		local boilerSpeedBonus = math.max(0, stats.boilerSpeedBonus or 0)
+		state.baseVoyageDurationSeconds = baseVoyageDuration
+		state.voyageDurationSeconds = baseVoyageDuration * (1 - 0.2 * boilerSpeedBonus / (1 + boilerSpeedBonus))
 		state.elapsedSailingSeconds = 0
 		state.encounterCount = 0
 		state.raidRemaining = 0
@@ -258,10 +928,6 @@ script GreatVoyageVoyageState extends Logic
 		state.lastReason = "航程已開始"
 		self:PublishSnapshot(playerId, state)
 		log("[VoyageState] start player=" .. playerId .. " route=" .. state.originId .. "->" .. state.destinationId .. " distance=" .. tostring(route.distance))
-		if player.GreatVoyagePlayerAttack == nil then
-			local attack = player:AddComponent("script.GreatVoyagePlayerAttack")
-			if attack == nil then log_warning("[VoyageState] player attack component could not be added") end
-		end
 		if player.PlayerComponent ~= nil then player.PlayerComponent:MoveToMapPosition("map_airship_deck", Vector2(-0.5, -1.0)) end
 	end
 
@@ -285,6 +951,211 @@ script GreatVoyageVoyageState extends Logic
 			end
 		end
 		return state.route.distance * (state.encounterCount + 1) / (expectedCount + 1)
+	end
+
+	@ExecSpace("ServerOnly")
+	method number GetAirBattleTriggerDistance(any state, integer segmentIndex)
+		local segment = state.segments[segmentIndex]
+		if segment == nil or state.route == nil then return -1 end
+		-- 每個 SplitRoute 空域段只打一場，觸發點固定在該段的百分比中點。
+		return state.route.distance * (segment.startT + segment.finishT) * 0.5
+	end
+
+	@ExecSpace("ServerOnly")
+	method number GetSegmentEncounterChance(any state, any segment)
+		local stats = state.ship.stats or {}
+		local chance = 0.65 * (1 + (stats.encounterMultiplier or 0))
+		local airspaceId = segment.airspaceId or ""
+		if airspaceId == "open_sea" or airspaceId == "aqua" or string.find(airspaceId, "wind") ~= nil or string.find(airspaceId, "cloud") ~= nil then
+			chance = chance * (1 + (stats.fogEncounterMultiplier or 0))
+		end
+		local enemy = _GreatVoyageVoyageData:GetAirBattleDefinition(airspaceId)
+		if enemy ~= nil then
+			if enemy.id == "stirge" or enemy.id == "kiyo" then chance = chance * (1 + (stats.monsterEncounterMultiplier or 0)) end
+			if enemy.id == "star_pixie" then chance = chance * (1 + (stats.magicEncounterMultiplier or 0)) end
+		end
+		return math.max(0.1, math.min(0.95, chance))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void ApplyVoyageRegen(any state, number previousDistance, number nextDistance)
+		-- 依航程發放修復並同步衍生損傷，避免船況與航程快照不同步。
+		local stats = state.ship.stats or {}
+		if (stats.regenPercent or 0) <= 0 or state.ship.hull <= 0 or state.route == nil then return end
+		local routeDistance = math.max(0.000001, state.route.distance)
+		local targetGranted = (state.ship.baseHull or state.ship.maxHull) * stats.regenPercent * math.max(0, math.min(1, nextDistance / routeDistance))
+		local priorGranted = state.regenGranted or 0
+		local repair = math.max(0, targetGranted - priorGranted)
+		if repair > 0 then
+			local priorHull = state.ship.hull
+			state.ship.hull = math.min(state.ship.maxHull, state.ship.hull + repair)
+			state.hullDamage = math.max(0, state.ship.maxHull - state.ship.hull)
+			state.regenGranted = targetGranted
+			if state.ship.hull > priorHull then state.shipRevision = state.shipRevision + 1 end
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean ApplyVoyageCardProgress(string playerId, any state, number previousDistance, number nextDistance)
+		self:ApplyVoyageRegen(state, previousDistance, nextDistance)
+		local stats = state.ship.stats or {}
+		local boilerSpeedBonus = math.max(0, stats.boilerSpeedBonus or 0)
+		if boilerSpeedBonus > 0 and state.boilerHeatApplied ~= true and nextDistance >= state.route.distance * 0.2 then
+			state.boilerHeatApplied = true
+			local heatDamage = math.floor((state.ship.baseHull or state.ship.maxHull) * (stats.boilerHeatPercent or 0) + 0.5)
+			state.ship.hull = math.max(0, state.ship.hull - heatDamage)
+			state.hullDamage = math.max(0, state.ship.maxHull - state.ship.hull)
+			state.shipRevision = state.shipRevision + 1
+			if state.ship.hull <= 0 then
+				state.status = "sunk"
+				state.cargo = { id = "", quantity = 0, buyPrice = 0 }
+				state.economyRevision = state.economyRevision + 1
+				state.economyMessage = "船隻沉沒，船貨已全數遺失。"
+				state.lastReason = "鍋爐過熱使船體損毀，貨物已清空。"
+				self:MovePlayerToPort(playerId, state.originId)
+				self:PublishSnapshot(playerId, state)
+				return false
+			end
+		end
+		return true
+	end
+
+	@ExecSpace("ServerOnly")
+	method void BeginAirBattle(string playerId, any state, any segment, integer segmentIndex, number now)
+		if _GreatVoyageVoyageData == nil or segment == nil then return end
+		local enemy = _GreatVoyageVoyageData:GetAirBattleDefinition(segment.airspaceId)
+		if enemy == nil then
+			log_warning("[AirBattle] missing airspace pool player=" .. playerId .. " airspace=" .. tostring(segment.airspaceId))
+			return
+		end
+		state.airBattleCount = (state.airBattleCount or 0) + 1
+		local damage = math.max(1, math.floor(20 * (state.ship.cannonMultiplier or 1) + 0.5))
+		local stats = state.ship.stats or {}
+		local fireIntervalSeconds = 1
+		local flightSeconds = 0.6
+		local attacksToWin = math.ceil(enemy.maxHp / damage)
+		local durationSeconds = math.max(5, math.min(15, attacksToWin * fireIntervalSeconds + 1 + flightSeconds))
+		local voyageSequence = state.voyageSequence or 1
+		state.airBattle = {
+			id = playerId .. "_voyage_" .. tostring(voyageSequence) .. "_battle_" .. tostring(state.airBattleCount),
+			phase = "active",
+			outcome = "",
+			airspaceId = segment.airspaceId,
+			enemyId = enemy.id,
+			enemyName = enemy.name,
+			enemyHp = enemy.maxHp,
+			enemyMaxHp = enemy.maxHp,
+			enemyDamage = math.max(1, math.floor(enemy.attackDamage * (1 + (stats.incomingDamageMultiplier or 0)) + 0.5)),
+			enemyAttackIntervalSeconds = math.max(1, enemy.attackIntervalSeconds),
+			playerDamage = damage,
+			playerAttackIntervalSeconds = fireIntervalSeconds,
+			flightSeconds = flightSeconds,
+			playerShotSequence = 0,
+			enemyShotSequence = 0,
+			lastPlayerShotAt = nil,
+			lastEnemyShotAt = nil,
+			playerImpactAt = nil,
+			enemyImpactAt = nil,
+			nextPlayerAttackAt = now + fireIntervalSeconds,
+			nextEnemyAttackAt = now + enemy.attackIntervalSeconds,
+			startedAt = now,
+			endsAt = now + durationSeconds,
+			segmentIndex = segmentIndex,
+			settled = false
+		}
+		state.lastReason = "進入" .. (segment.shortName or segment.displayName or "空域") .. "，自動空戰開始"
+		log("[AirBattle] started player=" .. playerId .. " id=" .. state.airBattle.id .. " airspace=" .. segment.airspaceId .. " enemy=" .. enemy.id .. " segment=" .. tostring(segmentIndex))
+		self:PublishSnapshot(playerId, state)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void FinalizeAirBattle(string playerId, any state, any battle, string phase, number now)
+		if battle == nil or battle.settled == true or state.airBattle ~= battle or (phase ~= "won" and phase ~= "sunk") then return end
+		battle.settled = true
+		battle.phase = phase
+		battle.outcome = phase
+		battle.endedAt = now
+		if phase == "sunk" then
+			state.status = "sunk"
+			state.cargo = { id = "", quantity = 0, buyPrice = 0 }
+			state.economyRevision = state.economyRevision + 1
+			state.economyMessage = "沉船，船貨已全數遺失。"
+			state.lastReason = "空戰沉船，貨物已清空並返回出發港；T0 小風帆可免費維修。"
+			self:MovePlayerToPort(playerId, state.originId)
+		else
+			state.lastAdvanceAt = now
+			state.lastReason = "空戰勝利，航程繼續"
+		end
+		self:PublishSnapshot(playerId, state)
+		log("[AirBattle] settled player=" .. playerId .. " id=" .. battle.id .. " outcome=" .. phase .. " hull=" .. tostring(state.ship.hull))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void AdvanceAirBattle(string playerId, any state, number now)
+		local battle = state.airBattle
+		if state.status ~= "sailing" or battle == nil or battle.phase ~= "active" or battle.settled == true then return end
+		local simulationTime = math.min(now, battle.endsAt)
+		local iterations = 0
+		local changed = false
+		while battle.phase == "active" and iterations < 32 do
+			if state.ship.hull <= 0 then
+				self:FinalizeAirBattle(playerId, state, battle, "sunk", now)
+				return
+			end
+			-- Preserve the previous player-first tie order; hull already at zero always sinks above.
+			local nextEventAt = simulationTime + 1
+			local nextEvent = ""
+			if battle.playerImpactAt ~= nil and battle.playerImpactAt < nextEventAt then nextEventAt = battle.playerImpactAt nextEvent = "player_impact" end
+			if battle.enemyImpactAt ~= nil and battle.enemyImpactAt < nextEventAt - 0.000001 then nextEventAt = battle.enemyImpactAt nextEvent = "enemy_impact" end
+			if battle.nextPlayerAttackAt < nextEventAt - 0.000001 then nextEventAt = battle.nextPlayerAttackAt nextEvent = "player_launch" end
+			if battle.nextEnemyAttackAt < nextEventAt - 0.000001 then nextEventAt = battle.nextEnemyAttackAt nextEvent = "enemy_launch" end
+			if nextEvent == "" or nextEventAt > simulationTime then break end
+			iterations = iterations + 1
+			if nextEvent == "enemy_impact" then
+				battle.enemyImpactAt = nil
+				self:ApplyShipDamage(state, battle.enemyDamage)
+				state.hullDamage = math.max(0, state.ship.maxHull - state.ship.hull)
+				changed = true
+				if state.ship.hull <= 0 then
+					self:FinalizeAirBattle(playerId, state, battle, "sunk", now)
+					return
+				end
+			elseif nextEvent == "player_impact" then
+				battle.playerImpactAt = nil
+				battle.enemyHp = math.max(0, battle.enemyHp - battle.playerDamage)
+				changed = true
+				if battle.enemyHp <= 0 then
+					self:FinalizeAirBattle(playerId, state, battle, "won", now)
+					return
+				end
+			elseif nextEvent == "enemy_launch" then
+				battle.enemyShotSequence = battle.enemyShotSequence + 1
+				battle.lastEnemyShotAt = nextEventAt
+				battle.enemyImpactAt = nextEventAt + battle.flightSeconds
+				battle.nextEnemyAttackAt = nextEventAt + battle.enemyAttackIntervalSeconds
+				changed = true
+			else
+				battle.playerShotSequence = battle.playerShotSequence + 1
+				battle.lastPlayerShotAt = nextEventAt
+				battle.playerImpactAt = nextEventAt + battle.flightSeconds
+				battle.nextPlayerAttackAt = nextEventAt + battle.playerAttackIntervalSeconds
+				changed = true
+			end
+		end
+		if battle.phase == "active" and state.ship.hull <= 0 then
+			self:FinalizeAirBattle(playerId, state, battle, "sunk", now)
+			return
+		end
+		if battle.phase == "active" and now >= battle.endsAt
+			and battle.nextPlayerAttackAt > battle.endsAt
+			and battle.nextEnemyAttackAt > battle.endsAt
+			and (battle.playerImpactAt == nil or battle.playerImpactAt > battle.endsAt)
+			and (battle.enemyImpactAt == nil or battle.enemyImpactAt > battle.endsAt) then
+			-- 已按時間順序補完戰鬥期限內的攻擊，存活才可視為逼退敵人。
+			self:FinalizeAirBattle(playerId, state, battle, "won", now)
+			return
+		end
+		if changed then self:PublishSnapshot(playerId, state) end
 	end
 
 	method string GetShopMerchantPath(string portId)
@@ -327,10 +1198,12 @@ script GreatVoyageVoyageState extends Logic
 
 	@ExecSpace("Server")
 	method void BuyGood(string goodId, integer quantity)
+		-- 驗證商品、數量與總價後才扣款，避免超過貨艙或錢包整數範圍。
 		local playerId = senderUserId
 		if playerId == nil or playerId == "" then return end
 		local state = self:GetOrCreateState(playerId)
-		if quantity < 1 or quantity > 8 then self:CompleteEconomyRequest(playerId, state, "交易數量無效（1–8 件）。") return end
+		local cargoCapacity = math.max(0, state.ship.cargoCapacity or 0)
+		if quantity < 1 or quantity > cargoCapacity then self:CompleteEconomyRequest(playerId, state, "交易數量超出貨艙容量。") return end
 		if state.status == "sailing" then self:CompleteEconomyRequest(playerId, state, "航行中無法交易。") return end
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		local portId = ""
@@ -347,6 +1220,7 @@ script GreatVoyageVoyageState extends Logic
 		end
 		if good == nil or good.price <= 0 then self:CompleteEconomyRequest(playerId, state, "該商品不在本港貨架上。") return end
 		local total = good.price * quantity
+		if total > 2147483647 then self:CompleteEconomyRequest(playerId, state, "交易總價超出金幣整數上限。") return end
 		if state.money < total then self:CompleteEconomyRequest(playerId, state, "金幣不足，需要 " .. tostring(total) .. " G。") return end
 		state.money = state.money - total
 		state.cargo = { id = good.id, quantity = quantity, buyPrice = good.price }
@@ -356,6 +1230,7 @@ script GreatVoyageVoyageState extends Logic
 
 	@ExecSpace("Server")
 	method void SellCargo()
+		-- 保留貨物為交易原子性單位，避免收入使同步金幣超過 signed 32-bit 上限。
 		local playerId = senderUserId
 		if playerId == nil or playerId == "" then return end
 		local state = self:GetOrCreateState(playerId)
@@ -366,77 +1241,50 @@ script GreatVoyageVoyageState extends Logic
 		if portId == "" or self:IsAtShop(player, portId) == false then self:CompleteEconomyRequest(playerId, state, "請在港口商人附近交易。") return end
 		if _GreatVoyageVoyageData == nil then self:CompleteEconomyRequest(playerId, state, "商品資料尚未就緒。") return end
 		local cargo = state.cargo
-		if cargo == nil or cargo.quantity < 1 or cargo.quantity > 8 then self:CompleteEconomyRequest(playerId, state, "貨艙目前沒有可賣出的貨物。") return end
+		if cargo == nil or cargo.quantity < 1 or cargo.quantity > state.ship.cargoCapacity then self:CompleteEconomyRequest(playerId, state, "貨艙目前沒有可賣出的貨物。") return end
 		local good = _GreatVoyageVoyageData:GetGoodById(cargo.id)
 		local salePrice = _GreatVoyageVoyageData:GetSalePrice(portId, cargo.id)
 		if good == nil or salePrice <= 0 then self:CompleteEconomyRequest(playerId, state, "貨物資料無效，交易已拒絕。") return end
 		local total = salePrice * cargo.quantity
+		if total > 2147483647 or state.money > 2147483647 - total then self:CompleteEconomyRequest(playerId, state, "交易收入會超出金幣整數上限，請先使用金幣。") return end
 		local profit = (salePrice - (cargo.buyPrice or 0)) * cargo.quantity
 		state.money = state.money + total
 		state.cargo = { id = "", quantity = 0, buyPrice = 0 }
-		self:CompleteEconomyRequest(playerId, state, "賣出 " .. good.displayName .. " ×" .. tostring(cargo.quantity) .. "，收入 " .. tostring(total) .. " G；價差 " .. tostring(profit) .. " G。")
+		self:CompleteEconomyRequest(playerId, state, "賣出 " .. good.displayName .. " ×" .. tostring(cargo.quantity) .. "，收入 " .. tostring(total) .. " G。")
 		log("[VoyageState] server sell player=" .. playerId .. " port=" .. portId .. " good=" .. good.id .. " qty=" .. tostring(cargo.quantity) .. " revenue=" .. tostring(total) .. " profit=" .. tostring(profit))
 	end
 
 	@ExecSpace("ServerOnly")
 	method void StartRaidEncounter(string playerId, any state)
-		local parent = _EntityService:GetEntityByPath("/maps/map_airship_deck")
-		if parent == nil then
-			log_warning("[VoyageState] raid map missing")
-			return
-		end
+		-- 舊甲板襲擊已退休；保留方法簽名供歷史元件相容，不再生成怪物。
+	end
+
+	@ExecSpace("ServerOnly")
+	method void ClearLegacyEncounter(any state)
+		-- 先關閉事件，再移除舊怪物，避免 Destroy 回呼重複結算。
+		state.pendingEncounter = nil
 		state.raidRemaining = 0
-		state.raidEnemies = {}
-		for index, x in ipairs({ -3.2, -2.2, -1.2 }) do
-			local monster = _SpawnService:SpawnByModelId("greatvoyagedeckmushroom", "DeckMushroom_" .. playerId .. "_" .. tostring(index), Vector3(x, -1.0, 0), parent)
-			if monster ~= nil and monster.GreatVoyageDeckMushroom ~= nil then
-				monster.GreatVoyageDeckMushroom.ownerPlayerId = playerId
-				monster.GreatVoyageDeckMushroom.encounterId = state.pendingEncounter.id
-				if monster.HitComponent ~= nil then monster.HitComponent.CollisionGroup = CollisionGroups.Monster end
-				if monster.SpriteRendererComponent ~= nil then
-					monster.SpriteRendererComponent.SortingLayer = "MapLayer3"
-					monster.SpriteRendererComponent.OrderInLayer = 100
-				end
-				state.raidRemaining = state.raidRemaining + 1
-				table.insert(state.raidEnemies, monster)
-				log("[VoyageState] raid monster=" .. tostring(index) .. " x=" .. tostring(monster.TransformComponent.WorldPosition.x))
-			end
+		state.pausedDistance = 0
+		state.encounterCount = 0
+		for _, enemy in ipairs(state.raidEnemies or {}) do
+			if isvalid(enemy) then enemy:Destroy(0) end
 		end
-		log("[VoyageState] raid spawned player=" .. playerId .. " count=" .. tostring(state.raidRemaining))
+		state.raidEnemies = {}
 	end
 
 	@ExecSpace("ServerOnly")
 	method void MarkRaidEnemyRemoved(string playerId, string encounterId)
-		local state = self.voyageByPlayer[playerId]
-		if state == nil or state.pendingEncounter == nil or state.pendingEncounter.id ~= encounterId then return end
-		if state.pendingEncounter.card == nil or state.pendingEncounter.card.id ~= "victoria_mushroom_raid" then return end
-		state.raidRemaining = math.max(0, state.raidRemaining - 1)
-		if state.raidRemaining == 0 then
-			state.pendingEncounter = nil
-			state.pausedDistance = 0
-			state.encounterCount = state.encounterCount + 1
-			state.raidEnemies = {}
-			state.lastReason = "菇菇襲擊已結束，航程持續中"
-			log("[VoyageState] raid cleared player=" .. playerId)
-		end
-		self:PublishSnapshot(playerId, state)
+		-- 舊怪物移除通知不再結算航行事件。
 	end
 
 	@ExecSpace("ServerOnly")
 	method void ApplyRaidDamage(string playerId, string encounterId)
-		local state = self.voyageByPlayer[playerId]
-		if state == nil or state.pendingEncounter == nil or state.pendingEncounter.id ~= encounterId then return end
-		if state.pendingEncounter.card == nil or state.pendingEncounter.card.id ~= "victoria_mushroom_raid" then return end
-		local now = _UtilLogic.ServerElapsedSeconds
-		if state.lastRaidDamageAt >= 0 and now - state.lastRaidDamageAt < 2.5 then return end
-		state.lastRaidDamageAt = now
-		state.hullDamage = state.hullDamage + 4
-		state.lastReason = "菇菇撞擊船體，損傷 +4"
-		self:PublishSnapshot(playerId, state)
+		-- 舊襲擊完全停用；殘留回呼不得再扣船體或觸發新戰鬥。
 	end
 
 	@ExecSpace("Server")
 	method void AdvanceVoyage(number distance)
+		-- 以伺服器航程進度推進；100% 時歸一到完整航距，避免浮點誤差阻止抵港。
 		local playerId = senderUserId
 		if playerId == nil or playerId == "" then return end
 		local state = self:GetOrCreateState(playerId)
@@ -447,54 +1295,76 @@ script GreatVoyageVoyageState extends Logic
 		end
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		if player == nil or player.CurrentMapName ~= "map_airship_deck" then return end
+		if state.pendingEncounter ~= nil or state.raidRemaining > 0 or #(state.raidEnemies or {}) > 0 then self:ClearLegacyEncounter(state) end
 		if distance ~= distance or distance <= 0 then
 			state.lastReason = "前進距離必須大於零"
 			self:PublishSnapshot(playerId, state)
 			return
 		end
 		local now = _UtilLogic.ServerElapsedSeconds
+		if state.airBattle ~= nil and state.airBattle.phase == "active" then
+			state.lastAdvanceAt = now
+			return
+		end
 		if state.lastAdvanceAt < 0 then state.lastAdvanceAt = now end
 		local elapsed = now - state.lastAdvanceAt
 		if elapsed < 0.4 then return end
 		state.lastAdvanceAt = now
-		-- distance 僅保留舊公開介面；實際航速由伺服器時鐘與固定 60 秒航程決定。
+		-- distance 僅保留舊公開介面；實際航速依本航次鎖定的基礎航程×船型／改裝倍率計算。
 		-- 單次最多計入 2 秒，防止載入卡頓或惡意請求使航程瞬間跳完。
-		state.elapsedSailingSeconds = math.min(self.voyageDurationSeconds, state.elapsedSailingSeconds + math.max(0, math.min(elapsed, 2)))
-		local targetDistance = state.route.distance * state.elapsedSailingSeconds / self.voyageDurationSeconds
-		local expectedCount = state.route.expectedEncounterCount or state.route.expectedEncounter or 0
-		local nextEncounterDistance = self:GetNextEncounterDistance(state, expectedCount)
-		if state.pendingEncounter == nil and state.encounterCount < expectedCount and state.distanceTravelled < nextEncounterDistance and targetDistance >= nextEncounterDistance then
-			state.distanceTravelled = targetDistance
-			state.budgetRemaining = math.max(0, state.route.distance - targetDistance)
-			state.pausedDistance = nextEncounterDistance
-			local segment = self:GetSegmentForDistance(state, nextEncounterDistance)
-			local card = nil
-			if _GreatVoyageVoyageData ~= nil and segment ~= nil then card = _GreatVoyageVoyageData:GetEncounterCard(segment.airspaceId, state.encounterCount + 1) end
-			state.pendingEncounter = { id = "cloud_encounter_" .. tostring(state.encounterCount + 1), distance = nextEncounterDistance, airspaceId = segment and segment.airspaceId or "open_sea", card = card, risk = state.route.risk, expectedEncounter = expectedCount }
-			state.raidRemaining = 0
-			if card ~= nil and card.id == "victoria_mushroom_raid" then self:StartRaidEncounter(playerId, state) end
-			state.lastReason = "遭遇事件，倒數持續"
-			self:PublishSnapshot(playerId, state)
-			log("[VoyageState] encounter player=" .. playerId .. " distance=" .. tostring(nextEncounterDistance) .. " remaining=" .. tostring(self.voyageDurationSeconds - state.elapsedSailingSeconds))
-			return
+		local voyageDuration = state.voyageDurationSeconds or self.voyageDurationSeconds
+		local targetElapsed = math.min(voyageDuration, state.elapsedSailingSeconds + math.max(0, math.min(elapsed, 2)))
+		local targetDistance = state.route.distance * targetElapsed / voyageDuration
+		local stats = state.ship.stats or {}
+		local boilerSpeedBonus = math.max(0, stats.boilerSpeedBonus or 0)
+		if boilerSpeedBonus > 0 then
+			local baseDuration = state.baseVoyageDurationSeconds or voyageDuration
+			local boostEndTime = baseDuration * 0.2 / (1 + boilerSpeedBonus)
+			local progressRatio = 0.2 + math.max(0, targetElapsed - boostEndTime) / baseDuration
+			if targetElapsed <= boostEndTime then progressRatio = targetElapsed * (1 + boilerSpeedBonus) / baseDuration end
+			targetDistance = state.route.distance * math.min(1, progressRatio)
 		end
+		if targetElapsed >= voyageDuration then targetDistance = state.route.distance end
+		local previousDistance = state.distanceTravelled
+		local nextSegmentIndex = state.nextAirBattleSegmentIndex or 1
+		while nextSegmentIndex <= #(state.segments or {}) do
+			local triggerDistance = self:GetAirBattleTriggerDistance(state, nextSegmentIndex)
+			if triggerDistance < 0 or targetDistance < triggerDistance then break end
+			local segment = state.segments[nextSegmentIndex]
+			local encounterOccurred = math.random() < self:GetSegmentEncounterChance(state, segment)
+			state.segmentEncounterRolls[nextSegmentIndex] = encounterOccurred
+			state.nextAirBattleSegmentIndex = nextSegmentIndex + 1
+			if encounterOccurred then
+				local distanceRatio = triggerDistance / state.route.distance
+				if boilerSpeedBonus > 0 then
+					local baseDuration = state.baseVoyageDurationSeconds or voyageDuration
+					local boostEndTime = baseDuration * 0.2 / (1 + boilerSpeedBonus)
+					if distanceRatio <= 0.2 then
+						state.elapsedSailingSeconds = distanceRatio * baseDuration / (1 + boilerSpeedBonus)
+					else
+						state.elapsedSailingSeconds = boostEndTime + (distanceRatio - 0.2) * baseDuration
+					end
+				else
+					state.elapsedSailingSeconds = voyageDuration * distanceRatio
+				end
+				state.distanceTravelled = triggerDistance
+				state.budgetRemaining = math.max(0, state.route.distance - triggerDistance)
+				if self:ApplyVoyageCardProgress(playerId, state, previousDistance, triggerDistance) == false then return end
+				self:BeginAirBattle(playerId, state, segment, nextSegmentIndex, now)
+				return
+			end
+			state.lastReason = "通過" .. (segment.shortName or segment.displayName or "空域") .. "，沒有遭遇敵人"
+			nextSegmentIndex = state.nextAirBattleSegmentIndex
+		end
+		if self:ApplyVoyageCardProgress(playerId, state, previousDistance, targetDistance) == false then return end
+		state.elapsedSailingSeconds = targetElapsed
 		state.distanceTravelled = targetDistance
 		state.budgetRemaining = math.max(0, state.route.distance - targetDistance)
 		if state.distanceTravelled >= state.route.distance then
 			state.status = "arrived"
-			if state.pendingEncounter ~= nil then
-				state.encounterCount = state.encounterCount + 1
-				log("[VoyageState] survived encounter player=" .. playerId .. " id=" .. state.pendingEncounter.id)
-			end
-			-- 先關閉事件再移除怪物，避免 Destroy 回呼將同一事件重複結算。
-			state.pendingEncounter = nil
-			state.raidRemaining = 0
-			for _, enemy in ipairs(state.raidEnemies or {}) do
-				if isvalid(enemy) then enemy:Destroy(0) end
-			end
-			state.raidEnemies = {}
-			state.pausedDistance = 0
-			state.lastReason = "已抵達目的港；甲板遭遇已結算"
+			self:ClearLegacyEncounter(state)
+			state.lastReason = "已抵達目的港"
+			log("[VoyageState] arrived player=" .. playerId .. " destination=" .. state.destinationId .. " legacyEvents=disabled")
 			local targetMap = "map_orbis_port"
 			local targetPosition = Vector2(0, 0)
 			if state.destinationId == "forest" then
@@ -517,40 +1387,7 @@ script GreatVoyageVoyageState extends Logic
 
 	@ExecSpace("Server")
 	method void ResolveEncounter(string outcome)
-		local playerId = senderUserId
-		if playerId == nil or playerId == "" then return end
-		local state = self:GetOrCreateState(playerId)
-		if state.status ~= "sailing" or state.route == nil then return end
-		local player = _UserService:GetUserEntityByUserId(playerId)
-		if player == nil or player.CurrentMapName ~= "map_airship_deck" then return end
-		if outcome ~= "deck_resolved" then return end
-		local position = player.TransformComponent.WorldPosition
-		local wheelX = position.x - 0.35
-		local wheelY = position.y + 1.55
-		if wheelX * wheelX + wheelY * wheelY > 0.95 * 0.95 then
-			state.lastReason = "請靠近舵輪處理遭遇事件"
-			self:PublishSnapshot(playerId, state)
-			return
-		end
-		if state.pendingEncounter == nil then
-			state.lastReason = "目前沒有待處理事件"
-			self:PublishSnapshot(playerId, state)
-			return
-		end
-		if state.pendingEncounter.card ~= nil and state.pendingEncounter.card.id == "victoria_mushroom_raid" and state.raidRemaining > 0 then
-			state.lastReason = "先擊退甲板菇菇，或撐到抵港"
-			self:PublishSnapshot(playerId, state)
-			return
-		end
-		local encounterId = state.pendingEncounter.id
-		state.pendingEncounter = nil
-		state.raidRemaining = 0
-		state.pausedDistance = 0
-		state.encounterCount = state.encounterCount + 1
-		state.lastReason = "事件 " .. encounterId .. " 已處理：" .. outcome
-		log("[VoyageState] encounter resolved player=" .. playerId .. " outcome=" .. outcome)
-		if state.distanceTravelled >= state.route.distance then state.status = "arrived" end
-		self:PublishSnapshot(playerId, state)
+		-- 舊舵輪 RPC 已退休；不改航行狀態，也不能干預後續的新戰鬥。
 	end
 
 	@ExecSpace("ClientOnly")

@@ -1,0 +1,50 @@
+{
+  "kind": "approved_design_mockups",
+  "approved_by": "user",
+  "approved_at": "2026-10-03T17:29:00+08:00",
+  "runtime_evidence": false,
+  "comparison_status": "awaiting_final_Maker_screenshots",
+  "assets": [
+    {
+      "file": "01-shop.png",
+      "page": "商店",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-97004efb-11a6-4fe4-97c7-df547ff229db.png",
+      "sha256": "CAEDC068BB79D4982629F635D5A9F85566811ED061291AE42D2AE53CDA2978A9",
+      "tool": "image_gen.imagegen",
+      "transparent_background": false
+    },
+    {
+      "file": "02-map.png",
+      "page": "航圖",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-67ff5501-bd35-4474-84b5-d71871731f56.png",
+      "sha256": "AFBF203FDA8A0813280DBCFB563797EB5FD972DB4DE7D280DBFBD2FDA2F242E6",
+      "tool": "image_gen.imagegen",
+      "transparent_background": false
+    },
+    {
+      "file": "03-ships.png",
+      "page": "船舶",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-53c14a1c-b03f-4917-acca-ba7503cbd480.png",
+      "sha256": "DBC08534BCC9F19F4E890946484A906A2F6DE87786D7B81E3968829E503C5D23",
+      "tool": "image_gen.imagegen",
+      "transparent_background": false
+    },
+    {
+      "file": "04-fitting.png",
+      "page": "改裝",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-2266bbb6-036c-4199-84e1-333551ded775.png",
+      "sha256": "7F20FD7503C77038C2595C4F41F881219EF74FDF87A21F74F8384985FCC556B0",
+      "tool": "image_gen.imagegen",
+      "transparent_background": false
+    },
+    {
+      "file": "05-cabin.png",
+      "page": "船艙",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-5b4b89e8-a582-42ff-bf69-4c9f694e7ab3.png",
+      "sha256": "04CA492D06FD050C666878777FFF79E5E1D7B0E16AD4C969D2AFAE4C834F3861",
+      "tool": "image_gen.imagegen",
+      "transparent_background": false
+    }
+  ]
+}
+

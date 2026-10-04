@@ -1,0 +1,33 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "codeblock://d44efbe5-43d2-43e7-8d2a-27352c7d54b6",
+  "ContentType": "x-mod/codeblock",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.7.0.0",
+  "StudioVersion": "",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "CoreVersion": {
+        "Major": 0,
+        "Minor": 2
+      },
+      "ScriptVersion": {
+        "Major": 1,
+        "Minor": 1
+      },
+      "Description": "",
+      "Id": "d44efbe5-43d2-43e7-8d2a-27352c7d54b6",
+      "Language": 1,
+      "Name": "GVShipDeckBounds",
+      "Type": 1,
+      "Source": 0,
+      "Target": null
+    }
+  }
+}

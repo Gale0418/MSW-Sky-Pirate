@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "generationTool": "image_gen.imagegen",
+  "promptProvenance": "Exact prompts from current generation calls",
+  "entries": [
+    {
+      "id": "oak",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-52d8e094-dd43-4797-9195-7879902169fb.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v1/oak.png",
+      "prompt": "Create ONE finished raster game UI background texture asset, landscape aspect ratio exactly 17:13, for a 1360 by 1040 UI window in a whimsical MapleStory-inspired 2D flying pirate trading game. Stylized hand-painted cozy fantasy game art, clean rounded outlines and subtle painted shading. A rectangular sturdy honey oak wooden notice-board made of many DIFFERENT horizontal planks: warm amber, pale golden oak, caramel, varied natural gentle wood grain, occasional subdued knots, distinct joints. Thin dark wood beveled outer frame occupying only the outer 4 percent, a few small brass nails at corners. The central 90 percent is a quiet light medium golden wooden surface with visible but low-contrast plank material texture so dark native UI text and colorful upgrade cards remain readable. Even frontal orthographic view, no perspective. Beautiful artisan wood rather than uniform flat color. NO items, cards, icons, ships, characters, lettering, numbers, logo or watermark. NO baked UI controls. No paper panels or white overlays. Fill the whole canvas with the board, opaque background. Production-ready single shop backdrop.",
+      "transparent": false,
+      "bytes": 1751712,
+      "sha256": "43dad9ed05d07246d5a169b4904762a0ad430d25b1597ea5b059b65af8512824",
+      "width": 1436,
+      "height": 1095,
+      "pngColorType": 2
+    },
+    {
+      "id": "walnut",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-c65f092a-8ae0-45e2-a83f-7ae797ffb283.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v1/walnut.png",
+      "prompt": "Create ONE finished raster game UI background texture asset, landscape aspect ratio 17:13, used at 1360 by 1040 UI units. A MapleStory-inspired whimsical 2D flying pirate game's ship outfitter workbench backdrop. Front-on rectangular board of DIFFERENT weathered walnut and reddish cedar vertical planks: medium chestnut, warm russet, gently sun-bleached grey brown, distinct plank joints, subtle grain, occasional knots, no excessively dark stripes. Rich artisan timber tactile material, stylized hand-painted clean fantasy cartoon outlines. Thin deep walnut beveled frame and modest brass corner rivets limited to outer 4 percent. Broad interior must be medium warm light chestnut with restrained wood texture; do not make it near-black, to support dark game text and colorful upgrade cards. Warm diffuse even light, shallow dimensional shading only, orthographic front view. Different from honey oak horizontal shop board. NO items, tools, cards, icons, characters, ships, lettering, logo, watermarks, paper panels or controls. Fill entire image, opaque. This is a functional legible UI background, quiet center.",
+      "transparent": false,
+      "bytes": 2009428,
+      "sha256": "c364bd374d61f5f89f644b2ecbcdbbb27d6cb092e036ac2ab636a306ba9d68f0",
+      "width": 1439,
+      "height": 1093,
+      "pngColorType": 2
+    },
+    {
+      "id": "parchment",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-f82e0c77-0534-4133-a0dd-21360d024cf1.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v1/parchment.png",
+      "prompt": "Create ONE finished blank parchment nautical game UI backdrop, landscape ratio exactly 17:13, for 1360 by 1040 UI window. MapleStory-inspired whimsical hand-painted 2D sky pirate game interface asset. A full rectangular sheet of beautiful antique ivory cream parchment, tactile paper fibers, very subtle uneven warm ivory tones, gentle old fold traces, browned aged outer edges, tiny paper nicks and modest curled corners. The central 90 percent stays pale cream and clean with LOW CONTRAST texture so a separate existing world map and native dark UI text remain readable. Outer aged edging within 4 percent only. One extremely faint sepia eight-point compass rose WATERMARK in bottom left within a small peripheral region, no lettering; a few almost imperceptible bearing lines peripheral only. Straight orthographic front view, no table or wooden surface, no background shadows outside the sheet, canvas filled by opaque parchment. NO drawn islands, coastlines, geographical map, port markers, pins, routes, arrows, symbols in central area, lettering, labels, logo, watermark branding or UI controls. This is the blank backing UNDER an existing geographical chart, not a new map. Soft charming illustrated fantasy paper texture, subtle shading.",
+      "transparent": false,
+      "bytes": 2055160,
+      "sha256": "c50fe76b502e0b46996837ba74c0a862e5bf6cc3d20569a29837cd67a177c45a",
+      "width": 1435,
+      "height": 1096,
+      "pngColorType": 2
+    },
+    {
+      "id": "pin",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-0485c4fb-1a66-4338-bd49-057ba75f0e40.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v1/pin.png",
+      "prompt": "Create ONE isolated game UI icon on a genuinely transparent background: an elegant charming nautical chart pushpin, for a whimsical MapleStory-inspired hand-painted 2D sky pirate game. A small ruby-red domed round enamel pin head encircled by a thick antique brass gold rim with a simple embossed gold anchor symbol, then a SHORT tapered brass needle directly below pointing straight down. Frontal view with slight shallow depth and subtle highlight, bold clean dark brown cartoon outline, readable at 40 pixels. Entire pin fits within central 75 percent of square canvas with generous transparent margin, needle tip exactly along vertical center line near lower quarter; circle clearly marks exact chart location with tip. Warm small illustrated artifact, no scene, no map, no text, no logo, no watermark, no shadows across full canvas. Do not put a disk or square background behind icon. Single reusable port pin only.",
+      "transparent": true,
+      "bytes": 484246,
+      "sha256": "14f3008f6db6c96c167855167307fcbddf219817c2f897e71291b59b9fb6d3bc",
+      "width": 1254,
+      "height": 1254,
+      "pngColorType": 6
+    },
+    {
+      "id": "arrow",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-ea44af51-0fd0-43cd-bd84-e944b188bc7b.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v1/arrow.png",
+      "prompt": "Create ONE isolated horizontal right-pointing nautical route arrow game UI icon on a truly transparent background. Stylized hand-painted whimsical MapleStory-inspired 2D fantasy sky-pirate chart emblem. A slender long antique brass navigation spear arrow with elegant dark sepia edging: a clear elongated pointed arrowhead on the RIGHT, straight narrow shaft reaching toward the LEFT, tiny compass-inspired notched tail on left. Slight warm golden highlight with firm dark outline for readability over a busy map. Silhouette wider than high, occupies about 80 percent width and 30 percent height of square canvas, centered exactly horizontally. It must point clearly RIGHT and not resemble a double-ended arrow, circle, ship, scene or button. Restrained fine maritime engraving inside arrowhead, readable when reduced to 60 pixels wide. No lettering, numbers, text, logo, watermark, background, frames, full-canvas shadows, map, paper or other objects. Single directional marker, generous transparent margins.",
+      "transparent": true,
+      "bytes": 1084917,
+      "sha256": "08b973055180915a417965c04fbe97785460805f33dfad9ac0c3fc19f43ffeef",
+      "width": 2048,
+      "height": 768,
+      "pngColorType": 6
+    }
+  ]
+}

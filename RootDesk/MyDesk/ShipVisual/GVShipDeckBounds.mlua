@@ -1,0 +1,209 @@
+@Component
+script GVShipDeckBounds extends Component
+
+-- Shared world-space bounds for the five similarly sized ships.
+property number leftBound = -3.92
+property number rightBound = -0.04
+property number footholdY = -1.462
+property number recoveryX = -1.98
+-- The avatar root/foot offset is intentionally tunable after Maker measurement.
+property number recoveryY = -1.30
+property number fallRecoveryDrop = 1.70
+property number fallRecoveryDelay = 0.65
+property number boundsMargin = 0.10
+property number checkInterval = 0.20
+
+-- Server-local runtime state, keyed by the player Entity instance.
+property table previousVerticalBlockByEntity = {}
+property table lastSafePositionByEntity = {}
+property table fallTimerByEntity = {}
+property number elapsed = 0
+-- Client-local settings are tracked separately; they are never synchronized.
+property table previousClientFlagsByEntity = {}
+property number clientElapsed = 0
+
+method void OnBeginPlay()
+	-- Initialize separate server recovery and owning-client collision state.
+	if self:IsServer() then
+		self.elapsed = 0
+		log("[GVShipDeckBounds] active bounds x=" .. self.leftBound .. ".." .. self.rightBound .. " floorY=" .. self.footholdY)
+	end
+	if self:IsClient() then
+		self.clientElapsed = 0
+	end
+end
+
+method void OnUpdate(number delta)
+	-- Poll this map's players and restore collision flags after map transitions.
+	if self:IsServer() then
+		self.elapsed = self.elapsed + delta
+		if self.elapsed >= self.checkInterval then
+			self.elapsed = 0
+
+			local deckPlayers = _UserService:GetUsersByMapName("map_airship_deck")
+			local presentPlayers = {}
+			if deckPlayers ~= nil then
+				for _, playerEntity in pairs(deckPlayers) do
+					self:TrackDeckPlayer(playerEntity, presentPlayers)
+				end
+			end
+
+			-- Restore the per-player body setting as soon as the player leaves this map.
+			for playerEntity, previousValue in pairs(self.previousVerticalBlockByEntity) do
+				if not presentPlayers[playerEntity] then
+					if isvalid(playerEntity) then
+						local body = playerEntity.RigidbodyComponent
+						if body ~= nil then
+							body.IsBlockVerticalLine = previousValue
+						end
+					end
+					self.previousVerticalBlockByEntity[playerEntity] = nil
+					self.lastSafePositionByEntity[playerEntity] = nil
+					self.fallTimerByEntity[playerEntity] = nil
+				end
+			end
+		end
+	end
+
+	if self:IsClient() then
+		self.clientElapsed = self.clientElapsed + delta
+		if self.clientElapsed >= self.checkInterval then
+			self.clientElapsed = 0
+			self:UpdateLocalClientPlayer()
+		end
+	end
+end
+
+@ExecSpace("ServerOnly")
+method void TrackDeckPlayer(Entity playerEntity, table presentPlayers)
+	-- Keep native walls enabled and recover only sustained falls or ground escapes.
+	if playerEntity == nil or not isvalid(playerEntity) then
+		return
+	end
+	presentPlayers[playerEntity] = true
+
+	local body = playerEntity.RigidbodyComponent
+	local transform = playerEntity.TransformComponent
+	local player = playerEntity.PlayerComponent
+	if body == nil or transform == nil or player == nil then
+		return
+	end
+
+	if self.previousVerticalBlockByEntity[playerEntity] == nil then
+		self.previousVerticalBlockByEntity[playerEntity] = body.IsBlockVerticalLine
+		self.lastSafePositionByEntity[playerEntity] = Vector2(self.recoveryX, self.recoveryY)
+	end
+	-- Vertical foothold walls on the map provide the normal boundary. This body
+	-- flag makes the same wall collision apply to players on the shared deck.
+	body.IsBlockVerticalLine = true
+
+	local position = transform.WorldPosition
+	if position == nil then
+		return
+	end
+
+	local outsideX = position.x < self.leftBound - self.boundsMargin
+		or position.x > self.rightBound + self.boundsMargin
+	local belowDeck = position.y < self.footholdY - self.fallRecoveryDrop
+
+	if body:IsOnGround() and not outsideX and not belowDeck then
+		local safeX = math.max(self.leftBound + self.boundsMargin, math.min(self.rightBound - self.boundsMargin, position.x))
+		self.lastSafePositionByEntity[playerEntity] = Vector2(safeX, position.y)
+		self.fallTimerByEntity[playerEntity] = 0
+		return
+	end
+
+	if belowDeck then
+		self.fallTimerByEntity[playerEntity] = (self.fallTimerByEntity[playerEntity] or 0) + self.checkInterval
+	else
+		self.fallTimerByEntity[playerEntity] = 0
+	end
+
+	-- Do not interrupt an ordinary jump. Recover only after a grounded boundary
+	-- escape, or after a sustained fall well below the shared foothold.
+	local escapedWhileGrounded = outsideX and body:IsOnGround()
+	local fellOffDeck = belowDeck and self.fallTimerByEntity[playerEntity] >= self.fallRecoveryDelay
+	if escapedWhileGrounded or fellOffDeck then
+		local safePosition = self.lastSafePositionByEntity[playerEntity]
+		if safePosition == nil then
+			safePosition = Vector2(self.recoveryX, self.recoveryY)
+		end
+		player:MoveToMapPosition("map_airship_deck", safePosition)
+		log("[GVShipDeckBounds] recovered player to deck safe position")
+		self.fallTimerByEntity[playerEntity] = 0
+	end
+end
+
+@ExecSpace("ClientOnly")
+method void UpdateLocalClientPlayer()
+	-- Apply collision settings only to the local player while aboard this deck.
+	local localPlayer = _UserService.LocalPlayer
+	if localPlayer == nil or not isvalid(localPlayer) or localPlayer.CurrentMapName ~= "map_airship_deck" then
+		self:RestoreClientFlags()
+		return
+	end
+
+	for previousEntity, previousFlags in pairs(self.previousClientFlagsByEntity) do
+		if previousEntity ~= localPlayer then
+			if isvalid(previousEntity) then
+				local previousBody = previousEntity.RigidbodyComponent
+				if previousBody ~= nil then
+					previousBody.IsBlockVerticalLine = previousFlags.isBlockVerticalLine
+					previousBody.IgnoreMoveBoundary = previousFlags.ignoreMoveBoundary
+				end
+			end
+			self.previousClientFlagsByEntity[previousEntity] = nil
+		end
+	end
+
+	local body = localPlayer.RigidbodyComponent
+	if body == nil then
+		return
+	end
+	if self.previousClientFlagsByEntity[localPlayer] == nil then
+		self.previousClientFlagsByEntity[localPlayer] = {
+			isBlockVerticalLine = body.IsBlockVerticalLine,
+			ignoreMoveBoundary = body.IgnoreMoveBoundary
+		}
+	end
+	-- The server-side body flags do not propagate to the owning client. Keep the
+	-- native walk constraints in sync only while the local player is on this deck.
+	body.IsBlockVerticalLine = true
+	body.IgnoreMoveBoundary = true
+end
+
+@ExecSpace("ClientOnly")
+method void RestoreClientFlags()
+	-- Return each tracked local body to its original settings without stale access.
+	for playerEntity, previousFlags in pairs(self.previousClientFlagsByEntity) do
+		if isvalid(playerEntity) then
+			local body = playerEntity.RigidbodyComponent
+			if body ~= nil then
+				body.IsBlockVerticalLine = previousFlags.isBlockVerticalLine
+				body.IgnoreMoveBoundary = previousFlags.ignoreMoveBoundary
+			end
+		end
+		self.previousClientFlagsByEntity[playerEntity] = nil
+	end
+end
+
+method void OnEndPlay()
+	-- Release cached player state and restore both sides' original collision flags.
+	if self:IsServer() then
+		for playerEntity, previousValue in pairs(self.previousVerticalBlockByEntity) do
+			if isvalid(playerEntity) then
+				local body = playerEntity.RigidbodyComponent
+				if body ~= nil then
+					body.IsBlockVerticalLine = previousValue
+				end
+			end
+		end
+		self.previousVerticalBlockByEntity = {}
+		self.lastSafePositionByEntity = {}
+		self.fallTimerByEntity = {}
+	end
+	if self:IsClient() then
+		self:RestoreClientFlags()
+	end
+end
+end

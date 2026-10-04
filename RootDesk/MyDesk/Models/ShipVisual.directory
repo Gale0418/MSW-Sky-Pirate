@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "directory://bb337dd2c9cc44fa80d02d8672803e7c",
+  "ContentType": "x-mod/directory",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.7.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "entry_id": "directory://bb337dd2c9cc44fa80d02d8672803e7c",
+      "name": "ShipVisual",
+      "lock": false,
+      "folding": false,
+      "nameEditable": true
+    }
+  }
+}

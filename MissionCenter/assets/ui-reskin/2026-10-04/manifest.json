@@ -1,0 +1,650 @@
+[
+  {
+    "key": "hudLocation",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-9b63482c-fe3b-492e-b293-a47bd1c4d78a.png",
+    "prompt": "Use case: stylized-concept. Asset type: transparent game HUD location-name plaque for a MapleStory-like fantasy sky-pirate game. Create ONE isolated wide horizontal illustrated wooden name plaque, width-to-height about 5:1, centered on a transparent canvas. Warm honey wood, dark walnut outer rim, thick hand-painted ink contour, polished beveled brass corner fittings and tiny rivets, a modest short rope knot at the left, a small tasteful brass compass emblem at the left edge. Crisp cute high-end 2D fantasy mobile game interface artwork, matching ornate wood-and-gold merchant/card windows. Mostly clean dark warm wood central writing field occupying at least 75% width for dynamic cream Chinese text to be overlaid in the game. Frame compact and restrained, no huge decorative protrusions. Straight-on orthographic, symmetrical horizontal sides except left emblem. NO text, letters, numbers, watermark, scenery, scene backdrop, other UI pieces or checkerboard pattern. True transparent alpha outside the plaque, solid opaque interior. Whole plaque visible with 8% transparent padding all around.",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/hudLocation-v1.png",
+    "canvas": [
+      1774,
+      887
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      52,
+      94,
+      1726,
+      833
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "8b87314edb590eed91c0a12276b20c68454def90994a36fc3cb0ad0fca03e69b",
+    "bytes": 824403,
+    "ruid": "fb71885ec05a40e6b861cb2f9cd5f7c8",
+    "status": "applied-verified",
+    "solidAlphaBounds": [
+      56,
+      241,
+      1718,
+      612
+    ],
+    "layoutWidth": 430,
+    "textSafeArea": {
+      "coordinateSpace": "visibleSolidAlphaBoundsScaled",
+      "rect": [
+        108,
+        31,
+        292,
+        46
+      ]
+    },
+    "evidence": {
+      "metadata": "validated",
+      "layout": "preview.html",
+      "maker": "MissionCenter/evidence/2026-10-04/ui-reskin/R4/snapshot.json",
+      "critic": "MissionCenter/evidence/2026-10-04/ui-reskin/final-critic.md"
+    },
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac220cdef24ff11274e6c17",
+    "layoutEvidence": "../../../../.builder-work/hud-redesign/applied-layout.json"
+  },
+  {
+    "key": "hudHint",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-3d9eed6f-2fd8-4448-8a5a-807b5cb42ce3.png",
+    "prompt": "Use case: stylized-concept. Asset type: transparent production-ready 2D game HUD sprite for a MapleStory-like fantasy sky-pirate game. ONE isolated narrow horizontal game HUD hint strip, width-to-height about 8:1. Thin dark walnut wooden bezel with restrained beveled brass edge, small paired brass screws near both ends, tiny rope-wrapped end caps. The center 88% is a smooth dark honey-brown opaque inset reserved for a long dynamic cream Chinese instruction. Keep border shallow so this reads as a subtle tip, not a giant window. Matching ornate wood-and-gold merchant/card interface, cute polished hand-painted high-end fantasy RPG interface art, crisp contours and simple material highlights. Straight-on orthographic, no perspective. NO text, letters, numbers, watermark, scenery, backgrounds, other UI pieces or fake checkerboard. True transparent alpha outside the ONE element, opaque interior. Whole element centered with 8% transparent margin, fully visible.",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/hudHint-v1.png",
+    "canvas": [
+      2032,
+      774
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      63,
+      78,
+      2002,
+      716
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "6e3efc597ed39d0f16754216df08617004e4c244b34e7c16b438ff5768af3fbd",
+    "bytes": 503192,
+    "ruid": "81372fdb923d429cbb3736b753538cfa",
+    "status": "applied-verified",
+    "solidAlphaBounds": [
+      66,
+      274,
+      1966,
+      463
+    ],
+    "layoutWidth": 820,
+    "textSafeArea": {
+      "coordinateSpace": "visibleSolidAlphaBoundsScaled",
+      "rect": [
+        80,
+        22,
+        660,
+        40
+      ]
+    },
+    "evidence": {
+      "metadata": "validated",
+      "layout": "preview.html",
+      "maker": "MissionCenter/evidence/2026-10-04/ui-reskin/R4/snapshot.json",
+      "critic": "MissionCenter/evidence/2026-10-04/ui-reskin/final-critic.md"
+    },
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "layoutEvidence": "../../../../.builder-work/hud-redesign/applied-layout.json"
+  },
+  {
+    "key": "hudCabin",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-52e46bad-ed2f-4243-8825-aaddb133ac49.png",
+    "prompt": "Use case: stylized-concept. Asset type: transparent production-ready 2D game HUD sprite for a MapleStory-like fantasy sky-pirate game. ONE isolated small horizontal clickable cabin-management game HUD button, width-to-height about 2.2:1. Thick warm amber wooden plaque with richly beveled polished gold brass rim, dark ink outlines and two corner rivets. In left quarter include a small readable brass silhouette emblem of a wooden cargo chest with a nautical wheel detail. Right 65% blank dark honey wood for dynamic Chinese label. Clear tactile raised button, visually compact, restrained nautical rope detail at corner. Matching ornate wood-and-gold merchant/card interface, cute polished hand-painted high-end fantasy RPG interface art, crisp contours and simple material highlights. Straight-on orthographic, no perspective. NO text, letters, numbers, watermark, scenery, backgrounds, other UI pieces or fake checkerboard. True transparent alpha outside the ONE element, opaque interior. Whole element centered with 8% transparent margin, fully visible.",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/hudCabin-v1.png",
+    "canvas": [
+      1860,
+      845
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      57,
+      23,
+      1768,
+      821
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "521c3bedde226773f8d1ef43911ebe47274f9e8da1aea228139dc3c2656ed552",
+    "bytes": 1130578,
+    "ruid": "78f33579cf6a47c396fc16cd83a82b4b",
+    "status": "applied-verified",
+    "solidAlphaBounds": [
+      126,
+      158,
+      1735,
+      631
+    ],
+    "layoutWidth": 220,
+    "textSafeArea": {
+      "coordinateSpace": "visibleSolidAlphaBoundsScaled",
+      "rect": [
+        82,
+        16,
+        115,
+        42
+      ]
+    },
+    "evidence": {
+      "metadata": "validated",
+      "layout": "preview.html",
+      "maker": "MissionCenter/evidence/2026-10-04/ui-reskin/R4/snapshot.json",
+      "critic": "MissionCenter/evidence/2026-10-04/ui-reskin/final-critic.md"
+    },
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac220d6e338ddeca881337b",
+    "layoutEvidence": "../../../../.builder-work/hud-redesign/applied-layout.json"
+  },
+  {
+    "key": "hudInteract",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-14f810d8-8b97-45a4-ba96-c91d5a838aa2.png",
+    "prompt": "Use case: stylized-concept. Asset type: transparent production-ready 2D game HUD sprite for a MapleStory-like fantasy sky-pirate game. ONE isolated horizontal game HUD interaction button, width-to-height about 5.5:1. Warm dark walnut and golden amber wooden plaque, thick hand-painted contours, beveled polished brass rim, tiny rivets and restrained paired rope knots at ends. On the left is a distinct SMALL blank inset rounded-square brass keycap (no letter on it), about 10% width, and a subtle separator. Remaining 75% wide smooth opaque dark wood center for dynamic cream Chinese action text. Small engraved compass ornament at top center of rim. A clear clickable raised button with warm gold edge, not a dull flat rectangle. Matching ornate wood-and-gold merchant/card interface, cute polished hand-painted high-end fantasy RPG interface art, crisp contours and simple material highlights. Straight-on orthographic, no perspective. NO text, letters, numbers, watermark, scenery, backgrounds, other UI pieces or fake checkerboard. True transparent alpha outside the ONE element, opaque interior. Whole element centered with 8% transparent margin, fully visible.",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/hudInteract-v1.png",
+    "canvas": [
+      2079,
+      756
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      0,
+      21,
+      2047,
+      756
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "01bf326d7a3f2002290dd7b2499e725fbf9923785a10f3274a61dc38c65efcee",
+    "bytes": 1464819,
+    "ruid": "5799c423153143cf99c058d21b46d9f8",
+    "status": "applied-verified",
+    "solidAlphaBounds": [
+      41,
+      97,
+      2041,
+      568
+    ],
+    "layoutWidth": 640,
+    "textSafeArea": {
+      "coordinateSpace": "visibleSolidAlphaBoundsScaled",
+      "rect": [
+        146,
+        52,
+        448,
+        70
+      ]
+    },
+    "evidence": {
+      "metadata": "validated",
+      "layout": "preview.html",
+      "maker": "MissionCenter/evidence/2026-10-04/ui-reskin/R4/snapshot.json",
+      "critic": "MissionCenter/evidence/2026-10-04/ui-reskin/final-critic.md"
+    },
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac220dcc52e84e379d4aaf6",
+    "layoutEvidence": "../../../../.builder-work/hud-redesign/applied-layout.json"
+  },
+  {
+    "key": "primaryGold",
+    "prompt": "Use case: stylized-concept. Asset type: a single production-ready transparent 2D fantasy game UI skin sprite for MapleStory-like sky-pirate game. ONE compact horizontal primary-action button, aspect ratio 3:1, clipped beveled corners, thick polished brass rim, luminous warm golden-yellow inset face, subtle honey wood edge, dark walnut outline, two small symmetric rivets. Center 78% completely blank and uncluttered for dark brown dynamic label. No icons. Clearly tactile raised button. Polished hand-painted cute 2D artwork, warm wood and gold nautical merchant/card UI style, simplified crisp material highlights, straight-on orthographic. Whole object fits tightly and centrally with small transparent padding around edges. NO text, letters, symbols, numbers, watermark, backgrounds, scenery, other objects or checkerboard; true transparent alpha outside ONE element, opaque interior.",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-4c18984f-2a74-43e8-a182-a241b41cf8c1.png",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/primaryGold-v1.png",
+    "canvas": [
+      2172,
+      724
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      62,
+      53,
+      2109,
+      706
+    ],
+    "solidAlphaBounds": [
+      65,
+      89,
+      2106,
+      594
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "acce7fb5659f6d7404629d9290b26212502a68128fb28fd66833c140b8fd9c98",
+    "bytes": 1221530,
+    "ruid": "0445f8312bc243f78b0d402f9b8bd34e",
+    "status": "imported-available",
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac220e26326a1bab64502f2",
+    "evidence": {
+      "maker": "not-applied"
+    }
+  },
+  {
+    "key": "secondaryWood",
+    "prompt": "Use case: stylized-concept. Asset type: a single production-ready transparent 2D fantasy game UI skin sprite for MapleStory-like sky-pirate game. ONE compact horizontal secondary-action button, aspect ratio 3:1, clipped beveled corners, polished narrow brass rim, dark walnut wooden inset face with restrained grain, honey wood edge, two small symmetric rivets. Center 78% blank and uncluttered for cream dynamic label. No icons. Clearly tactile raised button, subdued relative to primary gold. Polished hand-painted cute 2D artwork, warm wood and gold nautical merchant/card UI style, simplified crisp material highlights, straight-on orthographic. Whole object fits tightly and centrally with small transparent padding around edges. NO text, letters, symbols, numbers, watermark, backgrounds, scenery, other objects or checkerboard; true transparent alpha outside ONE element, opaque interior.",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-a98c80a8-6f78-4854-a415-68a678eea6c4.png",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/secondaryWood-v1.png",
+    "canvas": [
+      2172,
+      724
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      41,
+      21,
+      2138,
+      724
+    ],
+    "solidAlphaBounds": [
+      53,
+      116,
+      2119,
+      588
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "571e996ae564a90a807285846fd8e403ee7af7cdc06955e39c244762a2c94467",
+    "bytes": 1521730,
+    "ruid": "a7ace27d9a94495dbf4340668186c932",
+    "status": "applied-verified",
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac220eb260f15f4fc793b9c",
+    "evidence": {
+      "maker": "MissionCenter/evidence/2026-10-04/ui-reskin/R4/snapshot.json",
+      "critic": "MissionCenter/evidence/2026-10-04/ui-reskin/final-critic.md"
+    }
+  },
+  {
+    "key": "creamPanel",
+    "prompt": "Use case: stylized-concept. Asset type: a single production-ready transparent 2D fantasy game UI skin sprite for MapleStory-like sky-pirate game. ONE rectangular information/message panel, aspect ratio 2.4:1. Smooth pale cream parchment center, slim warm wood outer frame and thin beveled brass inner line, gently folded parchment corners, four small brass corner screws, dark ink silhouette contour. At least 86% central area plain pale cream with barely visible texture so multi-line dark brown dynamic Chinese description is highly readable. No icons or ornaments in central area. Polished hand-painted cute 2D artwork, warm wood and gold nautical merchant/card UI style, simplified crisp material highlights, straight-on orthographic. Whole object fits tightly and centrally with small transparent padding around edges. NO text, letters, symbols, numbers, watermark, backgrounds, scenery, other objects or checkerboard; true transparent alpha outside ONE element, opaque interior.",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-6b662e08-8417-4dae-a81a-3d4f55fa4fa8.png",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/creamPanel-v1.png",
+    "canvas": [
+      1942,
+      809
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      33,
+      58,
+      1910,
+      783
+    ],
+    "solidAlphaBounds": [
+      37,
+      62,
+      1905,
+      727
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "c44d886b8e47f8f70806ca7cd90f3a40a0ba1db58072fadad7f4143738c74af0",
+    "bytes": 1488035,
+    "ruid": "a4f42a3ac784425095bfe0b77bda224e",
+    "status": "imported-available",
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac2210b394547462f9d3f18",
+    "evidence": {
+      "maker": "not-applied"
+    }
+  },
+  {
+    "key": "roundClose",
+    "prompt": "Use case: stylized-concept. Asset type: a single production-ready transparent 2D fantasy game UI skin sprite for MapleStory-like sky-pirate game. ONE small circular close-control button, aspect ratio 1:1. Polished bevelled brass ring, smooth dark walnut wooden circular inset, thick dark brown hand-inked outer contour. Leave center fully BLANK for runtime cream X glyph. Small compact rivets around rim, tactile raised edge. NO X in artwork. Polished hand-painted cute 2D artwork, warm wood and gold nautical merchant/card UI style, simplified crisp material highlights, straight-on orthographic. Whole object fits tightly and centrally with small transparent padding around edges. NO text, letters, symbols, numbers, watermark, backgrounds, scenery, other objects or checkerboard; true transparent alpha outside ONE element, opaque interior.",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-a7c031be-9853-4f73-824d-0f1a806efb9c.png",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/roundClose-v1.png",
+    "canvas": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      60,
+      55,
+      1198,
+      1254
+    ],
+    "solidAlphaBounds": [
+      63,
+      59,
+      1188,
+      1166
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "e50170c6662420c07aa7eec8a78892aa7be1788274b87dbf35afeb94cb514439",
+    "bytes": 1745391,
+    "ruid": "a263a014128a4f8ba74ed41fc24e3aa8",
+    "status": "applied-verified",
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac22111394547462f9d3f21",
+    "evidence": {
+      "maker": "MissionCenter/evidence/2026-10-04/ui-reskin/R4/snapshot.json",
+      "critic": "MissionCenter/evidence/2026-10-04/ui-reskin/final-critic.md"
+    },
+    "layoutEvidence": "../../../../.builder-work/hud-redesign/applied-layout.json"
+  },
+  {
+    "key": "squareControl",
+    "prompt": "Use case: stylized-concept. Asset type: a single production-ready transparent 2D fantasy game UI skin sprite for MapleStory-like sky-pirate game. ONE compact square auxiliary-control button, aspect ratio 1:1. Chamfered corners, thick polished brass bevel frame, medium dark honey-walnut wood inset, thick dark brown hand-painted contour and four tiny corner rivets. Leave center fully blank and clear for runtime +, minus or arrow glyph. Tactile raised button, no central ornament. Polished hand-painted cute 2D artwork, warm wood and gold nautical merchant/card UI style, simplified crisp material highlights, straight-on orthographic. Whole object fits tightly and centrally with small transparent padding around edges. NO text, letters, symbols, numbers, watermark, backgrounds, scenery, other objects or checkerboard; true transparent alpha outside ONE element, opaque interior.",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-dc15f35f-cc4d-4e29-bb79-622205a46b71.png",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/squareControl-v1.png",
+    "canvas": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      109,
+      31,
+      1224,
+      1244
+    ],
+    "solidAlphaBounds": [
+      112,
+      121,
+      1141,
+      1115
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "614bb87bd3229db32751d13771858f1ec0ce924f1a76c45985461f9d9b81e077",
+    "bytes": 1576335,
+    "ruid": "3c9bbe7ded3843e7bf6a6cf9c74538b0",
+    "status": "applied-verified",
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac2211b9441c722b968dd36",
+    "evidence": {
+      "maker": "MissionCenter/evidence/2026-10-04/ui-reskin/R4/snapshot.json",
+      "critic": "MissionCenter/evidence/2026-10-04/ui-reskin/final-critic.md"
+    },
+    "layoutEvidence": "../../../../.builder-work/hud-redesign/applied-layout.json"
+  },
+  {
+    "key": "gaugeFrame",
+    "prompt": "One single very thin horizontal EMPTY progress gauge frame for a hand-painted MapleStory-inspired nautical fantasy game UI. Actual gauge silhouette aspect 12:1, centered on transparent canvas. Slim warm brass golden bevel border with dark brown crisp outline, softly rounded ends, recessed dark walnut empty channel occupying 84% width and 55% height, no jewels or bulky decorations. Empty channel opaque very dark wood; outside frame truly transparent. It should read at 300 by 25 screen pixels. Golden top glint. No words numbers ticks icons or background.",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-4c5518ae-b0c9-4e7f-9ceb-e7d2ec8e6a22.png",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/gaugeFrame-v1.png",
+    "canvas": [
+      2172,
+      724
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      33,
+      119,
+      2090,
+      544
+    ],
+    "solidAlphaBounds": [
+      86,
+      309,
+      2087,
+      416
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "5c58a20e33076d49ac002da57f7c903f682cd57be6fe331f095c005903dd56f0",
+    "bytes": 314117,
+    "ruid": "f41d41adad9f40d1a1d93e40ecb256f6",
+    "status": "imported-available",
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac221259441c722b968dd42",
+    "evidence": {
+      "maker": "not-applied"
+    }
+  },
+  {
+    "key": "gaugeHull",
+    "prompt": "One single thin horizontal lime-green glossy health gauge FILL strip only, silhouette aspect 14:1, centered on truly transparent canvas. 2D hand-painted fantasy game UI, smooth vivid lime green upper shine and deeper emerald bottom edge, one restrained long pale highlight in upper quarter, gently rounded ends, crisp dark green 2D outline, opaque strip interior. No frame no wood no gold hardware no words numbers ticks icons scenery background or checkerboard. Readable at 276 by 16 pixels and horizontal scaling.",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-18ad498b-4dff-4ba1-8d78-a19a1aa74983.png",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/gaugeHull-v1.png",
+    "canvas": [
+      1659,
+      948
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      14,
+      215,
+      1647,
+      665
+    ],
+    "solidAlphaBounds": [
+      17,
+      432,
+      1643,
+      513
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "7c34f52ae5b10e5298d115cbab31f663449a3c7e92f22679fc81ecef04713ee2",
+    "bytes": 158423,
+    "ruid": "8e7f2ad9915546be8feb29798044bfa8",
+    "status": "applied-verified",
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac2212d9441c722b968dd60",
+    "evidence": {
+      "maker": "MissionCenter/evidence/2026-10-04/ui-reskin/R4/snapshot.json",
+      "critic": "MissionCenter/evidence/2026-10-04/ui-reskin/final-critic.md"
+    },
+    "layoutEvidence": "../../../../.builder-work/hud-redesign/applied-layout.json"
+  },
+  {
+    "key": "gaugeShield",
+    "prompt": "One single thin horizontal electric-blue glossy shield gauge FILL strip only, silhouette aspect 14:1, centered on truly transparent canvas. 2D hand-painted fantasy game UI, smooth vivid cyan blue upper shine and deeper azure bottom edge, one restrained long pale highlight in upper quarter, gently rounded ends, crisp dark blue 2D outline, opaque strip interior. No frame no wood no gold hardware no words numbers ticks icons scenery background or checkerboard. Readable at 276 by 16 pixels and horizontal scaling.",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-13f6ccb7-52f6-4cd7-b570-bc2c845fbbd4.png",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/gaugeShield-v1.png",
+    "canvas": [
+      1649,
+      954
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      21,
+      338,
+      1632,
+      722
+    ],
+    "solidAlphaBounds": [
+      25,
+      439,
+      1625,
+      515
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "8b869bde656d44e5f4039056b94719e40bb84b741408b1c6d25800cce3ce3551",
+    "bytes": 133182,
+    "ruid": "34bcac4a21134fae9908e2744c734817",
+    "status": "applied-verified",
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac221379441c722b968dd94",
+    "evidence": {
+      "maker": "MissionCenter/evidence/2026-10-04/ui-reskin/R4/snapshot.json",
+      "critic": "MissionCenter/evidence/2026-10-04/ui-reskin/final-critic.md"
+    },
+    "layoutEvidence": "../../../../.builder-work/hud-redesign/applied-layout.json"
+  },
+  {
+    "key": "gaugeArmor",
+    "prompt": "One single thin horizontal amber-gold glossy armor gauge FILL strip only, silhouette aspect 14:1, centered on truly transparent canvas. 2D hand-painted fantasy game UI, smooth vivid yellow upper shine and deeper orange amber bottom edge, one restrained long pale highlight in upper quarter, gently rounded ends, crisp dark ochre 2D outline, opaque strip interior. No frame no wood no hardware no words numbers ticks icons scenery background or checkerboard. Readable at 276 by 16 pixels and horizontal scaling.",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-7af854c1-f8f4-4f5c-89c1-65285bb4a684.png",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/gaugeArmor-v1.png",
+    "canvas": [
+      1659,
+      948
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      38,
+      431,
+      1623,
+      908
+    ],
+    "solidAlphaBounds": [
+      42,
+      434,
+      1618,
+      514
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "779d984e749f47ad0277dd8437a6345de7a18d12d557729889d73d91b1ab8fa1",
+    "bytes": 142666,
+    "ruid": "b1d29456ca614ebbb9e94e280cc2a0b3",
+    "status": "applied-verified",
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac22141b44c5e265e8e80ec",
+    "evidence": {
+      "maker": "MissionCenter/evidence/2026-10-04/ui-reskin/R4/snapshot.json",
+      "critic": "MissionCenter/evidence/2026-10-04/ui-reskin/final-critic.md"
+    },
+    "layoutEvidence": "../../../../.builder-work/hud-redesign/applied-layout.json"
+  },
+  {
+    "key": "dialogWide",
+    "prompt": "Single standalone blank parchment dialogue banner for MapleStory-inspired hand-painted 2D nautical UI. IMPORTANT the ACTUAL VISIBLE BANNER shape is 8.2:1, extremely wide and short (target visible 1000 by 122 pixels), slim rectangular cream parchment center 90% of full width and 65% full height, honey wood edging and thin brass gold rim, very small gold corner screws, crisp dark brown outline, no large decorations, no rolled scroll ends. Orthographic frontal view, warm saturated cartoon wood and brass, subtle parchment grain, fully opaque parchment interior, true transparent alpha outside entire outline. One banner only centered horizontally, no letters text numbers symbols watermarks shadows on background or scenery.",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-b86d7005-ca61-45e7-b391-585e36820432.png",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/dialogWide-v1.png",
+    "canvas": [
+      2103,
+      748
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      26,
+      23,
+      2078,
+      722
+    ],
+    "solidAlphaBounds": [
+      29,
+      237,
+      2074,
+      495
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "e08f50017870864a5895a4bfb2bbbb827db20c7d2b2cdf0280318e17d410bbff",
+    "bytes": 709725,
+    "ruid": "101def3c46b04a0fa8878d45b81cc148",
+    "status": "applied-verified",
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac2214bb44c5e265e8e80f8",
+    "evidence": {
+      "maker": "MissionCenter/evidence/2026-10-04/ui-reskin/R4/snapshot.json",
+      "critic": "MissionCenter/evidence/2026-10-04/ui-reskin/final-critic.md"
+    },
+    "layoutEvidence": "../../../../.builder-work/hud-redesign/applied-layout.json"
+  },
+  {
+    "key": "marketInfoPanel",
+    "prompt": "Single standalone blank parchment information panel for MapleStory-inspired hand-painted 2D nautical UI. IMPORTANT ACTUAL VISIBLE PANEL shape 4.2:1 (target visible 404 by 96 pixels), wide short rectangular cream parchment center 86% width and 70% height, honey wood edging and slim brass gold rim, four small corner screws, crisp dark brown outline, no large decorations, no rolled scroll ends. Orthographic frontal view, warm cartoon wood and gold, subtle parchment grain, opaque parchment interior for two text lines, true transparent alpha outside entire outline. One panel only centered, no letters text numbers symbols watermark background or scenery.",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-89bee976-c49b-4dee-8be7-789139cdc984.png",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/marketInfoPanel-v1.png",
+    "canvas": [
+      2098,
+      749
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      45,
+      32,
+      2053,
+      726
+    ],
+    "solidAlphaBounds": [
+      48,
+      117,
+      2050,
+      621
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "7f16e5dcc20d97968543ea2e77c182a3abcedc68dd4b46f85fcd6e24b1d7b13a",
+    "bytes": 1310788,
+    "ruid": "545f78424df64e4298fbba51afe28e7c",
+    "status": "applied-verified",
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac221566067111150ebc9a0",
+    "evidence": {
+      "maker": "MissionCenter/evidence/2026-10-04/ui-reskin/R4/snapshot.json",
+      "critic": "MissionCenter/evidence/2026-10-04/ui-reskin/final-critic.md"
+    },
+    "layoutEvidence": "../../../../.builder-work/hud-redesign/applied-layout.json"
+  },
+  {
+    "key": "gaugeFrameV2",
+    "prompt": "Single empty progress meter frame for a hand-painted 2D nautical fantasy UI. The visible outer silhouette is a horizontal capsule exactly 10 times wider than tall, relatively thick, like a 300 pixel wide by 30 pixel tall status bar. Strong but slim brass gold bevel rim around a recessed opaque dark walnut EMPTY channel. Channel interior height is at least 65% of frame height and 92% of frame width to accept a separate colored glossy filling sprite above it. Dark brown outer outline, golden top highlights, softly rounded ends. One single frame, frontal orthographic view, centered on a true transparent canvas, generous surrounding alpha space. No fill inside, no words numbers ticks symbols decoration icons scenery or background. Do NOT make a hairline or extremely narrow strip: visibly tall channel and distinct upper and lower gold rim.",
+    "source": "C:\\Users\\USER\\.codex\\generated_images\\01a1041e-7021-7973-ae08-350037352874\\exec-acce9d13-7f7e-4e1f-84b5-5144a7062431.png",
+    "path": "MissionCenter/assets/ui-reskin/2026-10-04/gaugeFrameV2-v1.png",
+    "canvas": [
+      2172,
+      724
+    ],
+    "mode": "RGBA",
+    "alphaBounds": [
+      102,
+      101,
+      2074,
+      666
+    ],
+    "solidAlphaBounds": [
+      106,
+      246,
+      2066,
+      470
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "dcc5aaf6efb11e6a2fa324031928673b94388d034c3e183238044d32b92c418f",
+    "bytes": 641626,
+    "ruid": "a4136f23056648f788e26639704ce831",
+    "status": "applied-verified",
+    "importEvidence": "../../../../.builder-work/hud-redesign/import-results.json",
+    "importVersion": "6ac2215db44c5e265e8e8130",
+    "evidence": {
+      "maker": "MissionCenter/evidence/2026-10-04/ui-reskin/R4/snapshot.json",
+      "critic": "MissionCenter/evidence/2026-10-04/ui-reskin/final-critic.md"
+    },
+    "layoutEvidence": "../../../../.builder-work/hud-redesign/applied-layout.json"
+  }
+]

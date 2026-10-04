@@ -1,0 +1,68 @@
+{
+  "version": 2,
+  "generationTool": "image_gen.imagegen",
+  "style": "anime cartoon backgrounds",
+  "icons": "User selected v1 thick cartoon pin and arrow; v2 icons retained as unused alternatives",
+  "entries": [
+    {
+      "id": "oak",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-fd97f68b-7cc2-4f9f-9f2c-4cb15d59204e.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v2/oak.png",
+      "prompt": "STYLE CORRECTION edit of this wooden UI board. Preserve its single rectangular board composition and landscape 17:13 ratio, but REDRAW EVERYTHING as authentic cute MapleStory-style 2D anime game UI SPRITE art. Strong unmistakably CARTOON flat cel shading, chunky warm dark-brown colored outlines, soft rounded and slightly irregular oversized planks, playful compact shapes, LIMITED 3-4 discrete flat colors per wood surface, stylized simple curvy knot symbols and only a few broad wood-grain strokes. Think classic Korean chibi side-scrolling anime RPG inventory/shop windows, cheerful illustrated game props, beautifully designed but simplified. Palette honey orange, peach, buttery gold; varied horizontal plank colors. Thin rounded timber frame with cute simple golden bolts. Broad inner space light honey gold for native dark text/cards. NO realistic timber texture, no tiny fiber lines, no noise, no photographic material, no painterly realism, no PBR, no 3D render, no glossy realistic reflections, no fine high-frequency detail. Simplification is ESSENTIAL. NO text, letters, cards, objects, characters, UI controls, logo or watermark. Opaque full-board backdrop filling canvas. The source looked too realistic; this must look like a clean anime cartoon game asset.",
+      "active": true,
+      "bytes": 1193312,
+      "width": 1431,
+      "height": 1099,
+      "colorType": 2,
+      "sha256": "3937a697d4c5998c3d72e6c7112e2f862ffd5151b262a4de15a36c0b1a122d4a"
+    },
+    {
+      "id": "walnut",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-736a1e77-efae-42a5-86e0-32c0b622b9eb.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v2/walnut.png",
+      "prompt": "Redraw this vertical wood UI board in the SAME clean cute MapleStory 2D anime sprite style as the second reference, not realistic. Preserve landscape 17:13 whole single board, medium chestnut walnut and red cedar VERTICAL planks with a thin rounded frame and simple golden corner bolts. Chunky warm cocoa-colored outlines, rounded compact game-prop shapes, large simplified irregular joints, very few large stylized knot symbols, ONLY 3-4 flat cel-shaded discrete color levels on each plank. Medium warm brown and caramel colors, some peach and muted russet boards, make center sufficiently light for dark native UI text. NO microscopic wood fibers or detailed texture, no noise, no PBR, no photorealism, no 3D realistic reflection, no smooth rendered material. Looks like classic MapleStory anime inventory/store interface illustration, charming clear 2D, purposeful simplified flat shading. Keep interior quiet usable space. NO text, letters, logos, watermark, cards, tools, characters or UI controls. Opaque full-board canvas. Source 1 layout, source 2 ART STYLE ONLY.",
+      "active": true,
+      "bytes": 1202544,
+      "width": 1435,
+      "height": 1096,
+      "colorType": 2,
+      "sha256": "7a9eb94ec770a6cb1c5c14171445e7244a72c46a882f6d3501d446baed19703f"
+    },
+    {
+      "id": "parchment",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-49e1968c-6df0-4d4c-a193-cddb8622a3ca.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v2/parchment.png",
+      "prompt": "STYLE CORRECTION: Redraw source 1 parchment UI backdrop as cute clean MapleStory-style 2D ANIME game SPRITE art, consistent with flat cel shaded source 2. Single full rectangular cream parchment sheet, landscape 17:13. Thick soft warm brown COLORED OUTLINES around rounded slightly uneven edges and 4 cute curled corners, large simplified folds, only THREE to FOUR discrete flat cream/tan tones. Quiet broad pale ivory center, subtle cartoon crease lines and a few large flat warm tan age spots confined to edges; remove all realistic paper fiber texture, granular noise, speckling, microscopic detail and painterly realism. Classic anime fantasy RPG inventory/treasure-chart window. A simple VERY FAINT small eight-point compass rose in bottom left peripheral corner, no letters. No coastline, no islands, no pin markers, no route arrows, no labels, text, logos, UI controls or objects, because an existing actual world map is placed separately over it. Opaque full sheet filling image, no outside table or scene. Flat stylized 2D cel illustration, not photography, not 3D rendering or realistic materials. Source 1 composition only, source 2 simplified CARTOON SHAPE/LINE/SHADING style.",
+      "active": true,
+      "bytes": 1091984,
+      "width": 1434,
+      "height": 1097,
+      "colorType": 2,
+      "sha256": "929533608ff9e4c439db40743dc2ebd2bbaa95c5f5a3f269a84e82a2893ac02f"
+    },
+    {
+      "id": "pin",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-46ddecfc-6ce4-4ba6-bb56-49cd90f578ac.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v2/pin.png",
+      "prompt": "STYLE CORRECTION of this single nautical port pushpin icon. Keep SAME centered silhouette, red round head with gold anchor and short downward needle, but redraw as authentic cute MapleStory 2D ANIME GAME SPRITE art. Simple chunky warm dark brown colored outline, rounded red salmon jewel head, simple bold flat golden anchor, only 3 discrete flat cel-shaded color levels, one small stylized cream highlight patch. Cheerful fantasy RPG UI marker readable at 40px. NO photorealism, no real metal reflection, no 3D rendering, no fine ornate engravings, no soft glow or big soft shadow. GENUINELY TRANSPARENT background, preserve large transparent margins and approximate needle tip at normalized(.5,.795) for map pin registration. One icon only, no letters/text/logo/watermark, no map, no background square. Simplified anime/cartoon linework matching classic MapleStory inventory icons.",
+      "active": false,
+      "bytes": 421797,
+      "width": 1254,
+      "height": 1254,
+      "colorType": 6,
+      "sha256": "d3010481974ec3379228288cdd8ff4346415a8de58de7f524185efed90b9bdf6"
+    },
+    {
+      "id": "arrow",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-69425f89-ea54-4cfa-9a23-4eb5054ab030.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v2/arrow.png",
+      "prompt": "STYLE CORRECTION of this one right-pointing nautical route arrow icon. Preserve horizontal RIGHT direction and wide 8:3 image ratio with genuinely transparent background. Redraw as a cute clear MapleStory-style 2D anime fantasy game UI sprite: thick warm cocoa colored outline, stylized GOLD arrowhead pointing RIGHT, short simple brass shaft and little notched tail on left, ONLY 3 discrete flat cel-shaded levels amber/butter yellow/cream, subtle cartoon compass engraving as simple 4 pointed star on arrowhead. Simplify ornate details drastically, make tip unmistakable at 90px. Crisp clean rounded cartoon linework with broad flat color blocks. NO realistic metallic texture, no PBR, no photorealism, no soft halo, no soft shadows, no 3D rendered reflections, no fine noise. Entire object centered vertically; transparent margins. NO text, letters, numbers, map, paper, logo, watermark, background square, other icons. Classic anime inventory/map interface asset, beautiful simplified graphic.",
+      "active": false,
+      "bytes": 957077,
+      "width": 2048,
+      "height": 768,
+      "colorType": 6,
+      "sha256": "5fa43987270f4fca85fc3e4c0cac935a3b8008bff8ad5868e47f3f8d1ed63fa7"
+    }
+  ]
+}

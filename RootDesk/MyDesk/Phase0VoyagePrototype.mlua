@@ -7,7 +7,7 @@ script Phase0VoyagePrototype extends Logic
 	property string currentPortId = "forest"
 	property string selectedDestinationId = "sky"
 	property integer voyageCount = 0
-	property integer money = 120
+	property integer money = 12000
 	property integer cloudCrystal = 0
 	property integer hull = 100
 	property integer maxHull = 100
@@ -47,11 +47,12 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void ResetPrototype()
+		-- 重設 Phase 0 錢包時沿用正式航程的起始金額。
 		self.currentPort = "魔法森林"
 		self.currentPortId = "forest"
 		self.selectedDestinationId = "sky"
 		self.voyageCount = 0
-		self.money = 120
+		self.money = 12000
 		self.cloudCrystal = 0
 		self.maxHull = 100
 		self.hull = self.maxHull
@@ -81,66 +82,16 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("Client")
 	method void DamageShipFromRaid(number amount)
-		local result = self:ApplyDamage(amount)
-		log("[Phase0] raid damage: " .. result)
+		-- 舊襲擊已退休；不再讓歷史 RPC 改動本地船況。
 	end
 
 	@ExecSpace("ClientOnly")
 	method void StartVoyage()
-		if self.structure <= 0 or self.hull <= 0 then
-			self:Notify("船體結構已破損，先按 4 整備或 R 重置。")
+		if _GreatVoyageVoyageState == nil then
+			self:Notify("航行服務尚未就緒，無法送出航行請求。")
 			return
 		end
-		if self.selectedDestinationId == self.currentPortId then
-			self:Notify("請先選擇不同的目的港。")
-			return
-		end
-		if self.money < 8 then
-			self:Notify("金幣不足以補給出航，按 R 重置本輪。")
-			return
-		end
-
-		local origin = self.currentPort
-		local destination = self:GetDestination()
-		local airspace = self:GetAirspaceName()
-		self.money = self.money - 8
-		self.voyageCount = self.voyageCount + 1
-		self:RecoverShield(4)
-
-		local eventRoll = _UtilLogic:RandomIntegerRange(1, 100)
-		local eventText = ""
-		local rewardMoney = 0
-		local rewardCrystal = 0
-		local damageText = "無損傷"
-
-		if eventRoll <= 40 then
-			eventText = "順風航行"
-		elseif eventRoll <= 65 then
-			eventText = "漂流寶箱"
-			rewardMoney = 20
-			rewardCrystal = 1
-		elseif eventRoll <= 90 then
-			eventText = "空賊小怪騷擾"
-			damageText = self:ApplyDamage(18)
-		else
-			eventText = "大巴前兆"
-			rewardCrystal = 2
-			damageText = self:ApplyDamage(34)
-		end
-
-		self.money = self.money + rewardMoney
-		self.cloudCrystal = self.cloudCrystal + rewardCrystal
-		self.currentPortId = self.selectedDestinationId
-		self.currentPort = self:GetPortName(self.currentPortId)
-		if self.currentPortId == "forest" then
-			self.selectedDestinationId = "sky"
-		else
-			self.selectedDestinationId = "forest"
-		end
-
-		local result = "第 " .. tostring(self.voyageCount) .. " 航：" .. origin .. " -> " .. destination .. " / " .. airspace .. " / " .. eventText .. " / 事件+" .. tostring(rewardMoney) .. "G 結晶+" .. tostring(rewardCrystal) .. " / " .. damageText
-		self:Notify(result)
-		self:LogStatus()
+		_GreatVoyageVoyageState:StartVoyage(self.selectedDestinationId)
 	end
 
 	@ExecSpace("ClientOnly")
@@ -168,7 +119,8 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void UpgradeHull()
-		local costMoney = 70 + (self.hullLevel * 35)
+		-- 船體升級沿用舊公式並依經濟倍率換算金幣。
+		local costMoney = (70 + (self.hullLevel * 35)) * 100
 		local costCrystal = self.hullLevel
 		if self.money < costMoney or self.cloudCrystal < costCrystal then
 			self:Notify("船體升級不足：需要 " .. tostring(costMoney) .. "G / 結晶" .. tostring(costCrystal))
@@ -187,7 +139,8 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void UpgradeShield()
-		local costMoney = 60 + (self.shieldLevel * 30)
+		-- 護盾升級沿用舊公式並依經濟倍率換算金幣。
+		local costMoney = (60 + (self.shieldLevel * 30)) * 100
 		local costCrystal = self.shieldLevel
 		if self.money < costMoney or self.cloudCrystal < costCrystal then
 			self:Notify("護盾升級不足：需要 " .. tostring(costMoney) .. "G / 結晶" .. tostring(costCrystal))
@@ -204,8 +157,9 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void RefitShip()
-		local armorCost = 8
-		local structureCost = 24
+		-- 港口整備保留耐久回復量，只將兩項舊金幣費用乘上經濟倍率。
+		local armorCost = 8 * 100
+		local structureCost = 24 * 100
 		local costMoney = armorCost + structureCost
 		if self.money < costMoney then
 			self:Notify("港口整備金幣不足：需要 " .. tostring(costMoney) .. "G")
@@ -290,12 +244,18 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void CycleTradeGood(integer delta)
-		self.selectedGoodIndex = self.selectedGoodIndex + delta
-		if self.selectedGoodIndex > 3 then
-			self.selectedGoodIndex = 1
-		elseif self.selectedGoodIndex < 1 then
-			self.selectedGoodIndex = 3
+		-- 依目前港口實際商品數量輪播，空港或資料未就緒時安全停在第一項。
+		local goodsCount = 0
+		if _GreatVoyageVoyageData ~= nil then
+			local port = _GreatVoyageVoyageData:GetPort(self.currentPortId)
+			if port ~= nil and port.goods ~= nil then goodsCount = #port.goods end
 		end
+		if goodsCount <= 0 then
+			self.selectedGoodIndex = 1
+			self:Notify("本港目前沒有可交易商品。")
+			return
+		end
+		self.selectedGoodIndex = ((self.selectedGoodIndex - 1 + delta) % goodsCount) + 1
 		self:Notify("商品：" .. self:GetGoodName(self.selectedGoodIndex) .. " / " .. tostring(self:GetCurrentMarketPrice(self.selectedGoodIndex)) .. "G")
 	end
 

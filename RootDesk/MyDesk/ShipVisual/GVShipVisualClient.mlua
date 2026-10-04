@@ -1,0 +1,411 @@
+@Component
+script GVShipVisualClient extends Component
+
+	property Entity localHullView = nil
+	property Entity localEngineView = nil
+	property Entity localForegroundView = nil
+	property boolean localViewsActive = false
+	property boolean snapshotRequestedForMap = false
+	property string appliedShipId = ""
+	property number refreshElapsed = 0
+	property Entity localBattleEnemy = nil
+	property Entity localBattleShot = nil
+	property Entity localEnemyShot = nil
+	property string appliedBattleId = ""
+	property number battleVisualElapsed = 0
+	property number shotElapsed = 1
+	property number shotFlightSeconds = 0.6
+	property integer lastPlayerShotSequence = 0
+	property integer lastEnemyShotSequence = 0
+	property number enemyHitFlashRemaining = 0
+	property number lastEnemyHp = -1
+	property number enemyShotElapsed = 1
+
+	property string overlayModelId = "gvshipvisualoverlay"
+	property string engineAnimationRuid = "0b374aeaf9284ab0ae0b6e6ea1be57c8"
+	property string starterFrontRuid = "90ab86820946481da03cf9880f8c216b"
+	property string forestFrontRuid = "114e37b9d4ce4c44943cec46abf47a2e"
+	property string gearFrontRuid = "4bbf5312bf874748b374af1598be7e5f"
+	property string redFrontRuid = "86838173f97140d1911c35bac0cd9b4a"
+	property string merchantFrontRuid = "7ee37e4f9ded46799b17416bd1c9867c"
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		local map = self.Entity.CurrentMap
+		self:RefreshLocalMapState()
+		log("[GVShipVisual] client controller ready map=" .. tostring(map))
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnUpdate(number delta)
+		self:UpdateBattleVisuals(delta)
+		self.refreshElapsed = self.refreshElapsed + delta
+		if self.refreshElapsed < 0.2 then return end
+		self.refreshElapsed = 0
+		self:RefreshLocalMapState()
+		if self.localViewsActive == false then return end
+		self:SyncOverlayTransforms()
+		self:ApplySelectedShip()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnEndPlay()
+		self:ReleaseLocalViews()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshLocalMapState()
+		local player = _UserService.LocalPlayer
+		local map = self.Entity.CurrentMap
+		local shouldBeActive = player ~= nil and map ~= nil and player.CurrentMap == map
+		if shouldBeActive == self.localViewsActive then return end
+		if shouldBeActive then
+			if self:CreateLocalViews() == false then return end
+			self.localViewsActive = true
+			self:ApplySelectedShip()
+			self:SyncOverlayTransforms()
+			log("[GVShipVisual] local views entered map=" .. map.Name)
+		else
+			self:ReleaseLocalViews()
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean CreateLocalViews()
+		local map = self.Entity.CurrentMap
+		local sourceTransform = self.Entity.TransformComponent
+		if map == nil or sourceTransform == nil then return false end
+		local spawnPosition = sourceTransform.WorldPosition
+		local hullView = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalShipHull", spawnPosition, map)
+		local engineView = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalShipEngine", spawnPosition, map)
+		local foregroundView = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalShipForeground", spawnPosition, map)
+		if hullView == nil or engineView == nil or foregroundView == nil or isvalid(hullView) == false or isvalid(engineView) == false or isvalid(foregroundView) == false then
+			if hullView ~= nil and isvalid(hullView) then hullView:Destroy() end
+			if engineView ~= nil and isvalid(engineView) then engineView:Destroy() end
+			if foregroundView ~= nil and isvalid(foregroundView) then foregroundView:Destroy() end
+			log_warning("[GVShipVisual] local overlay spawn failed; will retry")
+			return false
+		end
+		self.localHullView = hullView
+		self.localEngineView = engineView
+		self.localForegroundView = foregroundView
+		local hullTransform = hullView.TransformComponent
+		local hullRenderer = hullView.SpriteRendererComponent
+		local engineTransform = engineView.TransformComponent
+		local engineRenderer = engineView.SpriteRendererComponent
+		local foregroundTransform = foregroundView.TransformComponent
+		local foregroundRenderer = foregroundView.SpriteRendererComponent
+		if hullTransform == nil or hullRenderer == nil or engineTransform == nil or engineRenderer == nil or foregroundTransform == nil or foregroundRenderer == nil then
+			self:ReleaseLocalViews()
+			log_warning("[GVShipVisual] local overlay components not ready; will retry")
+			return false
+		end
+		hullRenderer.Enable = false
+		engineRenderer.Enable = false
+		foregroundRenderer.Enable = false
+		self.appliedShipId = ""
+		return true
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean SyncOverlayTransforms()
+		local map = self.Entity.CurrentMap
+		local mapTransform = nil
+		local sourceTransform = self.Entity.TransformComponent
+		if map ~= nil then mapTransform = map.TransformComponent end
+		if map == nil or sourceTransform == nil then return false end
+		local scale = sourceTransform.Scale
+		local hostPosition = sourceTransform.WorldPosition
+		local hullOffset = self:GetHullVisualOffset(self.appliedShipId)
+		local hullWorldPosition = hostPosition + Vector3(hullOffset.x, hullOffset.y, 0)
+		local mapPosition = hullWorldPosition
+		if mapTransform ~= nil then mapPosition = mapTransform:ToLocalPoint(hullWorldPosition) end
+		local sourceRotation = sourceTransform.WorldRotation
+		local flipped = self:GetMapFlipX()
+		local sortingLayer = self:GetMapSortingLayer()
+		local shipId = self.appliedShipId
+		local engineOffset = self:GetEngineOffset(shipId)
+		local direction = 1
+		local engineAngle = -90
+		if flipped then
+			direction = -1
+			engineAngle = 90
+		end
+		if self.localHullView ~= nil and isvalid(self.localHullView) then
+			local hullTransform = self.localHullView.TransformComponent
+			local hullRenderer = self.localHullView.SpriteRendererComponent
+			if hullTransform ~= nil then
+				hullTransform.Position = mapPosition
+				hullTransform.Scale = scale
+				hullTransform.Rotation = sourceRotation
+			else return false end
+			if hullRenderer ~= nil then
+				hullRenderer.SortingLayer = sortingLayer
+				hullRenderer.OrderInLayer = 0
+				hullRenderer.FlipX = flipped
+			end
+		end
+		if self.localEngineView ~= nil and isvalid(self.localEngineView) then
+			local engineTransform = self.localEngineView.TransformComponent
+			local engineRenderer = self.localEngineView.SpriteRendererComponent
+			if engineTransform ~= nil then
+				local worldEnginePosition = hostPosition + Vector3(hullOffset.x + engineOffset.x * scale.x * direction, hullOffset.y + engineOffset.y * scale.y, 0.01)
+				engineTransform.Position = worldEnginePosition
+				if mapTransform ~= nil then engineTransform.Position = mapTransform:ToLocalPoint(worldEnginePosition) end
+				engineTransform.Scale = scale
+				engineTransform.Rotation = Vector3(sourceRotation.x, sourceRotation.y, sourceRotation.z + engineAngle)
+			else return false end
+			if engineRenderer ~= nil then
+				engineRenderer.SortingLayer = sortingLayer
+				engineRenderer.OrderInLayer = -1
+				engineRenderer.FlipX = false
+			end
+		end
+		if self.localForegroundView ~= nil and isvalid(self.localForegroundView) then
+			local foregroundTransform = self.localForegroundView.TransformComponent
+			local foregroundRenderer = self.localForegroundView.SpriteRendererComponent
+			if foregroundTransform ~= nil then
+				foregroundTransform.Position = mapPosition
+				local foregroundScale = scale
+				if shipId == "small_sampan" or shipId == "forest" then
+					foregroundScale = Vector3(scale.x * 1448 / 1447, scale.y * 1086 / 1087, scale.z)
+				end
+				foregroundTransform.Scale = foregroundScale
+				foregroundTransform.Rotation = sourceRotation
+			else return false end
+			if foregroundRenderer ~= nil then
+				foregroundRenderer.SortingLayer = sortingLayer
+				foregroundRenderer.OrderInLayer = self:GetMapFrontOrder()
+				foregroundRenderer.FlipX = flipped
+			end
+		end
+		if self.appliedShipId ~= "" then
+			local hullRenderer = self.localHullView.SpriteRendererComponent
+			local engineRenderer = self.localEngineView.SpriteRendererComponent
+			local foregroundRenderer = self.localForegroundView.SpriteRendererComponent
+			if hullRenderer ~= nil and engineRenderer ~= nil and foregroundRenderer ~= nil then
+				hullRenderer.Enable = true
+				engineRenderer.Enable = true
+				foregroundRenderer.Enable = true
+			end
+		end
+		return true
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ApplySelectedShip()
+		if self.localHullView == nil or isvalid(self.localHullView) == false then return end
+		local state = _GreatVoyageVoyageState
+		local data = _GreatVoyageVoyageData
+		if state == nil or data == nil then return end
+		local ship = state.clientShip
+		if ship == nil or ship.id == nil then
+			if self.snapshotRequestedForMap == false and state.RequestShipSnapshot ~= nil then
+				self.snapshotRequestedForMap = true
+				state:RequestShipSnapshot()
+				log("[GVShipVisual] requested ship snapshot on map entry")
+			end
+			return
+		end
+		local shipId = ship.id
+		local definition = data:GetShipById(shipId)
+		if definition == nil or definition.spriteRuid == nil or definition.spriteRuid == "" then
+			log_warning("[GVShipVisual] catalog entry missing sprite ship=" .. tostring(shipId))
+			return
+		end
+		if shipId == self.appliedShipId then return end
+		local hullRenderer = self.localHullView.SpriteRendererComponent
+		if hullRenderer == nil then return end
+		hullRenderer.SpriteRUID = definition.spriteRuid
+		if self.localEngineView ~= nil and isvalid(self.localEngineView) and self.localEngineView.SpriteRendererComponent ~= nil then
+			self.localEngineView.SpriteRendererComponent.SpriteRUID = self.engineAnimationRuid
+		end
+		if self.localForegroundView ~= nil and isvalid(self.localForegroundView) and self.localForegroundView.SpriteRendererComponent ~= nil then
+			local foregroundRenderer = self.localForegroundView.SpriteRendererComponent
+			foregroundRenderer.SpriteRUID = self:GetForegroundRuid(shipId)
+			foregroundRenderer.Enable = false
+		end
+		self.appliedShipId = shipId
+		self:SyncOverlayTransforms()
+		log("[GVShipVisual] local ship applied id=" .. shipId .. " engineFrames=11 visualConfirmed=false")
+	end
+
+	@ExecSpace("ClientOnly")
+	method string GetForegroundRuid(string shipId)
+		if shipId == "forest" then return self.forestFrontRuid end
+		if shipId == "gear" then return self.gearFrontRuid end
+		if shipId == "red" then return self.redFrontRuid end
+		if shipId == "merchant" then return self.merchantFrontRuid end
+		return self.starterFrontRuid
+	end
+
+	@ExecSpace("ClientOnly")
+	method Vector2 GetEngineOffset(string shipId)
+		-- Initial local sprite-unit offsets (100 px = 1 unit); tune in Maker without moving the foothold.
+		if shipId == "forest" then return Vector2(5.1, -1.5) end
+		if shipId == "gear" then return Vector2(5.0, -0.6) end
+		if shipId == "red" then return Vector2(5.7, -1.0) end
+		if shipId == "merchant" then return Vector2(6.0, -1.1) end
+		return Vector2(6.0, -1.6)
+	end
+
+	@ExecSpace("ClientOnly")
+	method Vector2 GetHullVisualOffset(string shipId)
+		-- Align each PNG's measured front-rail Y to a shared point 0.2 units above deck foothold Y=-1.462.
+		if shipId == "forest" then return Vector2(0, 0.106) end
+		if shipId == "gear" then return Vector2(0, 0.106) end
+		if shipId == "red" then return Vector2(0, 0.266) end
+		if shipId == "merchant" then return Vector2(0, -0.134) end
+		return Vector2(0, 0.366)
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean GetMapFlipX()
+		local map = self.Entity.CurrentMap
+		if map == nil then return false end
+		return map.Name == "map_forest_port" or map.Name == "map_nihal_port"
+	end
+
+	@ExecSpace("ClientOnly")
+	method string GetMapSortingLayer()
+		local map = self.Entity.CurrentMap
+		if map == nil then return "MapLayer6" end
+		if map.Name == "map_ludus_port" then return "MapLayer4" end
+		if map.Name == "map_nihal_port" then return "MapLayer1" end
+		return "MapLayer6"
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer GetMapFrontOrder()
+		local map = self.Entity.CurrentMap
+		if map ~= nil and map.Name == "map_ludus_port" then return 3 end
+		return 10
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ReleaseLocalViews()
+		self:ReleaseBattleVisuals()
+		if self.localHullView ~= nil and isvalid(self.localHullView) then self.localHullView:Destroy() end
+		if self.localEngineView ~= nil and isvalid(self.localEngineView) then self.localEngineView:Destroy() end
+		if self.localForegroundView ~= nil and isvalid(self.localForegroundView) then self.localForegroundView:Destroy() end
+		self.localHullView = nil
+		self.localEngineView = nil
+		self.localForegroundView = nil
+		self.appliedShipId = ""
+		self.snapshotRequestedForMap = false
+		self.localViewsActive = false
+		log("[GVShipVisual] local views released")
+	end
+
+	@ExecSpace("ClientOnly")
+	method string GetBattleAnimationRuid(string enemyId)
+		-- RUIDs verified from official MSW resource packs; these views have no Body or damage authority.
+		if enemyId == "stirge" then return "97be1b527dea4b20b7d1521feec01e64" end
+		if enemyId == "star_pixie" then return "a25f27e01d7446c6910550d595ef08b6" end
+		if enemyId == "bubble_fish" then return "669b0c89c6d84658b9b2e0a34a43a514" end
+		if enemyId == "yellow_plane" then return "2ea57f7287af47c3a718c48bfa4cf5bd" end
+		if enemyId == "kiyo" then return "d261f2a9500943e08e95a2a7988e4259" end
+		return ""
+	end
+
+	@ExecSpace("ClientOnly")
+	method void UpdateBattleVisuals(number delta)
+		local player = _UserService.LocalPlayer
+		local map = self.Entity.CurrentMap
+		local controller = _GreatVoyageAdventureController
+		local battle = nil
+		if controller ~= nil then battle = controller.clientAirBattle end
+		if not isvalid(player) or not isvalid(map) or player.CurrentMap ~= map or map.Name ~= "map_airship_deck" or battle == nil or battle.phase ~= "active" then
+			if self.appliedBattleId ~= "" then self:ReleaseBattleVisuals() end
+			return
+		end
+		local animationRuid = self:GetBattleAnimationRuid(battle.enemyId)
+		if animationRuid == "" then return end
+		if self.appliedBattleId ~= battle.id then
+			self:ReleaseBattleVisuals()
+			local enemy = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalAirEnemy", Vector3(-5.2, 0.1, 0), map)
+			local shot = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalCannonShot", Vector3(-4.35, -0.8, 0), map)
+			local enemyShot = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalEnemyShot", Vector3(-5.2, 0.1, 0), map)
+			self.localBattleEnemy = enemy
+			self.localBattleShot = shot
+			self.localEnemyShot = enemyShot
+			if not isvalid(enemy) or not isvalid(shot) or not isvalid(enemyShot) or enemy.SpriteRendererComponent == nil or shot.SpriteRendererComponent == nil or enemyShot.SpriteRendererComponent == nil or enemy.TransformComponent == nil or shot.TransformComponent == nil or enemyShot.TransformComponent == nil then
+				self:ReleaseBattleVisuals()
+				return
+			end
+			enemy.SpriteRendererComponent.SpriteRUID = animationRuid
+			enemy.SpriteRendererComponent.SortingLayer = self:GetMapSortingLayer()
+			enemy.SpriteRendererComponent.OrderInLayer = 20
+			enemy.SpriteRendererComponent.FlipX = true
+			enemy.SpriteRendererComponent.Enable = true
+			enemy.TransformComponent.Scale = Vector3(1.5, 1.5, 1)
+			-- A verified Star Pixie projectile sprite, tinted gold for the cannon tracer.
+			shot.SpriteRendererComponent.SpriteRUID = "7543d83767874b968f6871068931bd2e"
+			shot.SpriteRendererComponent.SortingLayer = self:GetMapSortingLayer()
+			shot.SpriteRendererComponent.OrderInLayer = 21
+			shot.SpriteRendererComponent.Color = Color(1, 0.75, 0.2, 1)
+			shot.SpriteRendererComponent.Enable = false
+			shot.TransformComponent.Scale = Vector3(0.8, 0.8, 1)
+			enemyShot.SpriteRendererComponent.SpriteRUID = "7543d83767874b968f6871068931bd2e"
+			enemyShot.SpriteRendererComponent.SortingLayer = self:GetMapSortingLayer()
+			enemyShot.SpriteRendererComponent.OrderInLayer = 21
+			enemyShot.SpriteRendererComponent.Color = Color(0.4, 0.8, 1, 1)
+			enemyShot.SpriteRendererComponent.Enable = false
+			enemyShot.TransformComponent.Scale = Vector3(0.8, 0.8, 1)
+			self.appliedBattleId = battle.id
+			self.lastEnemyHp = battle.enemyHp
+			log("[AirBattleVisual] created id=" .. battle.id .. " enemy=" .. battle.enemyId)
+		end
+		if not isvalid(self.localBattleEnemy) or not isvalid(self.localBattleShot) or not isvalid(self.localEnemyShot) then
+			self:ReleaseBattleVisuals()
+			return
+		end
+		self.battleVisualElapsed = self.battleVisualElapsed + delta
+		self.shotElapsed = self.shotElapsed + delta
+		self.enemyShotElapsed = self.enemyShotElapsed + delta
+		self.enemyHitFlashRemaining = math.max(0, self.enemyHitFlashRemaining - delta)
+		-- Start from server launch sequences, rather than replaying a shot after HP has dropped.
+		if (battle.playerShotSequence or 0) > self.lastPlayerShotSequence then
+			self.lastPlayerShotSequence = battle.playerShotSequence
+			self.shotElapsed = math.max(0, battle.playerShotElapsed or 0)
+		end
+		if (battle.enemyShotSequence or 0) > self.lastEnemyShotSequence then
+			self.lastEnemyShotSequence = battle.enemyShotSequence
+			self.enemyShotElapsed = math.max(0, battle.enemyShotElapsed or 0)
+		end
+		if battle.enemyHp < self.lastEnemyHp then self.enemyHitFlashRemaining = 0.2 end
+		self.lastEnemyHp = battle.enemyHp
+		local enemyPosition = Vector3(-5.2 + math.sin(self.battleVisualElapsed * 1.5) * 0.2, 0.1 + math.sin(self.battleVisualElapsed * 3) * 0.12, 0)
+		self.localBattleEnemy.TransformComponent.Position = enemyPosition
+		local shotProgress = math.min(1, self.shotElapsed / self.shotFlightSeconds)
+		self.localBattleShot.TransformComponent.Position = Vector3(-4.35 + (enemyPosition.x + 4.35) * shotProgress, -0.8 + (enemyPosition.y + 0.8) * shotProgress, 0)
+		self.localBattleShot.SpriteRendererComponent.Enable = self.shotElapsed < self.shotFlightSeconds
+		local enemyShotProgress = math.min(1, self.enemyShotElapsed / self.shotFlightSeconds)
+		self.localEnemyShot.TransformComponent.Position = Vector3(enemyPosition.x + (-3.5 - enemyPosition.x) * enemyShotProgress, enemyPosition.y + (-0.8 - enemyPosition.y) * enemyShotProgress, 0)
+		self.localEnemyShot.SpriteRendererComponent.Enable = self.enemyShotElapsed < self.shotFlightSeconds
+		if self.enemyHitFlashRemaining > 0 then
+			self.localBattleEnemy.SpriteRendererComponent.Color = Color(1, 0.5, 0.5, 1)
+		else
+			self.localBattleEnemy.SpriteRendererComponent.Color = Color(1, 1, 1, 1)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ReleaseBattleVisuals()
+		if isvalid(self.localBattleEnemy) then self.localBattleEnemy:Destroy() end
+		if isvalid(self.localBattleShot) then self.localBattleShot:Destroy() end
+		if isvalid(self.localEnemyShot) then self.localEnemyShot:Destroy() end
+		if self.appliedBattleId ~= "" then log("[AirBattleVisual] destroyed id=" .. self.appliedBattleId) end
+		self.localBattleEnemy = nil
+		self.localBattleShot = nil
+		self.localEnemyShot = nil
+		self.appliedBattleId = ""
+		self.battleVisualElapsed = 0
+		self.shotElapsed = 1
+		self.lastPlayerShotSequence = 0
+		self.lastEnemyShotSequence = 0
+		self.enemyHitFlashRemaining = 0
+		self.lastEnemyHp = -1
+		self.enemyShotElapsed = 1
+	end
+end

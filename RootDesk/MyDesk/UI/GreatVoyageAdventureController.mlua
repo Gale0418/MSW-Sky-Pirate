@@ -20,9 +20,11 @@ script GreatVoyageAdventureController extends Logic
 	property TextGUIRendererComponent selectedText = "2dae4a3b-b561-4ec8-9bf3-2090dfd84f93"
 	property UITransformComponent routeTransform = "f052c982-146a-412b-a552-a670727ca978"
 	property UITransformComponent routeArrowTransform = "984f9dfb-f337-47ba-8084-b65bc3d74c66"
-	property Entity deckEncounterPanel = "2f5b8dbc-b01b-4bfa-8488-ec2031a2a907"
-	property TextGUIRendererComponent encounterTitleText = "5211f35e-1315-4a64-a405-30ba64206558"
-	property TextGUIRendererComponent encounterBodyText = "de1d6fa4-2f54-414c-a26a-72e40b29e45f"
+	property UITransformComponent mapArtTransform = "dda473fa-1411-4b6e-b091-e7a2b3be0278"
+	property UITransformComponent forestMapPinTransform = "fd2a3a9e-9a10-4236-a4ee-2ebd4ae806b7"
+	property UITransformComponent skyMapPinTransform = "6afb608b-415f-433d-b76c-d906ded8a501"
+	property UITransformComponent ludusMapPinTransform = "894a4370-b721-4a31-ba4f-d61f994b4da1"
+	property UITransformComponent nihalMapPinTransform = "8c5520e6-63f8-4d36-a2e9-a8eaacf135c5"
 	property TextGUIRendererComponent previewSummaryText = "114c9a3c-b95a-428c-83e6-91b3c03bf1d9"
 	property TextGUIRendererComponent airspaceOrderText = "fc8752c3-d5be-4563-85b1-0ce0913b90bd"
 	property TextGUIRendererComponent segmentDetailsText = "b749e462-0765-4858-8cab-bfb14ae9ab61"
@@ -35,6 +37,8 @@ script GreatVoyageAdventureController extends Logic
 	property ButtonComponent shopPlusButton = "e6a43be9-134c-407d-a7b5-db89f90f6471"
 	property ButtonComponent shopBuyButton = "c996d596-b751-4441-bc52-ff84d3d83029"
 	property ButtonComponent shopSellButton = "0044263f-3560-4d02-8b01-7af93b0729b6"
+	property ButtonComponent shopShipButton = "01d5ba18-650e-4d30-bb94-e3374bb94381"
+	property ButtonComponent shopCardMarketButton = "45e93589-32f8-4f46-a398-bb7e3b60a0a5"
 	property TextGUIRendererComponent shopGoldText = "2f325fb6-ed00-4a37-887c-788788d39d50"
 	property TextGUIRendererComponent shopNpcNameText = "69459c9b-19f1-413f-80f9-e9f4054be84e"
 	property TextGUIRendererComponent shopDialogText = "95a2bcbf-b613-474b-973b-d40383f2ec75"
@@ -72,12 +76,14 @@ script GreatVoyageAdventureController extends Logic
 	property Entity npcTarget = nil
 	property string currentAction = ""
 	property string currentMapName = ""
+	property any clientAirBattle = nil
 	property string currentPortId = "forest"
 	property string selectedDestinationId = "sky"
 	property string pendingDestinationId = "sky"
-	property string lastEncounterId = ""
-	property integer lastRaidRemaining = -1
 	property string modalType = ""
+	property string shopTab = "goods"
+	property integer shopPage = 1
+	property integer shopSelectedIndex = 1
 	property string shopStatusMessage = "選擇商品後進行交易"
 	property integer lastShopEconomyRevision = 0
 	property number targetX = 0
@@ -86,17 +92,406 @@ script GreatVoyageAdventureController extends Logic
 	property boolean modalOpen = false
 	property number routeAngle = 0
 	property number routeArrowAngle = 0
+	property Entity shipModal = "019ec003-fc12-4752-94f7-33ada24c215a"
+	property ButtonComponent shipOpenButton = "4e3e25b1-21ed-4c8b-af46-7d2a21333989"
+	property ButtonComponent shipCloseButton = "6bb239dd-8a7f-4ca8-adfa-c9877d305657"
+	property ButtonComponent shipRepairButton = "63888555-a453-4761-a2cf-1b28379b2cf9"
+	property TextGUIRendererComponent shipConditionText = "317252f3-cdb2-4785-b9f7-1248c00eedbd"
+	property TextGUIRendererComponent shipNameText = "1916c38f-af07-4973-a584-67a96656a456"
+	property TextGUIRendererComponent shipBadgeText = "89e2d928-c1fd-496c-92df-bc0d245ada8e"
+	property TextGUIRendererComponent shipModsText = "9c58cab5-21ef-4b35-85ac-83a90fba315d"
+	property TextGUIRendererComponent shipCargoHintText = "4771980a-d47f-452a-b460-c21be11f6384"
+	property TextGUIRendererComponent shipWalletText = "e55efe61-037f-4df3-937b-779554588461"
+	property TextGUIRendererComponent shipCargoText = "f5456be3-7351-4615-ae8d-4d64eccf8e19"
+	property TextGUIRendererComponent shipCapacityText = "a9f4811a-c493-4a66-bacc-24ebe94fc338"
+	property TextGUIRendererComponent shipStatusText = "ffc6b7a4-b4f9-4757-99e0-5c91e8f7d1fe"
+	property Entity shipFooterHintEntity = "72dc1889-0301-40f0-bfed-96a6a28cce68"
+	property SpriteGUIRendererComponent shipCargoIcon = "8d32f803-3dc2-404c-9005-733c2d75c959"
+	property SpriteGUIRendererComponent shipPreviewImage = "8fd82935-adc6-42af-9d46-e8bb49428920"
+	property SpriteGUIRendererComponent shipShopPreviewImage = "ba0cc062-538e-4352-914c-28f3d05f678a"
+	property SpriteGUIRendererComponent cardMarketShipPreview = "4bc1f495-de56-48e2-8e96-771832492153"
+	property TextGUIRendererComponent cardMarketShipStats = "cd804e0b-4eca-4de6-adef-6cf6d9893955"
+	property Entity cardMarketFitLeftPanelEntity = "6ae1ee13-c6a7-40e2-a9b9-e572d7f9ed8c"
+	property Entity cardMarketFitRightPanelEntity = "111c64b8-7249-484b-a356-a825dab830f2"
+	property TextGUIRendererComponent cardMarketFitInventoryTitle = "b384efe7-adc0-420a-bd1c-313e66188ab3"
+	property UITransformComponent shipHullBarFillTransform = "8d452e36-d80c-42f0-bd39-05dd0791de3b"
+	property UITransformComponent shipShieldBarFillTransform = "7c410593-51e7-4dfc-b190-1b8fab8fe87b"
+	property UITransformComponent shipArmorBarFillTransform = "f9baf3a4-157a-4ec0-8980-df4cce380659"
+	property TextGUIRendererComponent shipHullValueText = "4fdfd80e-9143-43f2-81b3-a33167e368a8"
+	property TextGUIRendererComponent shipShieldValueText = "80aa28a9-28b1-482e-8111-d960a9093f23"
+	property TextGUIRendererComponent shipArmorValueText = "07b231a3-8b35-42c3-97f1-081f5550815c"
+	property ButtonComponent cardMarketFitSlot1Button = "ff004bbf-8c71-4c24-a649-0a4b30a083d5"
+	property ButtonComponent cardMarketFitSlot2Button = "f4901c47-04b4-4eb8-8611-2b45dc2bdc89"
+	property ButtonComponent cardMarketFitSlot3Button = "a99ef9a1-5385-48fc-810a-efe795336b21"
+	property TextGUIRendererComponent cardMarketFitSlot1Label = "774b3e60-2f36-41b5-8471-1e5e6f62f860"
+	property TextGUIRendererComponent cardMarketFitSlot2Label = "6dbd35ae-f646-46e7-a7e4-dd60d7fc3e35"
+	property TextGUIRendererComponent cardMarketFitSlot3Label = "7e39d717-7933-4441-9138-36175caeafbc"
+	property ButtonComponent cardMarketShipMerchantButton = "28ec5fac-03b5-4379-ac3c-d57c295c1843"
+	property ButtonComponent shipCargoGridPrevButton = "b8d82ec7-30c3-445b-a24b-d87b767583f0"
+	property ButtonComponent shipCargoGridNextButton = "049c4ff3-2613-4ea8-b9ae-b4af76e1fd73"
+	property TextGUIRendererComponent shipCargoGridPageText = "5852b6de-7dc0-4979-90fb-bdeafc80609c"
+	property Entity shipCargoGridCell1 = "d4e439bd-2f09-4f1c-87c9-fcae70b0108b"
+	property Entity shipCargoGridCell2 = "e40105d7-7d9c-4e8a-8cff-933bfb7567f2"
+	property Entity shipCargoGridCell3 = "7818de22-d0c4-458f-bc04-539ad4f8350d"
+	property Entity shipCargoGridCell4 = "29147995-ea02-4873-b95e-c9ad6d5029bf"
+	property Entity shipCargoGridCell5 = "b13e4f20-3ff2-46cf-91ed-b1de2e974750"
+	property Entity shipCargoGridCell6 = "7aba12ce-c1c7-4294-a2e8-3d18c0c4a8e1"
+	property Entity shipCargoGridCell7 = "d71ad2a2-b78c-4c34-b3c6-15b51b14fafe"
+	property Entity shipCargoGridCell8 = "f3fe0479-7e08-4d98-ae42-fc54c3d00635"
+	property Entity shipCargoGridCell9 = "21f3490a-efa1-474f-9ce7-d088ab4a31e5"
+	property Entity shipCargoGridCell10 = "f8a65962-c5b1-46ed-99aa-cf758c32894e"
+	property Entity shipCargoGridCell11 = "d9406952-de40-4439-858a-8cee3eca27e3"
+	property Entity shipCargoGridCell12 = "659f67fb-84f1-4166-8678-dc76b21c3113"
+	property Entity shipCargoGridCell13 = "b9734603-b442-4303-86a5-17343e278eae"
+	property Entity shipCargoGridCell14 = "1f5ee478-fd6f-479a-8619-9db36fad0407"
+	property Entity shipCargoGridCell15 = "5aca52f5-b83c-4041-9482-3424ed176767"
+	property Entity shipCargoGridCell16 = "989b7a17-eb21-4f2f-be58-06e2f7c78d75"
+	property Entity shipCargoGridCell17 = "d3cfec72-1c69-4287-a78e-91005f730ece"
+	property Entity shipCargoGridCell18 = "5aeec00b-6d8c-4c26-8be9-1cdbbea319d0"
+	property SpriteGUIRendererComponent shipCargoGridIcon1 = "11604892-a9a8-4ce2-9ba3-bd4ca905626c"
+	property SpriteGUIRendererComponent shipCargoGridIcon2 = "530fe57f-8a56-4043-a26a-9e6c683f2c73"
+	property SpriteGUIRendererComponent shipCargoGridIcon3 = "532f4a5f-ddf6-41e8-af50-574f5c38fdaa"
+	property SpriteGUIRendererComponent shipCargoGridIcon4 = "91adb99a-1d81-405c-8d2b-b66a75b6776e"
+	property SpriteGUIRendererComponent shipCargoGridIcon5 = "72d945f3-7360-416f-a26b-7feb218b315b"
+	property SpriteGUIRendererComponent shipCargoGridIcon6 = "7816a881-9c0d-4c5c-af15-043f2518ae89"
+	property SpriteGUIRendererComponent shipCargoGridIcon7 = "c18ecdfe-c1d2-4ef8-baa3-a3fc814a2663"
+	property SpriteGUIRendererComponent shipCargoGridIcon8 = "3c1e664a-5a69-463e-afb5-3e79e15ec249"
+	property SpriteGUIRendererComponent shipCargoGridIcon9 = "a8f76dd1-90fb-4e4a-bc28-7ee5f052d475"
+	property SpriteGUIRendererComponent shipCargoGridIcon10 = "1b58cc63-33e5-4c8e-8946-88e45907e007"
+	property SpriteGUIRendererComponent shipCargoGridIcon11 = "0d631ea0-adb5-4c36-ad05-653e41b2b2c6"
+	property SpriteGUIRendererComponent shipCargoGridIcon12 = "2e01fe06-b251-4fd2-bac1-fba2f66120b6"
+	property SpriteGUIRendererComponent shipCargoGridIcon13 = "e83e95a9-1a8d-4f66-8cfb-7b4857d20902"
+	property SpriteGUIRendererComponent shipCargoGridIcon14 = "707949c6-732c-45db-bfc7-71c3596cfdb1"
+	property SpriteGUIRendererComponent shipCargoGridIcon15 = "af0fbb91-ac8d-4807-94d9-3b72173ae9f0"
+	property SpriteGUIRendererComponent shipCargoGridIcon16 = "54cc94b1-4788-4cf2-a802-99854a90a380"
+	property SpriteGUIRendererComponent shipCargoGridIcon17 = "9b9e3671-a774-4e86-8da1-c06c6ca58823"
+	property SpriteGUIRendererComponent shipCargoGridIcon18 = "948e96d5-88dc-4f26-932d-12ca50f8f91b"
+	property TextGUIRendererComponent shipCargoGridLabel1 = "7fcfa0b6-1f54-4290-bfe2-812f03370f18"
+	property TextGUIRendererComponent shipCargoGridLabel2 = "4f9f582e-c529-4334-aed6-b7497cd97560"
+	property TextGUIRendererComponent shipCargoGridLabel3 = "f2bab323-b22f-4650-b7be-a9b1253c0d9f"
+	property TextGUIRendererComponent shipCargoGridLabel4 = "d5b0e5df-4378-4ff6-80e9-32c93fd152b5"
+	property TextGUIRendererComponent shipCargoGridLabel5 = "84199471-d3f6-4023-b975-a9124b483b37"
+	property TextGUIRendererComponent shipCargoGridLabel6 = "0b0bca76-23de-459d-b98d-b13933ddef16"
+	property TextGUIRendererComponent shipCargoGridLabel7 = "1e737400-797e-4310-a429-1d8b9b8040ee"
+	property TextGUIRendererComponent shipCargoGridLabel8 = "a09280bb-9f3b-41bc-944c-e177218600d6"
+	property TextGUIRendererComponent shipCargoGridLabel9 = "ff0a7124-6f09-4f57-95f3-36d43ae42fe6"
+	property TextGUIRendererComponent shipCargoGridLabel10 = "e1e68b43-969c-418b-aebf-62cb5b1c9d2d"
+	property TextGUIRendererComponent shipCargoGridLabel11 = "647a2eb7-676d-4777-8f14-938da5de8514"
+	property TextGUIRendererComponent shipCargoGridLabel12 = "ef03f2df-ddeb-4ffa-aedb-13050edf2b74"
+	property TextGUIRendererComponent shipCargoGridLabel13 = "afaa36bc-3bdd-4f26-822d-d6c30e927340"
+	property TextGUIRendererComponent shipCargoGridLabel14 = "442ba0eb-ed87-401c-bf3f-4855a9864f40"
+	property TextGUIRendererComponent shipCargoGridLabel15 = "fd67b782-8913-4d1b-acb5-2dad4a5ae74f"
+	property TextGUIRendererComponent shipCargoGridLabel16 = "b784ddf4-6c4d-4447-91c9-a381f92f78e5"
+	property TextGUIRendererComponent shipCargoGridLabel17 = "c791bcf3-1eef-4f0b-a930-903762b4b6cb"
+	property TextGUIRendererComponent shipCargoGridLabel18 = "1f2ddb64-afbc-4b86-8323-81be74bb72fd"
+	property ButtonComponent shipModSlot1Button = "2040347b-41f8-4cf0-96e8-2620e6107196"
+	property ButtonComponent shipModSlot2Button = "7324f889-5d5c-414e-bf71-fc0972038eb5"
+	property ButtonComponent shipModSlot3Button = "32580511-4c6c-4908-9de1-eb8ca25fd0a0"
+	property Entity shipShopPanel = "df7c13d6-70ce-4c17-851b-508a36b6c660"
+	property Entity shipCabinContentEntity = "a39b4b01-2345-4e40-9310-a5e661af1f82"
+	property Entity shipCargoContentEntity = "95671cbc-3826-410a-a340-02c0a03fae42"
+	property Entity shipInstalledContentEntity = "9c58cab5-21ef-4b35-85ac-83a90fba315d"
+	property TextGUIRendererComponent shipHeaderTitleText = "b4f84eea-390c-4987-98d8-e53dab137885"
+	property TextGUIRendererComponent shipShopTitleText = "cf12947e-bf55-4e82-a568-155d13fb736f"
+	property ButtonComponent shipShopCloseButton = "ede4fef3-f850-4e4d-8c97-4927f48df9aa"
+	property ButtonComponent shipShopBackButton = "f7de2d3b-0867-4228-a512-447bdab93963"
+	property ButtonComponent shipShopActionButton = "3a196f71-72a9-4041-8fe6-2d6e45baedab"
+	property TextGUIRendererComponent shipShopDetailText = "51f5f9ed-f56c-4fdf-bcbf-945a1d7c69e1"
+	property TextGUIRendererComponent shipShopGoldText = "72859b5a-bb5f-4f6b-ad9c-d103586e85d6"
+	property TextGUIRendererComponent shipShopMessageText = "00984648-a6b6-4dfe-88b5-58f0ca7dfc24"
+	property ButtonComponent shipShopCard1Button = "2c780526-1ec9-47b3-ae9a-79ed63d9e664"
+	property ButtonComponent shipShopCard2Button = "af22a9e1-e721-414f-95c7-5f0923a3079d"
+	property ButtonComponent shipShopCard3Button = "1b0d0b30-7f25-4e01-9ce4-d92cada2db2d"
+	property ButtonComponent shipShopCard4Button = "a876917d-8799-4f76-9d1c-6bf4c7f32934"
+	property ButtonComponent shipShopCard5Button = "412ab46e-ee7b-4ed9-a432-b05c08b46570"
+	property SpriteGUIRendererComponent shipShopCard1Icon = "0381a894-09f7-4a04-9f94-5664d3ad2ff2"
+	property SpriteGUIRendererComponent shipShopCard2Icon = "e33f291d-b741-4c9c-92bf-a5484e9f06f1"
+	property SpriteGUIRendererComponent shipShopCard3Icon = "edf08d5e-c3b5-4747-ba1a-ca1baaf4bf00"
+	property SpriteGUIRendererComponent shipShopCard4Icon = "8e717abf-acd1-4245-bd3c-953b543e5871"
+	property SpriteGUIRendererComponent shipShopCard5Icon = "40f5756c-2971-45d3-84a3-317027e412e5"
+	property TextGUIRendererComponent shipShopCard1Text = "f0f67b4a-f8e7-4c3b-b80c-a23b2179921c"
+	property TextGUIRendererComponent shipShopCard2Text = "11de5d3c-9470-4422-8ff0-286fa13e312c"
+	property TextGUIRendererComponent shipShopCard3Text = "2d660fed-adaa-4d29-ace2-10e4c37e11a7"
+	property TextGUIRendererComponent shipShopCard4Text = "2d772df1-58ef-403c-854a-c3337c495cbb"
+	property TextGUIRendererComponent shipShopCard5Text = "89f03de2-7d3e-4641-a8a8-53559bad2059"
+	property ButtonComponent shipShopSlot1Button = "e86baa83-810d-472e-86e5-69a46f1fe4cf"
+	property ButtonComponent shipShopSlot2Button = "984f6eae-5dbd-4bda-9c3d-0d8f5509e5e8"
+	property ButtonComponent shipShopSlot3Button = "d8f81f35-f392-45aa-a6d5-5ff029a0c318"
+	property ButtonComponent shipShopUpgrade1Button = "1c7ea369-8a43-4067-8794-3170760af84c"
+	property ButtonComponent shipShopUpgrade2Button = "c2d18af4-5b54-4b8b-aeac-c4b5d1977297"
+	property ButtonComponent shipShopUpgrade3Button = "b35e2a9c-7b75-49b2-b50d-7b1dc5b3a25d"
+	property ButtonComponent shipShopUpgradeClearButton = "5381f7c3-32d4-489f-a273-88973e264172"
+	property Entity cardMarketPanel = "013ece94-b5c3-49fb-bcde-4c7719946f32"
+	property ButtonComponent cardMarketTabBuyButton = "a8fe5563-1035-4230-9805-6247fd24a2d7"
+	property ButtonComponent cardMarketTabSellButton = "1416fb77-6d00-4f1b-9e9d-b51f29206ac1"
+	property ButtonComponent cardMarketPagePrevButton = "aa6b83cd-7771-4e73-9c6c-a83e88cc440e"
+	property ButtonComponent cardMarketPageNextButton = "451fabea-ad1f-4834-aba6-0fba8b3abd4c"
+	property ButtonComponent cardMarketMinusButton = "b13b91c9-34c8-4cbf-8bc9-e56c7cc882a8"
+	property ButtonComponent cardMarketPlusButton = "842674b0-7636-4688-8b78-3ab30502f365"
+	property ButtonComponent cardMarketActionButton = "d01323ea-f143-49b0-b430-026deb8e3084"
+	property ButtonComponent cardMarketBackButton = "adbcb1ee-b6e2-4608-8cf5-5148076b4f0c"
+	property ButtonComponent cardMarketCardsTabButton = "11bf4c28-8cd7-4697-a16b-4ba18e010fe8"
+	property ButtonComponent cardMarketCloseButton = "a8f07ae2-1004-40c1-9fa0-52e20c778d72"
+	property ButtonComponent cardMarketCard1Button = "bc495af1-1637-45d4-bbdc-bf952d0dddb4"
+	property ButtonComponent cardMarketCard2Button = "ed4eb19c-a70f-491e-9e6b-fc4ea9ec53c0"
+	property ButtonComponent cardMarketCard3Button = "ce912db7-c592-41e8-a4fa-0a48a2bf3332"
+	property ButtonComponent cardMarketCard4Button = "f0afd0af-4177-4794-ad6e-530a699a716a"
+	property ButtonComponent cardMarketCard5Button = "1204b95e-6c64-4c29-be19-975ff3ed6874"
+	property ButtonComponent cardMarketCard6Button = "e1270d14-b3cc-440b-9bf8-865de28204a8"
+	property TextGUIRendererComponent cardMarketTitleText = "197a16c5-26af-401e-a1d6-bc0c0827b669"
+	property TextGUIRendererComponent cardMarketWalletText = "2417719a-d489-4074-a4af-98575e3aaf9e"
+	property TextGUIRendererComponent cardMarketDetailText = "47c0cb06-090f-4c59-8f49-83718d1768af"
+	property TextGUIRendererComponent cardMarketMessageText = "43ed23b4-c265-4c9f-896f-1ac498103599"
+	property TextGUIRendererComponent cardMarketPageText = "20a82bca-5797-4596-b356-d1580a9de3eb"
+	property TextGUIRendererComponent cardMarketQuantityText = "91136d48-8f04-4a43-af07-37109a562ce9"
+	property TextGUIRendererComponent cardMarketCard1Label = "c41a0ec3-102d-469b-ac62-29d5870d1bc7"
+	property TextGUIRendererComponent cardMarketCard2Label = "f9fca4fd-e795-4d34-b13b-2029db051480"
+	property TextGUIRendererComponent cardMarketCard3Label = "53630ae0-0124-47ca-a55d-801a3cd9605b"
+	property TextGUIRendererComponent cardMarketCard4Label = "324ddecd-d674-465e-b2e9-16e09bc32700"
+	property TextGUIRendererComponent cardMarketCard5Label = "573cc869-aaab-4d92-a69e-de8aca1d77b7"
+	property TextGUIRendererComponent cardMarketCard6Label = "ff031f31-01dc-4efc-acc0-1b0c4347af72"
+	property TextGUIRendererComponent shipShopSlot1Label = "49260b6b-b32b-4009-a38e-b75b0c8f1d79"
+	property TextGUIRendererComponent shipShopSlot2Label = "93639e6d-d041-498d-b0ea-15c912ae9f53"
+	property TextGUIRendererComponent shipShopSlot3Label = "772238fb-122c-44a9-9a0d-ed762cde4fa6"
+	property TextGUIRendererComponent shipModSlot1Label = "d6138187-3078-4326-8c5d-c79fa4c0740d"
+	property TextGUIRendererComponent shipModSlot2Label = "cbbc62ff-26ad-4d5e-ad01-ed6512eb3a48"
+	property TextGUIRendererComponent shipModSlot3Label = "02db3a32-8b3d-4bec-af9d-d1b6c727deba"
+	property any shipOpenHandler = nil
+	property any shipCloseHandler = nil
+	property any shipRepairHandler = nil
+	property any shipCargoGridPrevHandler = nil
+	property any shipCargoGridNextHandler = nil
+	property any cardMarketShipMerchantHandler = nil
+	property any shipModSlot1Handler = nil
+	property any shipModSlot2Handler = nil
+	property any shipModSlot3Handler = nil
+	property any shopShipHandler = nil
+	property any shopCardMarketHandler = nil
+	property any shipShopBackHandler = nil
+	property any shipShopCloseHandler = nil
+	property any shipShopActionHandler = nil
+	property any shipShopCard1Handler = nil
+	property any shipShopCard2Handler = nil
+	property any shipShopCard3Handler = nil
+	property any shipShopCard4Handler = nil
+	property any shipShopCard5Handler = nil
+	property any shipShopSlot1Handler = nil
+	property any shipShopSlot2Handler = nil
+	property any shipShopSlot3Handler = nil
+	property any shipShopUpgrade1Handler = nil
+	property any shipShopUpgrade2Handler = nil
+	property any shipShopUpgrade3Handler = nil
+	property any shipShopUpgradeClearHandler = nil
+	property any cardMarketTabBuyHandler = nil
+	property any cardMarketTabSellHandler = nil
+	property any cardMarketPagePrevHandler = nil
+	property any cardMarketPageNextHandler = nil
+	property any cardMarketMinusHandler = nil
+	property any cardMarketPlusHandler = nil
+	property any cardMarketActionHandler = nil
+	property any cardMarketBackHandler = nil
+	property any cardMarketCloseHandler = nil
+	property any cardMarketCard1Handler = nil
+	property any cardMarketCard2Handler = nil
+	property any cardMarketCard3Handler = nil
+	property any cardMarketCard4Handler = nil
+	property any cardMarketCard5Handler = nil
+	property any cardMarketCard6Handler = nil
+	property any cardMarketFitSlot1Handler = nil
+	property any cardMarketFitSlot2Handler = nil
+	property any cardMarketFitSlot3Handler = nil
+	property integer pendingShipRepairRevision = -1
+	property integer pendingShipShopRevision = -1
+	property integer selectedShipCatalogIndex = 1
+	property integer selectedShipSlotIndex = 1
+	property integer shipCargoGridPage = 1
+	property integer shipCargoGridPageSize = 12
+	property boolean shipShopReturnToFitting = false
+	property string selectedShipId = ""
+	property string cardMarketMode = "buy"
+	property string cardMarketReturnModal = "shop"
+	property string cardMarketShipId = ""
+	property string cardMarketSelectedCardId = ""
+	property integer cardMarketSelectedIndex = 0
+	property integer cardMarketPage = 1
+	property integer cardMarketQuantity = 1
+	property integer cardMarketInventoryRevision = -1
+	property integer cardMarketPendingRevision = -1
+	property number cardMarketPendingElapsed = 0
+	property boolean cardMarketRequestPending = false
+	property string cardMarketFeedback = ""
+
+	@ExecSpace("ClientOnly")
+	method void CacheReskinVisuals()
+		-- 只在 UI 初始化時解析新增 child，更新循環使用快取參照。
+		self._T.reskinVisuals = {}
+		local paths = {
+			"/ui/GreatVoyageAdventure/PromptButton",
+			"/ui/GreatVoyageAdventure/ShipOpen",
+			"/ui/GreatVoyageAdventure/ShopModal/Window/Trade/Minus",
+			"/ui/GreatVoyageAdventure/ShopModal/Window/Trade/Plus",
+			"/ui/GreatVoyageAdventure/ShopModal/Window/Trade/Sell",
+			"/ui/GreatVoyageAdventure/ShipModal/Window/Cargo/Prev",
+			"/ui/GreatVoyageAdventure/ShipModal/Window/Cargo/Next",
+			"/ui/GreatVoyageAdventure/CardMarket/Window/Minus",
+			"/ui/GreatVoyageAdventure/CardMarket/Window/Plus",
+			"/ui/GreatVoyageAdventure/CardMarket/Window/Prev",
+			"/ui/GreatVoyageAdventure/CardMarket/Window/Next",
+			"/ui/GreatVoyageAdventure/CardMarket/Window/Close",
+			"/ui/GreatVoyageAdventure/ShipModal/Window/Close",
+			"/ui/GreatVoyageAdventure/ShipModal/Window/ShipShop/Close",
+			"/ui/GreatVoyageAdventure/ShopModal/Window/Close",
+			"/ui/GreatVoyageAdventure/WorldMapModal/Window/Close"
+		}
+		local cachedComponentCount = 0
+		self._T.reskinButtonEnabled = {}
+		self._T.reskinButtonStates = {}
+		self._T.reskinStateHandlers = {}
+		for _, path in ipairs(paths) do
+			local visual = {
+				material = nil,
+				materialTransform = nil,
+				materialBaseScale = nil,
+				materialBasePosition = nil,
+				label = nil,
+				labelTransform = nil,
+				rootTransform = nil,
+				rootBaseSize = nil,
+				button = nil
+			}
+			local rootEntity = _EntityService:GetEntityByPath(path)
+			if isvalid(rootEntity) and isvalid(rootEntity.UITransformComponent) then
+				visual.rootTransform = rootEntity.UITransformComponent
+				visual.rootBaseSize = rootEntity.UITransformComponent.RectSize
+			end
+			if isvalid(rootEntity) and isvalid(rootEntity.ButtonComponent) then
+				visual.button = rootEntity.ButtonComponent
+				self._T.reskinButtonEnabled[path] = rootEntity.ButtonComponent.Enable
+				self._T.reskinButtonStates[path] = ButtonState.Normal
+				local capturedPath = path
+				local stateEventHandle = rootEntity:ConnectEvent(ButtonStateChangeEvent, function(event)
+					self:OnReskinButtonStateChange(capturedPath, event)
+				end)
+				table.insert(self._T.reskinStateHandlers, { entity = rootEntity, eventHandler = stateEventHandle })
+			end
+			local materialEntity = _EntityService:GetEntityByPath(path .. "/Material")
+			if isvalid(materialEntity) and isvalid(materialEntity.SpriteGUIRendererComponent) then
+				visual.material = materialEntity.SpriteGUIRendererComponent
+				cachedComponentCount = cachedComponentCount + 1
+			end
+			if isvalid(materialEntity) and isvalid(materialEntity.UITransformComponent) then
+				visual.materialTransform = materialEntity.UITransformComponent
+				visual.materialBaseScale = materialEntity.UITransformComponent.UIScale
+				visual.materialBasePosition = materialEntity.UITransformComponent.anchoredPosition
+			end
+			local labelEntity = _EntityService:GetEntityByPath(path .. "/Label")
+			if isvalid(labelEntity) and isvalid(labelEntity.TextGUIRendererComponent) then
+				visual.label = labelEntity.TextGUIRendererComponent
+				cachedComponentCount = cachedComponentCount + 1
+			end
+			if isvalid(labelEntity) and isvalid(labelEntity.UITransformComponent) then
+				visual.labelTransform = labelEntity.UITransformComponent
+			end
+			self._T.reskinVisuals[path] = visual
+			self:ApplyReskinButtonState(path, ButtonState.Normal)
+		end
+		self._T.promptVisualLabel = nil
+		local promptLabelEntity = _EntityService:GetEntityByPath("/ui/GreatVoyageAdventure/PromptButton/Label")
+		if isvalid(promptLabelEntity) and isvalid(promptLabelEntity.TextGUIRendererComponent) then
+			self._T.promptVisualLabel = promptLabelEntity.TextGUIRendererComponent
+		end
+		self._T.reskinComponentCount = cachedComponentCount
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetPromptText(string text)
+		-- 根文字維持可讀資料，畫面文字同步到安全區 Label；E 由獨立 KeyHint 呈現。
+		if isvalid(self.promptLabel) then self.promptLabel.Text = text end
+		if isvalid(self._T.promptVisualLabel) then self._T.promptVisualLabel.Text = text end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetButtonEnabled(string path, ButtonComponent button, boolean enabled)
+		-- 按鈕仍由原 ButtonComponent 控制；新增圖文 child 同步呈現 disabled 狀態。
+		if not isvalid(button) then return end
+		local wasEnabled = self._T.reskinButtonEnabled[path]
+		self._T.reskinButtonEnabled[path] = enabled
+		button.Enable = enabled
+		if wasEnabled ~= enabled then self._T.reskinButtonStates[path] = ButtonState.Normal end
+		self:ApplyReskinButtonState(path, self._T.reskinButtonStates[path] or ButtonState.Normal)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnReskinButtonStateChange(string path, ButtonStateChangeEvent event)
+		-- 子圖層接管根圖 alpha=0 後的 hover/pressed 視覺。
+		self._T.reskinButtonStates[path] = event.state
+		self:ApplyReskinButtonState(path, event.state)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ApplyReskinButtonState(string path, ButtonState state)
+		local visual = self._T.reskinVisuals[path]
+		if visual == nil then return end
+		local materialColor = Color(1, 1, 1, 1)
+		local labelColor = Color(1, 0.91, 0.69, 1)
+		if self._T.reskinButtonEnabled[path] == false then
+			materialColor = Color(0.58, 0.55, 0.49, 1)
+			labelColor = Color(0.72, 0.67, 0.56, 1)
+		elseif state == ButtonState.Hover then
+			materialColor = Color(1, 0.98, 0.88, 1)
+			labelColor = Color(1, 0.97, 0.82, 1)
+		elseif state == ButtonState.Pressed then
+			materialColor = Color(0.82, 0.73, 0.57, 1)
+			labelColor = Color(0.94, 0.84, 0.64, 1)
+		end
+		if isvalid(visual.material) then visual.material.Color = materialColor end
+		if isvalid(visual.label) then visual.label.FontColor = labelColor end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void FitCardMarketButtonVisual(string path, UITransformComponent rootTransform, boolean isFitting)
+		-- 安裝模式縮窄翻頁按鈕時，縮放固定畫布並讓文字框跟隨根按鈕。
+		local visual = self._T.reskinVisuals[path]
+		if visual == nil or not isvalid(rootTransform) then return end
+		local currentSize = rootTransform.RectSize
+		if isvalid(visual.materialTransform) and visual.rootBaseSize ~= nil and visual.rootBaseSize.x > 0 and visual.rootBaseSize.y > 0 then
+			local fitScale = math.min(currentSize.x / visual.rootBaseSize.x, currentSize.y / visual.rootBaseSize.y)
+			local baseScale = visual.materialBaseScale
+			local basePosition = visual.materialBasePosition
+			if baseScale ~= nil then visual.materialTransform.UIScale = Vector3(baseScale.x * fitScale, baseScale.y * fitScale, baseScale.z) end
+			if basePosition ~= nil then visual.materialTransform.anchoredPosition = Vector2(basePosition.x * fitScale, basePosition.y * fitScale) end
+		end
+		if isvalid(visual.labelTransform) then
+			visual.labelTransform.RectSize = currentSize
+			visual.labelTransform.anchoredPosition = Vector2(0, 0)
+		end
+		if isvalid(visual.label) then
+			visual.label.BestFit = true
+			visual.label.FontSize = 26
+			visual.label.MinSize = 22
+			visual.label.MaxSize = 26
+			if isFitting then
+				visual.label.FontSize = 18
+				visual.label.MinSize = 16
+				visual.label.MaxSize = 18
+			end
+		end
+	end
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
+		-- 綁定共用商店六格貨架與分頁，事件在結束時回收。
+		self:CacheReskinVisuals()
+		log("[GV-UI-RESKIN] OnBeginPlay entered; cached child renderer components=" .. tostring(self._T.reskinComponentCount or 0))
+		self:ConnectMerchantGrid()
 		if not isvalid(self.promptButton) or not isvalid(self.worldMapModal) or not isvalid(self.shopModal) then
 			log_warning("[Adventure] UI bindings invalid")
 			return
 		end
 		self.promptButtonEntity.Enable = false
+		self:SetButtonEnabled("/ui/GreatVoyageAdventure/PromptButton", self.promptButton, false)
 		self.worldMapModal.Enable = false
 		self.shopModal.Enable = false
-		if isvalid(self.deckEncounterPanel) then self.deckEncounterPanel.Enable = false end
 		self.promptHandler = self.promptButton.Entity:ConnectEvent(ButtonClickEvent, self.OnPromptClick)
 		self.forestHandler = self.forestButton.Entity:ConnectEvent(ButtonClickEvent, self.OnForestClick)
 		self.skyHandler = self.skyButton.Entity:ConnectEvent(ButtonClickEvent, self.OnSkyClick)
@@ -112,7 +507,54 @@ script GreatVoyageAdventureController extends Logic
 		self.plusHandler = self.shopPlusButton.Entity:ConnectEvent(ButtonClickEvent, self.OnPlusClick)
 		self.buyHandler = self.shopBuyButton.Entity:ConnectEvent(ButtonClickEvent, self.OnBuyClick)
 		self.sellHandler = self.shopSellButton.Entity:ConnectEvent(ButtonClickEvent, self.OnSellClick)
+		self.shopShipHandler = self.shopShipButton.Entity:ConnectEvent(ButtonClickEvent, self.OnShopShipClick)
 		self.keyHandler = _InputService:ConnectEvent(KeyDownEvent, self.OnKeyDown)
+		if isvalid(self.shipModal) then self.shipModal.Enable = false end
+		if isvalid(self.shipOpenButton) then self.shipOpenHandler = self.shipOpenButton.Entity:ConnectEvent(ButtonClickEvent, self.OnShipOpenClick) end
+		if isvalid(self.shipCloseButton) then self.shipCloseHandler = self.shipCloseButton.Entity:ConnectEvent(ButtonClickEvent, self.OnShipCloseClick) end
+		if isvalid(self.shipRepairButton) then self.shipRepairHandler = self.shipRepairButton.Entity:ConnectEvent(ButtonClickEvent, self.OnShipRepairClick) end
+		if isvalid(self.shipCargoGridPrevButton) then self.shipCargoGridPrevHandler = self.shipCargoGridPrevButton.Entity:ConnectEvent(ButtonClickEvent, self.OnShipCargoGridPrevClick) end
+		if isvalid(self.shipCargoGridNextButton) then self.shipCargoGridNextHandler = self.shipCargoGridNextButton.Entity:ConnectEvent(ButtonClickEvent, self.OnShipCargoGridNextClick) end
+		if isvalid(self.shipShopPanel) then self.shipShopPanel.Enable = false end
+		if isvalid(self.shipShopCloseButton) then self.shipShopCloseHandler = self.shipShopCloseButton.Entity:ConnectEvent(ButtonClickEvent, self.OnShipCloseClick) end
+		if isvalid(self.shipShopBackButton) then self.shipShopBackHandler = self.shipShopBackButton.Entity:ConnectEvent(ButtonClickEvent, self.OnShipShopBackClick) end
+		if isvalid(self.shipShopActionButton) then self.shipShopActionHandler = self.shipShopActionButton.Entity:ConnectEvent(ButtonClickEvent, self.OnShipShopActionClick) end
+		if isvalid(self.shipShopCard1Button) then self.shipShopCard1Handler = self.shipShopCard1Button.Entity:ConnectEvent(ButtonClickEvent, self.OnShipShopCard1Click) end
+		if isvalid(self.shipShopCard2Button) then self.shipShopCard2Handler = self.shipShopCard2Button.Entity:ConnectEvent(ButtonClickEvent, self.OnShipShopCard2Click) end
+		if isvalid(self.shipShopCard3Button) then self.shipShopCard3Handler = self.shipShopCard3Button.Entity:ConnectEvent(ButtonClickEvent, self.OnShipShopCard3Click) end
+		if isvalid(self.shipShopCard4Button) then self.shipShopCard4Handler = self.shipShopCard4Button.Entity:ConnectEvent(ButtonClickEvent, self.OnShipShopCard4Click) end
+		if isvalid(self.shipShopCard5Button) then self.shipShopCard5Handler = self.shipShopCard5Button.Entity:ConnectEvent(ButtonClickEvent, self.OnShipShopCard5Click) end
+		if isvalid(self.shipShopSlot1Button) then self.shipShopSlot1Handler = self.shipShopSlot1Button.Entity:ConnectEvent(ButtonClickEvent, self.OnShipShopSlot1Click) end
+		if isvalid(self.shipShopSlot2Button) then self.shipShopSlot2Handler = self.shipShopSlot2Button.Entity:ConnectEvent(ButtonClickEvent, self.OnShipShopSlot2Click) end
+		if isvalid(self.shipShopSlot3Button) then self.shipShopSlot3Handler = self.shipShopSlot3Button.Entity:ConnectEvent(ButtonClickEvent, self.OnShipShopSlot3Click) end
+		if isvalid(self.shipShopUpgrade1Button) then self.shipShopUpgrade1Handler = self.shipShopUpgrade1Button.Entity:ConnectEvent(ButtonClickEvent, self.OnShipShopUpgrade1Click) end
+		if isvalid(self.shipShopUpgrade2Button) then self.shipShopUpgrade2Handler = self.shipShopUpgrade2Button.Entity:ConnectEvent(ButtonClickEvent, self.OnShipShopUpgrade2Click) end
+		if isvalid(self.shipShopUpgrade3Button) then self.shipShopUpgrade3Handler = self.shipShopUpgrade3Button.Entity:ConnectEvent(ButtonClickEvent, self.OnShipShopUpgrade3Click) end
+		if isvalid(self.shipShopUpgradeClearButton) then self.shipShopUpgradeClearHandler = self.shipShopUpgradeClearButton.Entity:ConnectEvent(ButtonClickEvent, self.OnShipShopUpgradeClearClick) end
+		if isvalid(self.shopCardMarketButton) then self.shopCardMarketHandler = self.shopCardMarketButton.Entity:ConnectEvent(ButtonClickEvent, self.OnShopCardMarketClick) end
+		if isvalid(self.shipModSlot1Button) then self.shipModSlot1Handler = self.shipModSlot1Button.Entity:ConnectEvent(ButtonClickEvent, self.OnShipModSlot1Click) end
+		if isvalid(self.shipModSlot2Button) then self.shipModSlot2Handler = self.shipModSlot2Button.Entity:ConnectEvent(ButtonClickEvent, self.OnShipModSlot2Click) end
+		if isvalid(self.shipModSlot3Button) then self.shipModSlot3Handler = self.shipModSlot3Button.Entity:ConnectEvent(ButtonClickEvent, self.OnShipModSlot3Click) end
+		if isvalid(self.cardMarketTabBuyButton) then self.cardMarketTabBuyHandler = self.cardMarketTabBuyButton.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketBuyTabClick) end
+		if isvalid(self.cardMarketTabSellButton) then self.cardMarketTabSellHandler = self.cardMarketTabSellButton.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketSellTabClick) end
+		if isvalid(self.cardMarketPagePrevButton) then self.cardMarketPagePrevHandler = self.cardMarketPagePrevButton.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketPrevClick) end
+		if isvalid(self.cardMarketPageNextButton) then self.cardMarketPageNextHandler = self.cardMarketPageNextButton.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketNextClick) end
+		if isvalid(self.cardMarketMinusButton) then self.cardMarketMinusHandler = self.cardMarketMinusButton.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketMinusClick) end
+		if isvalid(self.cardMarketPlusButton) then self.cardMarketPlusHandler = self.cardMarketPlusButton.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketPlusClick) end
+		if isvalid(self.cardMarketActionButton) then self.cardMarketActionHandler = self.cardMarketActionButton.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketActionClick) end
+		if isvalid(self.cardMarketBackButton) then self.cardMarketBackHandler = self.cardMarketBackButton.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketBackClick) end
+		if isvalid(self.cardMarketCloseButton) then self.cardMarketCloseHandler = self.cardMarketCloseButton.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketCloseClick) end
+		if isvalid(self.cardMarketCard1Button) then self.cardMarketCard1Handler = self.cardMarketCard1Button.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketCard1Click) end
+		if isvalid(self.cardMarketCard2Button) then self.cardMarketCard2Handler = self.cardMarketCard2Button.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketCard2Click) end
+		if isvalid(self.cardMarketCard3Button) then self.cardMarketCard3Handler = self.cardMarketCard3Button.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketCard3Click) end
+		if isvalid(self.cardMarketCard4Button) then self.cardMarketCard4Handler = self.cardMarketCard4Button.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketCard4Click) end
+		if isvalid(self.cardMarketCard5Button) then self.cardMarketCard5Handler = self.cardMarketCard5Button.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketCard5Click) end
+		if isvalid(self.cardMarketCard6Button) then self.cardMarketCard6Handler = self.cardMarketCard6Button.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketCard6Click) end
+		if isvalid(self.cardMarketFitSlot1Button) then self.cardMarketFitSlot1Handler = self.cardMarketFitSlot1Button.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketFitSlot1Click) end
+		if isvalid(self.cardMarketFitSlot2Button) then self.cardMarketFitSlot2Handler = self.cardMarketFitSlot2Button.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketFitSlot2Click) end
+		if isvalid(self.cardMarketFitSlot3Button) then self.cardMarketFitSlot3Handler = self.cardMarketFitSlot3Button.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketFitSlot3Click) end
+		if isvalid(self.cardMarketShipMerchantButton) then self.cardMarketShipMerchantHandler = self.cardMarketShipMerchantButton.Entity:ConnectEvent(ButtonClickEvent, self.OnCardMarketShipMerchantClick) end
+		if isvalid(self.cardMarketPanel) then self.cardMarketPanel.Enable = false end
 		self:RefreshMapContext(true)
 		log("[Adventure] voyage and merchant proximity UI ready")
 	end
@@ -121,22 +563,51 @@ script GreatVoyageAdventureController extends Logic
 	method void OnUpdate(number delta)
 		self.refreshElapsed = self.refreshElapsed + delta
 		if self.refreshElapsed < 0.1 then return end
+		local elapsedInterval = self.refreshElapsed
 		self.refreshElapsed = 0
 		self:RefreshMapContext(false)
 		self:RefreshInteraction()
+		self:RefreshAirBattleDisplay()
 		if self.modalOpen and self.modalType == "shop" then self:RefreshShop() end
+		if self.modalOpen and self.modalType == "ship" then self:RefreshShipPanel() end
+		if self.modalOpen and self.modalType == "ship_shop" then self:RefreshShipPanel(); self:RefreshShipShop() end
+		if self.modalOpen and self.modalType == "card_market" then self:RefreshCardMarket() end
+		if self.modalOpen and self.modalType == "card_market" and self.cardMarketRequestPending then
+			self.cardMarketPendingElapsed = self.cardMarketPendingElapsed + elapsedInterval
+			if self.cardMarketPendingElapsed >= 5 then
+				self.cardMarketRequestPending = false
+				self.cardMarketFeedback = "尚未收到伺服器更新，請確認港口位置、金幣與未安裝庫存。"
+			end
+		end
 	end
 
 	@ExecSpace("ClientOnly")
 	method void RefreshMapContext(boolean force)
+		-- 地圖變更時重置共用貨架選擇，避免沿用另一港的索引。
+		if _UserService.LocalPlayer ~= nil and _UserService.LocalPlayer.CurrentMapName ~= self.currentMapName then
+			self.shopPage = 1; self.shopSelectedIndex = 1; self.shopTab = "goods"
+			if _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype.selectedGoodIndex = 1 end
+		end
+		-- 只有地圖實際變更時才關閉既有頁面並清除未完成請求。
 		local player = _UserService.LocalPlayer
 		if player == nil then return end
 		local mapName = player.CurrentMapName
-		if force == false and mapName == self.currentMapName then return end
+		local mapChanged = mapName ~= self.currentMapName
+		if force == false and mapChanged == false then return end
+		if mapChanged then
+			self:CloseActiveModal()
+			self.cardMarketRequestPending = false
+			self.cardMarketPendingElapsed = 0
+			self.cardMarketPendingRevision = -1
+			self.pendingShipRepairRevision = -1
+			self.pendingShipShopRevision = -1
+		end
 		self.currentMapName = mapName
-		self.lastEncounterId = ""
-		self.lastRaidRemaining = -1
-		if isvalid(self.deckEncounterPanel) then self.deckEncounterPanel.Enable = false end
+		if isvalid(self.shipOpenButton) then
+			local canOpenShip = mapName == "map_airship_deck" or (_GreatVoyageVoyageState ~= nil and _GreatVoyageVoyageState:GetPortIdFromMap(mapName) ~= "")
+			self.shipOpenButton.Entity.Enable = canOpenShip
+			self:SetButtonEnabled("/ui/GreatVoyageAdventure/ShipOpen", self.shipOpenButton, canOpenShip)
+		end
 		self.boardingTarget = nil
 		self.npcTarget = nil
 		self.currentAction = ""
@@ -184,7 +655,7 @@ script GreatVoyageAdventureController extends Logic
 			end
 		elseif mapName == "map_airship_deck" then
 			self.portText.Text = "雲海航行甲板"
-			self.messageText.Text = "雲海航程倒數開始；遇襲時航程持續"
+			self.messageText.Text = "依航程百分比穿越空域；自動交戰後續航抵港"
 			self.targetX = 0.35
 		else
 			self.portText.Text = "楓谷雲海航線"
@@ -197,7 +668,17 @@ script GreatVoyageAdventureController extends Logic
 	method void RefreshInteraction()
 		if self.modalOpen then
 			self.promptButtonEntity.Enable = false
+			self:SetButtonEnabled("/ui/GreatVoyageAdventure/PromptButton", self.promptButton, false)
+			if isvalid(self.shipOpenButton) then
+				self.shipOpenButton.Entity.Enable = false
+				self:SetButtonEnabled("/ui/GreatVoyageAdventure/ShipOpen", self.shipOpenButton, false)
+			end
 			return
+		end
+		if isvalid(self.shipOpenButton) then
+			local canOpenShip = self.currentMapName == "map_airship_deck" or (_GreatVoyageVoyageState ~= nil and _GreatVoyageVoyageState:GetPortIdFromMap(self.currentMapName) ~= "")
+			self.shipOpenButton.Entity.Enable = canOpenShip
+			self:SetButtonEnabled("/ui/GreatVoyageAdventure/ShipOpen", self.shipOpenButton, canOpenShip)
 		end
 		local player = _UserService.LocalPlayer
 		if player == nil or player.TransformComponent == nil then return end
@@ -206,33 +687,20 @@ script GreatVoyageAdventureController extends Logic
 		self.currentAction = ""
 
 		if self.currentMapName == "map_airship_deck" then
-			local deckX = playerPosition.x - self.targetX
-			local deckY = playerPosition.y - self.targetY
-			local encounterId = ""
-			if _GreatVoyageVoyageState ~= nil then encounterId = _GreatVoyageVoyageState.clientSnapshotPendingEncounterId end
-			local raidRemaining = 0
 			if _GreatVoyageVoyageState ~= nil then
-				raidRemaining = _GreatVoyageVoyageState.clientSnapshotRaidRemaining
 				if _GreatVoyageVoyageState.clientSnapshotStatus == "sailing" then
-					local seconds = math.ceil(_GreatVoyageVoyageState.clientSnapshotRemainingSeconds)
-					local secondsText = tostring(math.max(0, seconds))
-					if seconds < 10 then secondsText = "0" .. secondsText end
-					if raidRemaining > 0 then
-						self.messageText.Text = "菇菇襲擊！按 Ctrl 迎擊，或撐到抵港　｜　剩餘 00:" .. secondsText
-					elseif encounterId ~= "" then
-						self.messageText.Text = "遭遇事件進行中；航程持續　｜　剩餘 00:" .. secondsText
+					local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+					local travelled = snapshot.distanceTravelled or 0
+					local totalDistance = 0
+					if snapshot.route ~= nil and snapshot.route.distance ~= nil then
+						totalDistance = snapshot.route.distance
 					else
-						self.messageText.Text = "航程 00:" .. secondsText .. "｜左右移動巡視甲板・遇襲按 Ctrl，也可撐到抵港"
+						totalDistance = travelled + (snapshot.budgetRemaining or 0)
 					end
+					local progressPercent = 0
+					if totalDistance > 0 then progressPercent = math.min(100, math.floor(travelled / totalDistance * 100 + 0.5)) end
+					self.messageText.Text = "航程進度 " .. tostring(progressPercent) .. "%｜左右移動巡視甲板・抵港後結算"
 				end
-			end
-			if encounterId ~= self.lastEncounterId or raidRemaining ~= self.lastRaidRemaining then self:RefreshDeckEncounter(encounterId) end
-			near = math.sqrt(deckX * deckX + deckY * deckY) <= 0.95
-			near = near and encounterId ~= "" and raidRemaining == 0
-			if near then self.currentAction = "arrive" end
-			if raidRemaining > 0 then
-				near = true
-				self.currentAction = "attack"
 			end
 		else
 			local boardDistance = 999
@@ -259,62 +727,57 @@ script GreatVoyageAdventureController extends Logic
 		end
 
 		self.promptButtonEntity.Enable = near
+		self:SetButtonEnabled("/ui/GreatVoyageAdventure/PromptButton", self.promptButton, near)
 		if near == false then return end
 		if self.currentAction == "open_map" then
-			self.promptLabel.Text = "E　登上你的專屬飛空船：啟航"
+			self:SetPromptText("登上你的專屬飛空船：啟航")
 		elseif self.currentAction == "shop" then
-			self.promptLabel.Text = "E　與港口商人交談"
-		elseif self.currentAction == "attack" then
-			self.promptLabel.Text = "攻擊菇菇　｜　鍵盤 Ctrl"
-		else
-			self.promptLabel.Text = "E　轉動舵輪：處理航程事件"
+			self:SetPromptText("與港口商人交談")
 		end
 	end
 
 	@ExecSpace("ClientOnly")
+	method boolean IsNearPortMerchant()
+		-- 用現有四港商人的距離確認是否顯示本地交易操作。
+		local player = _UserService.LocalPlayer
+		if player == nil or player.TransformComponent == nil or not isvalid(self.npcTarget) then return false end
+		local playerPosition = player.TransformComponent.WorldPosition
+		local npcPosition = self.npcTarget.TransformComponent.WorldPosition
+		local dx = playerPosition.x - npcPosition.x
+		local dy = playerPosition.y - npcPosition.y
+		return math.sqrt(dx * dx + dy * dy) <= 1.1
+	end
+
+	@ExecSpace("ClientOnly")
 	method void RefreshDeckEncounter(string encounterId)
-		-- 只在遭遇 ID 改變時重建事件文案，避免每幀重算航線幾何。
-		self.lastEncounterId = encounterId
-		self.lastRaidRemaining = 0
-		if _GreatVoyageVoyageState ~= nil then self.lastRaidRemaining = _GreatVoyageVoyageState.clientSnapshotRaidRemaining end
-		if not isvalid(self.deckEncounterPanel) then return end
-		self.deckEncounterPanel.Enable = encounterId ~= ""
-		if encounterId == "" then return end
-		local title = "未知空域事件"
-		local body = "航程不會停下；可前往操舵台處理事件，或等待抵港。"
-		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
-		local remainingText = ""
-		if snapshot ~= nil then
-			local seconds = math.max(0, math.ceil(snapshot.remainingSeconds or 0))
-			remainingText = "　｜　剩餘 00:"
-			if seconds < 10 then remainingText = remainingText .. "0" end
-			remainingText = remainingText .. tostring(seconds)
-		end
-		if snapshot ~= nil and _GreatVoyageVoyageData ~= nil then
-		local segment = _GreatVoyageVoyageState:GetSegmentForDistance(snapshot, snapshot.pausedDistance)
-			if segment ~= nil then
-				local card = _GreatVoyageVoyageData:GetEncounterCard(segment.airspaceId, snapshot.encounterCount + 1)
-				if card ~= nil then
-					title = card.title
-					body = card.text
-					if card.id == "victoria_mushroom_raid" then
-						if snapshot.raidRemaining > 0 then
-						body = body .. "\n按 Ctrl 迎擊，或撐到抵港｜菇菇剩餘 " .. tostring(snapshot.raidRemaining) .. " 隻。"
-					else
-						body = body .. "\n襲擊結束，繼續航行。"
-						end
-					end
-				end
+		-- 舊事件面板已移除，保留空入口供歷史呼叫相容。
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ReceiveAirBattleSnapshot(string battleId, string phase, string airspaceId, string enemyId, string enemyName, number enemyHp, number enemyMaxHp, number playerHp, number playerMaxHp, number remainingSeconds, string outcome, number playerShotSequence, number enemyShotSequence, number playerShotElapsed, number enemyShotElapsed, string playerId)
+		local player = _UserService.LocalPlayer
+		if not isvalid(player) or player.PlayerComponent == nil or player.PlayerComponent.UserId ~= playerId then return end
+		if player.CurrentMapName ~= nil and player.CurrentMapName ~= self.currentMapName then self:RefreshMapContext(false) end
+		local previous = self.clientAirBattle
+		self.clientAirBattle = {id = battleId, phase = phase, airspaceId = airspaceId, enemyId = enemyId, enemyName = enemyName, enemyHp = enemyHp, enemyMaxHp = enemyMaxHp, playerHp = playerHp, playerMaxHp = playerMaxHp, remainingSeconds = remainingSeconds, outcome = outcome, playerShotSequence = playerShotSequence, enemyShotSequence = enemyShotSequence, playerShotElapsed = playerShotElapsed, enemyShotElapsed = enemyShotElapsed}
+		if previous == nil or previous.id ~= battleId or previous.phase ~= phase then
+			log("[AirBattleUI] id=" .. battleId .. " phase=" .. phase .. " enemy=" .. enemyId .. " outcome=" .. outcome)
+			if isvalid(self.messageText) and phase == "won" and self.currentMapName == "map_airship_deck" then
+				self.messageText.Text = "擊退" .. enemyName .. "｜已恢復航行，抵港後結算"
+			elseif isvalid(self.messageText) and phase == "sunk" and self.currentMapName ~= "map_airship_deck" then
+				self.messageText.Text = "船體受損，已返回出發港；貨物已遺失。可在船艙管理維修。"
 			end
 		end
-		if isvalid(self.encounterTitleText) then self.encounterTitleText.Text = "遭遇・" .. title end
-		if isvalid(self.encounterBodyText) then self.encounterBodyText.Text = body end
-		if self.lastRaidRemaining > 0 then
-		self.messageText.Text = "菇菇襲擊！按 Ctrl 迎擊，或撐到抵港" .. remainingText
-	else
-		self.messageText.Text = "遭遇事件進行中；航程持續" .. remainingText
+		self:RefreshAirBattleDisplay()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshAirBattleDisplay()
+		local battle = self.clientAirBattle
+		if battle == nil or not isvalid(self.messageText) then return end
+		if battle.phase == "active" and self.currentMapName == "map_airship_deck" then
+			self.messageText.Text = "自動空戰｜" .. battle.enemyName .. " " .. tostring(math.ceil(battle.enemyHp)) .. "/" .. tostring(math.ceil(battle.enemyMaxHp)) .. "｜船體 " .. tostring(math.ceil(battle.playerHp)) .. "/" .. tostring(math.ceil(battle.playerMaxHp))
 		end
-		log("[Adventure] encounter shown id=" .. encounterId .. " title=" .. title)
 	end
 
 	@ExecSpace("ClientOnly")
@@ -363,11 +826,6 @@ script GreatVoyageAdventureController extends Logic
 			self:OpenWorldMap()
 		elseif self.currentAction == "shop" then
 			self:OpenShop()
-		elseif self.currentAction == "arrive" then
-			self:ArriveAtDestination()
-		elseif self.currentAction == "attack" then
-			local player = _UserService.LocalPlayer
-			if player ~= nil and player.GreatVoyagePlayerAttack ~= nil then player.GreatVoyagePlayerAttack:PerformAttack() end
 		end
 	end
 
@@ -396,7 +854,8 @@ script GreatVoyageAdventureController extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void OpenShop()
-		-- 商店與航圖沿用同一個預定目的港，價差才有可操作的意義。
+		-- 商店保留自由航線；貨架資訊不透露外港收購價格。
+		self:CloseActiveModal()
 		self.selectedDestinationId = self:GetPlannedTradeDestinationId()
 		self.modalOpen = true
 		self.modalType = "shop"
@@ -408,6 +867,7 @@ script GreatVoyageAdventureController extends Logic
 			local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
 			self.lastShopEconomyRevision = snapshot.economyRevision
 			_GreatVoyageVoyageState:RequestEconomySnapshot()
+			_GreatVoyageVoyageState:RequestCardMarket()
 		end
 		self:RefreshShop()
 		log("[Adventure] merchant opened port=" .. self.currentPortId)
@@ -425,7 +885,1277 @@ script GreatVoyageAdventureController extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void CloseActiveModal()
-		if self.modalType == "shop" then self:CloseShop() else self:CloseWorldMap() end
+		-- 開啟另一個頂層視窗前，直接關閉所有 modal，避免返回流程重開舊商店。
+		if isvalid(self.worldMapModal) then self.worldMapModal.Enable = false end
+		if isvalid(self.shopModal) then self.shopModal.Enable = false end
+		if isvalid(self.cardMarketPanel) then self.cardMarketPanel.Enable = false end
+		if isvalid(self.shipModal) then self.shipModal.Enable = false end
+		if isvalid(self.shipShopPanel) then self.shipShopPanel.Enable = false end
+		self.shipShopReturnToFitting = false
+		self.modalOpen = false
+		self.modalType = ""
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShopShipClick(ButtonClickEvent event)
+		-- 從港口市場切換至目前船舶的改裝頁。
+		if self.modalType ~= "shop" or not isvalid(self.shipModal) or _GreatVoyageVoyageState == nil then return end
+		self.selectedShipSlotIndex = 1
+		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+		local shipId = ""
+		if snapshot.ship ~= nil then shipId = snapshot.ship.id end
+		self:OpenCardMarket("install", "shop", shipId, 1)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShopCardMarketClick(ButtonClickEvent event)
+		-- 改裝卡使用同一個商店視窗及交易按鈕。
+		if self.modalType == "shop" then self:SetShopTab("cards") end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipOpenClick(ButtonClickEvent event)
+		if not isvalid(self.shipModal) or _GreatVoyageVoyageState == nil then return end
+		self:CloseActiveModal()
+		self.modalOpen = true
+		self.modalType = "ship"
+		self.shipModal.Enable = true
+		if isvalid(self.shipShopPanel) then self.shipShopPanel.Enable = false end
+		self.promptButtonEntity.Enable = false
+		self.pendingShipRepairRevision = -1
+		_GreatVoyageVoyageState:RequestShipSnapshot()
+		self:RefreshShipPanel()
+		log("[ShipUI] opened map=" .. self.currentMapName)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void CloseShipPanel()
+		if isvalid(self.shipModal) then self.shipModal.Enable = false end
+		if isvalid(self.shipShopPanel) then self.shipShopPanel.Enable = false end
+		if self.modalType == "ship" or self.modalType == "ship_shop" then
+			self.modalOpen = false
+			self.modalType = ""
+		end
+		self.pendingShipRepairRevision = -1
+		self.pendingShipShopRevision = -1
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipCloseClick(ButtonClickEvent event)
+		self:CloseShipPanel()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipShopBackClick(ButtonClickEvent event)
+		-- 返回船舶改裝頁或船況管理頁。
+		if isvalid(self.shipShopPanel) then self.shipShopPanel.Enable = false end
+		self.pendingShipShopRevision = -1
+		if self.shipShopReturnToFitting then
+			self.shipShopReturnToFitting = false
+			if isvalid(self.shipModal) then self.shipModal.Enable = false end
+			if isvalid(self.cardMarketPanel) then self.cardMarketPanel.Enable = true end
+			self.modalType = "card_market"
+			self.modalOpen = true
+			self:RefreshCardMarket()
+		else
+			if self.modalType == "ship_shop" then self.modalType = "ship" end
+			self:RefreshShipPanel()
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipShopCard1Click(ButtonClickEvent event)
+		-- 選取目錄中的第一艘船。
+		self:SelectShipCatalogItem(1)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipShopCard2Click(ButtonClickEvent event)
+		-- 選取目錄中的第二艘船。
+		self:SelectShipCatalogItem(2)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipShopCard3Click(ButtonClickEvent event)
+		-- 選取目錄中的第三艘船。
+		self:SelectShipCatalogItem(3)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipShopCard4Click(ButtonClickEvent event)
+		-- 選取目錄中的第四艘船。
+		self:SelectShipCatalogItem(4)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipShopCard5Click(ButtonClickEvent event)
+		-- 選取目錄中的第五艘船。
+		self:SelectShipCatalogItem(5)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipShopSlot1Click(ButtonClickEvent event)
+		-- 選取第一個改裝槽位。
+		self:SelectShipSlot(1)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipShopSlot2Click(ButtonClickEvent event)
+		-- 選取第二個改裝槽位。
+		self:SelectShipSlot(2)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipShopSlot3Click(ButtonClickEvent event)
+		-- 選取第三個改裝槽位。
+		self:SelectShipSlot(3)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipShopUpgrade1Click(ButtonClickEvent event)
+		-- 從伺服器庫存選擇卡片安裝至目前船槽。
+		self:OpenCardMarket("install", "ship_shop", self.selectedShipId, self.selectedShipSlotIndex)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipShopUpgrade2Click(ButtonClickEvent event)
+		-- 拆下目前船槽卡片並由伺服器退回庫存。
+		self:ConfigureSelectedShipSlot(0)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipShopUpgrade3Click(ButtonClickEvent event)
+		-- 以庫存/出售瀏覽模式檢視尚未安裝的卡片。
+		self:OpenCardMarket("sell", "ship_shop", self.selectedShipId, self.selectedShipSlotIndex)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipShopUpgradeClearClick(ButtonClickEvent event)
+		-- 要求伺服器拆除目前槽位的改裝卡。
+		self:ConfigureSelectedShipSlot(0)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipModSlot1Click(ButtonClickEvent event)
+		self:OpenActiveShipSlot(1)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipModSlot2Click(ButtonClickEvent event)
+		self:OpenActiveShipSlot(2)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipModSlot3Click(ButtonClickEvent event)
+		self:OpenActiveShipSlot(3)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OpenActiveShipSlot(integer index)
+		if self.modalType ~= "ship" or _GreatVoyageVoyageState == nil or _GreatVoyageVoyageData == nil then return end
+		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+		local ship = snapshot.ship
+		local definition = nil
+		if ship ~= nil then definition = _GreatVoyageVoyageData:GetShipById(ship.id) end
+		if definition == nil or definition.tier ~= 1 then
+			self.shipStatusText.Text = "新手船沒有改裝槽；可向港口商人購買 T1 船。"
+			return
+		end
+		if snapshot.ownedShips == nil or snapshot.ownedShips[ship.id] == nil then return end
+		if not self:IsNearPortMerchant() or snapshot.status == "sailing" then
+			self.shipStatusText.Text = "請在港口靠近商人後管理改裝卡。"
+			return
+		end
+		self.selectedShipSlotIndex = index
+		self:OpenCardMarket("install", "ship", ship.id, index)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SelectShipCatalogItem(integer index)
+		-- 更新所選船舶與預設的第一個槽位。
+		self.selectedShipCatalogIndex = index
+		self.selectedShipSlotIndex = 1
+		self:RefreshShipShop()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SelectShipSlot(integer index)
+		-- 更新目前要配置的改裝槽位。
+		self.selectedShipSlotIndex = index
+		self:RefreshShipShop()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ConfigureSelectedShipSlot(integer cardIndex)
+		-- 將選定改裝卡交由伺服器驗證並配置。
+		if self.modalType ~= "ship_shop" or self.pendingShipShopRevision >= 0 or not self:IsNearPortMerchant() or _GreatVoyageVoyageState == nil or _GreatVoyageVoyageData == nil then return end
+		local catalog = _GreatVoyageVoyageData:GetShipCatalog()
+		local selected = catalog[self.selectedShipCatalogIndex]
+		local cards = _GreatVoyageVoyageData:GetShipUpgradeCards()
+		if selected == nil or selected.tier ~= 1 or self.selectedShipSlotIndex < 1 or self.selectedShipSlotIndex > 3 then return end
+		local cardId = ""
+		if cardIndex > 0 then
+			local card = cards[cardIndex]
+			if card == nil then return end
+			cardId = card.id
+		end
+		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+		if snapshot.ship == nil or snapshot.ownedShips == nil or snapshot.ownedShips[selected.id] == nil then return end
+		self.pendingShipShopRevision = snapshot.ship.revision
+		_GreatVoyageVoyageState:ConfigureShipSlot(selected.id, self.selectedShipSlotIndex, cardId)
+		self:RefreshShipShop()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipShopActionClick(ButtonClickEvent event)
+		-- 將購買或切換請求送到伺服器處理。
+		if self.modalType ~= "ship_shop" or self.pendingShipShopRevision >= 0 or _GreatVoyageVoyageState == nil or _GreatVoyageVoyageData == nil then return end
+		if not self:IsNearPortMerchant() or _GreatVoyageVoyageState.clientSnapshotStatus == "sailing" then return end
+		local catalog = _GreatVoyageVoyageData:GetShipCatalog()
+		local selected = catalog[self.selectedShipCatalogIndex]
+		if selected == nil or selected.id == nil then return end
+		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+		if snapshot.ship == nil or snapshot.ownedShips == nil then return end
+		self.pendingShipShopRevision = snapshot.ship.revision
+		if snapshot.ownedShips[selected.id] ~= nil then
+			_GreatVoyageVoyageState:SelectShip(selected.id)
+		else
+			_GreatVoyageVoyageState:BuyShip(selected.id)
+		end
+		self:RefreshShipShop()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OpenCardMarket(string mode, string returnModal, string shipId, integer slotIndex)
+		-- 買賣模式回到共用商店；配裝頁保留既有槽位操作。
+		if mode ~= "install" then
+			self:OpenShop()
+			if mode == "sell" then self:SetShopTab("inventory") else self:SetShopTab("cards") end
+			return
+		end
+		if _GreatVoyageVoyageState == nil or _GreatVoyageVoyageData == nil or not isvalid(self.cardMarketPanel) then return end
+		if not self:IsNearPortMerchant() or _GreatVoyageVoyageState.clientSnapshotStatus == "sailing" then
+			self.shopStatusMessage = "請在港口商人處管理改裝卡。"
+			self.shipStatusText.Text = self.shopStatusMessage
+			return
+		end
+		self.cardMarketMode = mode
+		self.cardMarketReturnModal = returnModal
+		self.cardMarketShipId = shipId
+		if mode == "install" then
+			local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+			if snapshot.ship ~= nil then self.cardMarketShipId = snapshot.ship.id end
+		end
+		self.selectedShipSlotIndex = slotIndex
+		self.cardMarketSelectedCardId = ""
+		self.cardMarketSelectedIndex = 0
+		self.cardMarketPage = 1
+		self.cardMarketQuantity = 1
+		self.cardMarketInventoryRevision = -1
+		self.cardMarketPendingRevision = -1
+		self.cardMarketPendingElapsed = 0
+		self.cardMarketRequestPending = false
+		self.cardMarketFeedback = ""
+		self.cardMarketPanel.Enable = true
+		if isvalid(self.worldMapModal) then self.worldMapModal.Enable = false end
+		if returnModal == "shop" then self.shopModal.Enable = false end
+		if returnModal == "ship_shop" then self.shipShopPanel.Enable = false end
+		if isvalid(self.shipModal) then self.shipModal.Enable = false end
+		self.modalOpen = true
+		self.modalType = "card_market"
+		_GreatVoyageVoyageState:RequestShipSnapshot()
+		self:RefreshCardMarket()
+		log("[CardMarket] opened mode=" .. mode .. " port=" .. self.currentPortId)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void CloseCardMarket()
+		if isvalid(self.cardMarketPanel) then self.cardMarketPanel.Enable = false end
+		if self.cardMarketReturnModal == "ship_shop" then
+			self.modalType = "ship_shop"
+			if isvalid(self.shipModal) then self.shipModal.Enable = true end
+			if isvalid(self.shipShopPanel) then self.shipShopPanel.Enable = true end
+			self:RefreshShipPanel()
+			self:RefreshShipShop()
+		elseif self.cardMarketReturnModal == "ship" then
+			self.modalType = "ship"
+			if isvalid(self.shipModal) then self.shipModal.Enable = true end
+			if isvalid(self.shipShopPanel) then self.shipShopPanel.Enable = false end
+			self:RefreshShipPanel()
+		else
+			self.modalType = "shop"
+			if isvalid(self.shipModal) then self.shipModal.Enable = false end
+			if isvalid(self.shipShopPanel) then self.shipShopPanel.Enable = false end
+			if isvalid(self.shopModal) then self.shopModal.Enable = true end
+			self:RefreshShop()
+		end
+		self.modalOpen = true
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketBackClick(ButtonClickEvent event)
+		self:CloseCardMarket()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketCloseClick(ButtonClickEvent event)
+		self:CloseCardMarket()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketBuyTabClick(ButtonClickEvent event)
+		if self.cardMarketMode == "install" or self.cardMarketReturnModal == "ship" or self.cardMarketReturnModal == "ship_shop" then return end
+		self.cardMarketMode = "buy"
+		self.cardMarketPage = 1
+		self.cardMarketSelectedCardId = ""
+		self.cardMarketSelectedIndex = 0
+		self:RefreshCardMarket()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketSellTabClick(ButtonClickEvent event)
+		if self.cardMarketMode == "install" or self.cardMarketReturnModal == "ship" or self.cardMarketReturnModal == "ship_shop" then return end
+		self.cardMarketMode = "sell"
+		self.cardMarketPage = 1
+		self.cardMarketSelectedCardId = ""
+		self.cardMarketSelectedIndex = 0
+		self:RefreshCardMarket()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketPrevClick(ButtonClickEvent event)
+		self.cardMarketPage = math.max(1, self.cardMarketPage - 1)
+		self:RefreshCardMarket()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketNextClick(ButtonClickEvent event)
+		self.cardMarketPage = self.cardMarketPage + 1
+		self:RefreshCardMarket()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketMinusClick(ButtonClickEvent event)
+		self.cardMarketQuantity = math.max(1, self.cardMarketQuantity - 1)
+		self:RefreshCardMarket()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketPlusClick(ButtonClickEvent event)
+		self.cardMarketQuantity = math.min(99, self.cardMarketQuantity + 1)
+		self:RefreshCardMarket()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketCard1Click(ButtonClickEvent event)
+		self:SelectCardMarketCard(1)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketCard2Click(ButtonClickEvent event)
+		self:SelectCardMarketCard(2)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketCard3Click(ButtonClickEvent event)
+		self:SelectCardMarketCard(3)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketCard4Click(ButtonClickEvent event)
+		self:SelectCardMarketCard(4)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketCard5Click(ButtonClickEvent event)
+		self:SelectCardMarketCard(5)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketCard6Click(ButtonClickEvent event)
+		self:SelectCardMarketCard(6)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketFitSlot1Click(ButtonClickEvent event)
+		-- 選取第一個通用改裝槽。
+		self.selectedShipSlotIndex = 1
+		self.cardMarketSelectedCardId = ""
+		self:RefreshCardMarket()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketFitSlot2Click(ButtonClickEvent event)
+		-- 選取第二個通用改裝槽。
+		self.selectedShipSlotIndex = 2
+		self.cardMarketSelectedCardId = ""
+		self:RefreshCardMarket()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketFitSlot3Click(ButtonClickEvent event)
+		-- 選取第三個通用改裝槽。
+		self.selectedShipSlotIndex = 3
+		self.cardMarketSelectedCardId = ""
+		self:RefreshCardMarket()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketShipMerchantClick(ButtonClickEvent event)
+		-- 從改裝頁切換至既有船舶買賣目錄。
+		if self.modalType ~= "card_market" or self.cardMarketMode ~= "install" or _GreatVoyageVoyageState == nil then return end
+		if isvalid(self.cardMarketPanel) then self.cardMarketPanel.Enable = false end
+		if isvalid(self.shipModal) then self.shipModal.Enable = true end
+		if isvalid(self.shipShopPanel) then self.shipShopPanel.Enable = true end
+		self.shipShopReturnToFitting = true
+		self.modalType = "ship_shop"
+		self.pendingShipShopRevision = -1
+		self.selectedShipCatalogIndex = 1
+		_GreatVoyageVoyageState:RequestShipSnapshot()
+		self:RefreshShipShop()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SelectCardMarketCard(integer tileIndex)
+		local list = self:GetCardMarketList()
+		local index = (self.cardMarketPage - 1) * 6 + tileIndex
+		local card = list[index]
+		if card == nil then return end
+		self.cardMarketSelectedIndex = index
+		self.cardMarketSelectedCardId = card.id
+		self.cardMarketFeedback = ""
+		self:RefreshCardMarket()
+	end
+
+	@ExecSpace("ClientOnly")
+	method any GetCardMarketList()
+		-- 購買列顯示圖鑑；出售與配裝只列未安裝庫存。
+		local cards = _GreatVoyageVoyageData:GetShipUpgradeCards()
+		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+		local inventory = snapshot.cardInventory or {}
+		local list = {}
+		for _, card in ipairs(cards) do
+			if self.cardMarketMode == "buy" or (inventory[card.id] or 0) > 0 then
+				table.insert(list, card)
+			end
+		end
+		return list
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshCardMarket()
+		-- 依商店或配裝模式同步卡片庫存、槽位與狀態。
+		if _GreatVoyageVoyageData == nil or _GreatVoyageVoyageState == nil or not isvalid(self.cardMarketPanel) then return end
+		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+		local list = self:GetCardMarketList()
+		local inventory = snapshot.cardInventory or {}
+		local responseRevision = 0
+		local responseMessage = ""
+		if snapshot.ship ~= nil then
+			responseRevision = snapshot.ship.revision or 0
+			responseMessage = snapshot.ship.message or ""
+		end
+		if snapshot.ship ~= nil and self.pendingShipShopRevision >= 0 and responseRevision > self.pendingShipShopRevision then
+			self.pendingShipShopRevision = -1
+		end
+		if self.cardMarketRequestPending and self.cardMarketPendingRevision >= 0 and responseRevision > self.cardMarketPendingRevision then
+			self.cardMarketRequestPending = false
+			self.cardMarketFeedback = responseMessage
+		end
+		local pageCount = math.max(1, math.ceil(#list / 6))
+		self.cardMarketPage = math.min(math.max(1, self.cardMarketPage), pageCount)
+		local isFitting = self.cardMarketMode == "install"
+		local detailTransform = nil
+		local messageTransform = nil
+		local actionTransform = nil
+		local backTransform = nil
+		local prevTransform = nil
+		local nextTransform = nil
+		local pageTransform = nil
+		local minusTransform = nil
+		local plusTransform = nil
+		local quantityTransform = nil
+		if isvalid(self.cardMarketDetailText) then detailTransform = self.cardMarketDetailText.Entity.UITransformComponent end
+		if isvalid(self.cardMarketMessageText) then messageTransform = self.cardMarketMessageText.Entity.UITransformComponent end
+		if isvalid(self.cardMarketActionButton) then actionTransform = self.cardMarketActionButton.Entity.UITransformComponent end
+		if isvalid(self.cardMarketBackButton) then backTransform = self.cardMarketBackButton.Entity.UITransformComponent end
+		if isvalid(self.cardMarketPagePrevButton) then prevTransform = self.cardMarketPagePrevButton.Entity.UITransformComponent end
+		if isvalid(self.cardMarketPageNextButton) then nextTransform = self.cardMarketPageNextButton.Entity.UITransformComponent end
+		if isvalid(self.cardMarketPageText) then pageTransform = self.cardMarketPageText.Entity.UITransformComponent end
+		if isvalid(self.cardMarketMinusButton) then minusTransform = self.cardMarketMinusButton.Entity.UITransformComponent end
+		if isvalid(self.cardMarketPlusButton) then plusTransform = self.cardMarketPlusButton.Entity.UITransformComponent end
+		if isvalid(self.cardMarketQuantityText) then quantityTransform = self.cardMarketQuantityText.Entity.UITransformComponent end
+		if isvalid(detailTransform) then
+			detailTransform.anchoredPosition = Vector2(0, -325)
+			detailTransform.RectSize = Vector2(1240, 60)
+			if isFitting then detailTransform.anchoredPosition = Vector2(397, -347); detailTransform.RectSize = Vector2(390, 86) end
+		end
+		if isvalid(messageTransform) then
+			messageTransform.anchoredPosition = Vector2(0, -360)
+			messageTransform.RectSize = Vector2(1240, 28)
+			if isFitting then messageTransform.anchoredPosition = Vector2(-225, -378); messageTransform.RectSize = Vector2(670, 36) end
+		end
+		if isvalid(actionTransform) then actionTransform.anchoredPosition = Vector2(70, -390); actionTransform.RectSize = Vector2(220, 64) end
+		if isvalid(backTransform) then backTransform.anchoredPosition = Vector2(-575, -390); backTransform.RectSize = Vector2(150, 64) end
+		if isvalid(prevTransform) then prevTransform.anchoredPosition = Vector2(390, -390); prevTransform.RectSize = Vector2(64, 64) end
+		if isvalid(pageTransform) then pageTransform.anchoredPosition = Vector2(480, -390); pageTransform.RectSize = Vector2(110, 64) end
+		if isvalid(nextTransform) then nextTransform.anchoredPosition = Vector2(570, -390); nextTransform.RectSize = Vector2(64, 64) end
+		if isvalid(minusTransform) then minusTransform.anchoredPosition = Vector2(-340, -420); minusTransform.RectSize = Vector2(72, 64) end
+		if isvalid(quantityTransform) then quantityTransform.anchoredPosition = Vector2(-240, -420); quantityTransform.RectSize = Vector2(120, 52) end
+		if isvalid(plusTransform) then plusTransform.anchoredPosition = Vector2(-130, -420); plusTransform.RectSize = Vector2(72, 64) end
+		if isFitting then
+			if isvalid(actionTransform) then actionTransform.anchoredPosition = Vector2(397, -435); actionTransform.RectSize = Vector2(370, 66) end
+			if isvalid(backTransform) then backTransform.anchoredPosition = Vector2(-435, -429); backTransform.RectSize = Vector2(190, 66) end
+			if isvalid(prevTransform) then prevTransform.anchoredPosition = Vector2(310, 290); prevTransform.RectSize = Vector2(42, 28) end
+			if isvalid(pageTransform) then pageTransform.anchoredPosition = Vector2(397, 290); pageTransform.RectSize = Vector2(100, 28) end
+			if isvalid(nextTransform) then nextTransform.anchoredPosition = Vector2(484, 290); nextTransform.RectSize = Vector2(42, 28) end
+		end
+		-- Runtime geometry uses center anchors; keep serialized offsets consistent with the same rect.
+		for _, transform in ipairs({ detailTransform, messageTransform, actionTransform, backTransform, prevTransform, nextTransform, pageTransform, minusTransform, plusTransform, quantityTransform }) do
+			if isvalid(transform) then
+				transform.AnchorsMin = Vector2(0.5, 0.5); transform.AnchorsMax = Vector2(0.5, 0.5); transform.Pivot = Vector2(0.5, 0.5)
+				local p = transform.anchoredPosition; local s = transform.RectSize
+				transform.OffsetMin = Vector2(p.x - s.x * 0.5, p.y - s.y * 0.5)
+				transform.OffsetMax = Vector2(p.x + s.x * 0.5, p.y + s.y * 0.5)
+			end
+		end
+		self:FitCardMarketButtonVisual("/ui/GreatVoyageAdventure/CardMarket/Window/Prev", prevTransform, isFitting)
+		self:FitCardMarketButtonVisual("/ui/GreatVoyageAdventure/CardMarket/Window/Next", nextTransform, isFitting)
+		self:FitCardMarketButtonVisual("/ui/GreatVoyageAdventure/CardMarket/Window/Minus", minusTransform, isFitting)
+		self:FitCardMarketButtonVisual("/ui/GreatVoyageAdventure/CardMarket/Window/Plus", plusTransform, isFitting)
+		if isvalid(self.cardMarketFitInventoryTitle) then
+			self.cardMarketFitInventoryTitle.Text = "未安裝庫存"
+			if isFitting and #list == 0 then self.cardMarketFitInventoryTitle.Text = "未安裝庫存（空）" end
+			self.cardMarketFitInventoryTitle.Entity.Enable = isFitting
+		end
+
+		local fittingName = _EntityService:GetEntityByPath("/ui/GreatVoyageAdventure/CardMarket/Window/FitShipName")
+		local fittingInstruction = _EntityService:GetEntityByPath("/ui/GreatVoyageAdventure/CardMarket/Window/FitInstruction")
+		if isvalid(fittingName) then fittingName.Enable = isFitting end
+		if isvalid(fittingInstruction) then fittingInstruction.Enable = false end
+		if isvalid(self.cardMarketFitLeftPanelEntity) then self.cardMarketFitLeftPanelEntity.Enable = isFitting end
+		if isvalid(self.cardMarketFitRightPanelEntity) then self.cardMarketFitRightPanelEntity.Enable = isFitting end
+		if self.cardMarketTitleText ~= nil then
+			self.cardMarketTitleText.Text = "雲海商會"
+			if isFitting then self.cardMarketTitleText.Text = "船舶改裝" end
+		end
+		if self.cardMarketWalletText ~= nil then
+			self.cardMarketWalletText.Text = "持有 " .. tostring(snapshot.money or 0) .. " G"
+			self.cardMarketWalletText.Entity.Enable = not isFitting
+		end
+		if self.cardMarketPageText ~= nil then self.cardMarketPageText.Text = tostring(self.cardMarketPage) .. " / " .. tostring(pageCount) end
+		if self.cardMarketQuantityText ~= nil then self.cardMarketQuantityText.Text = "數量 ×" .. tostring(self.cardMarketQuantity) end
+		local showTradeTabs = not isFitting and not self.cardMarketRequestPending
+		if self.cardMarketTabBuyButton ~= nil then self.cardMarketTabBuyButton.Entity.Enable = showTradeTabs end
+		if self.cardMarketTabSellButton ~= nil then self.cardMarketTabSellButton.Entity.Enable = showTradeTabs end
+		if isvalid(self.cardMarketBackButton) then
+			local backText = self.cardMarketBackButton.Entity.TextGUIRendererComponent
+			backText.Text = "商品"
+			if isFitting then backText.Text = "返回" end
+			backText.FontColor = Color(1, 0.91, 0.69, 1)
+		end
+		if isvalid(self.cardMarketMinusButton) then
+			self.cardMarketMinusButton.Entity.Enable = showTradeTabs
+			self:SetButtonEnabled("/ui/GreatVoyageAdventure/CardMarket/Window/Minus", self.cardMarketMinusButton, showTradeTabs)
+		end
+		if isvalid(self.cardMarketPlusButton) then
+			self.cardMarketPlusButton.Entity.Enable = showTradeTabs
+			self:SetButtonEnabled("/ui/GreatVoyageAdventure/CardMarket/Window/Plus", self.cardMarketPlusButton, showTradeTabs)
+		end
+		if isvalid(self.cardMarketQuantityText) then self.cardMarketQuantityText.Entity.Enable = showTradeTabs end
+		if isvalid(self.cardMarketShipPreview) then self.cardMarketShipPreview.Entity.Enable = isFitting end
+		if isvalid(self.cardMarketShipStats) then self.cardMarketShipStats.Entity.Enable = isFitting; self.cardMarketShipStats.FontColor = Color(0.29, 0.19, 0.13, 1) end
+		if isvalid(self.cardMarketShipMerchantButton) then self.cardMarketShipMerchantButton.Entity.Enable = isFitting end
+		if isvalid(self.cardMarketCardsTabButton) then self.cardMarketCardsTabButton.Entity.Enable = not isFitting end
+		if isvalid(self.cardMarketPagePrevButton) then self.cardMarketPagePrevButton.Entity.Enable = pageCount > 1 end
+		if isvalid(self.cardMarketPageNextButton) then self.cardMarketPageNextButton.Entity.Enable = pageCount > 1 end
+		if isvalid(self.cardMarketPageText) then self.cardMarketPageText.Entity.Enable = pageCount > 1 end
+		if isvalid(self.cardMarketActionButton) then self.cardMarketActionButton.Entity.Enable = true end
+		if isvalid(self.cardMarketBackButton) then self.cardMarketBackButton.Entity.Enable = true end
+		if isvalid(self.cardMarketMinusButton) then self.cardMarketMinusButton.Entity.Enable = showTradeTabs end
+		if isvalid(self.cardMarketPlusButton) then self.cardMarketPlusButton.Entity.Enable = showTradeTabs end
+		local activeShip = snapshot.ship
+		local fittingShipDefinition = nil
+		local ownedActiveShip = false
+		if isFitting and activeShip ~= nil and _GreatVoyageVoyageData ~= nil then
+			self.cardMarketShipId = activeShip.id
+			fittingShipDefinition = _GreatVoyageVoyageData:GetShipById(activeShip.id)
+			ownedActiveShip = snapshot.ownedShips ~= nil and snapshot.ownedShips[activeShip.id] ~= nil
+			if fittingShipDefinition ~= nil and isvalid(self.cardMarketShipPreview) then
+				self.cardMarketShipPreview.ImageRUID = DataRef(fittingShipDefinition.spriteRuid or "")
+				self.cardMarketShipPreview.PreserveSprite = PreserveSpriteType.AspectOnly
+				self.cardMarketShipPreview.Color = Color(1, 1, 1, 1)
+				-- 新手船的高桅杆要留在船名下方；切回 T1 時還原大圖區。
+				local previewTransform = self.cardMarketShipPreview.Entity.UITransformComponent
+				if isvalid(previewTransform) then
+					local previewY = 114
+					local previewHeight = 350
+					local previewWidth = 660
+					if fittingShipDefinition.tier == 0 then previewY = 95; previewHeight = 280; previewWidth = 500 end
+					previewTransform.anchoredPosition = Vector2(-225, previewY)
+					previewTransform.RectSize = Vector2(previewWidth, previewHeight)
+					previewTransform.OffsetMin = Vector2(-225 - previewWidth * 0.5, previewY - previewHeight * 0.5)
+					previewTransform.OffsetMax = Vector2(-225 + previewWidth * 0.5, previewY + previewHeight * 0.5)
+				end
+			end
+			local stats = activeShip.stats or {}
+			local speed = stats.speedMultiplier or 1
+			local speedPercent = math.floor((speed - 1) * 100 + 0.5)
+			local speedText = "航速基準"
+			if speedPercent > 0 then speedText = "航速 +" .. tostring(speedPercent) .. "%"
+			elseif speedPercent < 0 then speedText = "航速 -" .. tostring(math.abs(speedPercent)) .. "%" end
+			local cannonPercent = math.floor(((activeShip.cannonMultiplier or 1) - 1) * 100 + 0.5)
+			local cannonText = "炮擊基準"
+			if cannonPercent > 0 then cannonText = "炮擊 +" .. tostring(cannonPercent) .. "%" end
+			if isvalid(self.cardMarketShipStats) then
+				local tierText = "T0"
+				if fittingShipDefinition ~= nil and fittingShipDefinition.tier == 1 then tierText = "T1" end
+				local isTierOne = fittingShipDefinition ~= nil and fittingShipDefinition.tier == 1
+				if isvalid(fittingName) then fittingName.TextGUIRendererComponent.Text = tostring(activeShip.name or "飛空船") .. " · " .. tierText end
+				local statsText = "船體 " .. tostring(activeShip.maxHull or 0) .. "　護盾 " .. tostring(activeShip.maxShield or 0) .. "　裝甲 " .. tostring(activeShip.maxArmor or 0) .. "\n" .. speedText .. "　" .. cannonText .. "　貨艙 " .. tostring(activeShip.cargoCapacity or 0) .. " 格"
+				if not isTierOne then statsText = statsText .. "　（T0 無改裝槽）" end
+				self.cardMarketShipStats.Text = statsText
+				self.cardMarketShipStats.FontSize = 26
+			end
+		end
+		local fittingSlotButtons = { self.cardMarketFitSlot1Button, self.cardMarketFitSlot2Button, self.cardMarketFitSlot3Button }
+		local fittingSlotLabels = { self.cardMarketFitSlot1Label, self.cardMarketFitSlot2Label, self.cardMarketFitSlot3Label }
+		local installedSlots = { "", "", "" }
+		if activeShip ~= nil and activeShip.slots ~= nil then
+			installedSlots = { activeShip.slots.slot1 or activeShip.slots[1] or "", activeShip.slots.slot2 or activeShip.slots[2] or "", activeShip.slots.slot3 or activeShip.slots[3] or "" }
+		end
+		for slotIndex = 1, 3 do
+			local button = fittingSlotButtons[slotIndex]
+			local label = fittingSlotLabels[slotIndex]
+			if isvalid(button) then
+				local isTierOne = fittingShipDefinition ~= nil and fittingShipDefinition.tier == 1 and ownedActiveShip
+				button.Entity.Enable = isFitting and isTierOne
+				button.Enable = isFitting and isTierOne and self:IsNearPortMerchant() and snapshot.status ~= "sailing" and self.pendingShipShopRevision < 0
+				local cardId = installedSlots[slotIndex]
+				local slotName = "空槽"
+				local slotArt = _GreatVoyageVoyageData:GetCardSlotRuid()
+				if slotArt == nil or slotArt == "" then slotArt = "4e145218d5e3404586496c969504f3df" end
+				if cardId ~= "" then
+					local installedCard = _GreatVoyageVoyageData:GetShipUpgradeCardById(cardId)
+					if installedCard ~= nil then slotName = installedCard.name; if installedCard.artRuid ~= nil and installedCard.artRuid ~= "" then slotArt = installedCard.artRuid end end
+				end
+				button.Entity.SpriteGUIRendererComponent.ImageRUID = DataRef(slotArt)
+				button.Entity.SpriteGUIRendererComponent.PreserveSprite = PreserveSpriteType.AspectOnly
+				button.Entity.SpriteGUIRendererComponent.Color = Color(1, 1, 1, 1)
+				if isvalid(label) then
+					label.Entity.Enable = isFitting and isTierOne
+					local marker = ""
+					if slotIndex == self.selectedShipSlotIndex then marker = "◆ " end
+					label.Text = marker .. tostring(slotIndex) .. " · " .. slotName
+					label.FontColor = Color(1, 0.93, 0.75, 1)
+				end
+			end
+		end
+		local buttons = { self.cardMarketCard1Button, self.cardMarketCard2Button, self.cardMarketCard3Button, self.cardMarketCard4Button, self.cardMarketCard5Button, self.cardMarketCard6Button }
+		local labels = { self.cardMarketCard1Label, self.cardMarketCard2Label, self.cardMarketCard3Label, self.cardMarketCard4Label, self.cardMarketCard5Label, self.cardMarketCard6Label }
+		local selectedCard = nil
+		for i = 1, 6 do
+			local button = buttons[i]
+			local label = labels[i]
+			local card = list[(self.cardMarketPage - 1) * 6 + i]
+			if isvalid(button) then
+				local column = (i - 1) % 3
+				local row = math.floor((i - 1) / 3)
+				local cardWidth = 220
+				local cardHeight = 260
+				local cardX = -420 + column * 420
+				local cardY = 130 - row * 295
+				local labelWidth = 138
+				local labelY = -81
+				local labelHeight = 48
+				if isFitting then
+					column = (i - 1) % 2
+					row = math.floor((i - 1) / 2)
+					cardWidth = 174
+					cardHeight = 180
+					cardX = 292 + column * 210
+					cardY = 185 - row * 195
+					labelWidth = 145
+					labelY = -54
+					labelHeight = 58
+				end
+				local isRegenCaption = isFitting and card ~= nil and card.name == "修復奈米蜂群"
+				if isRegenCaption then labelHeight = 58 end
+				local cardTransform = button.Entity.UITransformComponent
+				if isvalid(cardTransform) then
+					cardTransform.AnchorsMin = Vector2(0.5, 0.5); cardTransform.AnchorsMax = Vector2(0.5, 0.5); cardTransform.Pivot = Vector2(0.5, 0.5)
+					cardTransform.RectSize = Vector2(cardWidth, cardHeight); cardTransform.anchoredPosition = Vector2(cardX, cardY)
+					cardTransform.OffsetMin = Vector2(cardX - cardWidth * 0.5, cardY - cardHeight * 0.5); cardTransform.OffsetMax = Vector2(cardX + cardWidth * 0.5, cardY + cardHeight * 0.5)
+				end
+				button.Enable = card ~= nil
+				button.Entity.Enable = card ~= nil
+				if isvalid(label) then
+					label.Entity.Enable = card ~= nil
+					local labelTransform = label.Entity.UITransformComponent
+					if isvalid(labelTransform) then
+						labelTransform.AnchorsMin = Vector2(0.5, 0.5); labelTransform.AnchorsMax = Vector2(0.5, 0.5); labelTransform.Pivot = Vector2(0.5, 0.5)
+						labelTransform.RectSize = Vector2(labelWidth, labelHeight); labelTransform.anchoredPosition = Vector2(0, labelY)
+						labelTransform.OffsetMin = Vector2(-labelWidth * 0.5, labelY - labelHeight * 0.5); labelTransform.OffsetMax = Vector2(labelWidth * 0.5, labelY + labelHeight * 0.5)
+					end
+					label.FontSize = 16
+					label.MaxSize = 16
+					label.MinSize = 16
+					label.BestFit = false
+					if isFitting then label.FontSize = 18; label.MaxSize = 18; label.MinSize = 18 end
+					if isRegenCaption then label.FontSize = 18; label.MaxSize = 18; label.MinSize = 18 end
+					label.FontColor = Color(0.29, 0.19, 0.13, 1)
+					if isvalid(label.Entity.SpriteGUIRendererComponent) then label.Entity.SpriteGUIRendererComponent.Enable = false end
+				end
+				if card ~= nil then
+					local count = inventory[card.id] or 0
+
+					local stockLine = tostring(card.price or 0) .. "G·庫" .. tostring(count)
+					if self.cardMarketMode == "sell" then stockLine = "出售 " .. tostring(card.sellPrice or 0) .. "G·庫" .. tostring(count) end
+					if isFitting then stockLine = "×" .. tostring(count) end
+					if card.available == false then stockLine = stockLine .. " ·未解鎖" end
+					if isvalid(label) then
+						if isRegenCaption then label.Text = card.name .. "\n×" .. tostring(count)
+						elseif isFitting then label.Text = card.name .. "\n持有 " .. tostring(count)
+						else label.Text = card.name .. "\n" .. stockLine end
+					end
+					button.Entity.SpriteGUIRendererComponent.Outline = card.id == self.cardMarketSelectedCardId
+					button.Entity.SpriteGUIRendererComponent.OutlineColor = Color(0.98, 0.74, 0.28, 1)
+					button.Entity.SpriteGUIRendererComponent.OutlineWidth = 3
+					button.Entity.SpriteGUIRendererComponent.Color = Color(1, 1, 1, 1)
+					local cardArtRuid = card.artRuid
+					if cardArtRuid == nil or cardArtRuid == "" then cardArtRuid = "2860136c06ab075439721c027de365af" end
+					button.Entity.SpriteGUIRendererComponent.ImageRUID = DataRef(cardArtRuid)
+					button.Entity.SpriteGUIRendererComponent.PreserveSprite = PreserveSpriteType.AspectOnly
+					if card.id == self.cardMarketSelectedCardId then selectedCard = card end
+				end
+			end
+		end
+		if self.cardMarketSelectedIndex > #list or (selectedCard == nil and self.cardMarketSelectedCardId ~= "") then
+			self.cardMarketSelectedCardId = ""
+			self.cardMarketSelectedIndex = 0
+			selectedCard = nil
+		end
+		if self.cardMarketDetailText ~= nil then
+			self.cardMarketDetailText.FontSize = 22
+			self.cardMarketDetailText.Padding = RectOffset(0, 0, 0, 0)
+			if isFitting then
+				self.cardMarketDetailText.FontSize = 22
+				self.cardMarketDetailText.Padding = RectOffset(18, 18, 3, 3)
+			end
+			if selectedCard == nil then
+				self.cardMarketDetailText.Text = "選擇卡片查看效果與售價。鎖定卡會顯示解鎖條件。"
+				if isFitting then
+					self.cardMarketDetailText.Text = "選卡安裝到選定槽；替換會退回原卡。"
+					if fittingShipDefinition ~= nil and fittingShipDefinition.tier ~= 1 then
+						self.cardMarketDetailText.Text = "T0 沒有改裝槽；持有卡片可留待 T1 船使用。"
+					end
+				end
+			else
+				self.cardMarketDetailText.Text = selectedCard.name .. "｜" .. selectedCard.description
+				if isFitting then self.cardMarketDetailText.Text = selectedCard.name .. "\n" .. selectedCard.description end
+			end
+			-- UTF-8 長效果文預留三行；原生文字尺寸會晚一幀更新，不能在此同步量字。
+			if isFitting and selectedCard ~= nil and #(selectedCard.description or "") > 60 then
+				self.cardMarketDetailText.FontSize = 18
+			end
+		end
+		local marketHint = ""
+		if #list == 0 then marketHint = "目前沒有未安裝的改裝卡庫存。"
+		elseif self.cardMarketMode == "install" then marketHint = "選取庫存卡片後安裝至船槽 " .. tostring(self.selectedShipSlotIndex) .. "；替換時舊卡會退回庫存。"
+		elseif self.cardMarketMode == "sell" then marketHint = "只能出售未安裝的庫存卡片。"
+		else marketHint = "買入會增加未安裝庫存（總持有上限 99 張，含已裝）；安裝請從 T1 船槽操作。" end
+		if isFitting and fittingShipDefinition ~= nil and fittingShipDefinition.tier ~= 1 then marketHint = "目前船型沒有改裝槽；切換至已擁有的 T1 船才能裝配。" end
+		local canAct = selectedCard ~= nil and self:IsNearPortMerchant() and snapshot.status ~= "sailing" and not self.cardMarketRequestPending and self.pendingShipShopRevision < 0
+		local selectedSlotCardId = installedSlots[self.selectedShipSlotIndex] or ""
+		if selectedCard ~= nil then
+			if self.cardMarketMode == "buy" then
+				local price = (selectedCard.price or 0) * self.cardMarketQuantity
+				if selectedCard.available == false then
+					marketHint = "鎖定卡片｜解鎖條件：" .. tostring(selectedCard.requirement or "尚未開放")
+				elseif (snapshot.money or 0) < price then
+					marketHint = "金幣不足：買入需 " .. tostring(price) .. " G。"
+				end
+				canAct = canAct and selectedCard.available ~= false and (snapshot.money or 0) >= price
+			elseif self.cardMarketMode == "sell" then
+				if (inventory[selectedCard.id] or 0) < self.cardMarketQuantity then marketHint = "庫存不足：目前只有 ×" .. tostring(inventory[selectedCard.id] or 0) .. "。" end
+				canAct = canAct and (inventory[selectedCard.id] or 0) >= self.cardMarketQuantity
+			else
+				local isTierOne = fittingShipDefinition ~= nil and fittingShipDefinition.tier == 1
+				canAct = canAct and isTierOne and ownedActiveShip and (inventory[selectedCard.id] or 0) > 0 and activeShip ~= nil
+				if not isTierOne then marketHint = "目前船型沒有改裝槽；切換至已擁有的 T1 船才能裝配。" end
+				if selectedSlotCardId == selectedCard.id then
+					marketHint = "這張卡已安裝在選定槽位。"
+					canAct = false
+				end
+			end
+		end
+		if isFitting and selectedCard == nil and selectedSlotCardId ~= "" then
+			local isTierOne = fittingShipDefinition ~= nil and fittingShipDefinition.tier == 1
+			canAct = isTierOne and ownedActiveShip and self:IsNearPortMerchant() and snapshot.status ~= "sailing" and not self.cardMarketRequestPending and self.pendingShipShopRevision < 0
+			marketHint = "卸下後卡片會退回未安裝庫存。"
+		end
+		if self.cardMarketRequestPending or self.cardMarketFeedback ~= "" then marketHint = self.cardMarketFeedback end
+		if self.cardMarketMessageText ~= nil then
+			if isFitting then self.cardMarketMessageText.FontSize = 20 end
+			self.cardMarketMessageText.Text = marketHint
+		end
+		if self.cardMarketActionButton ~= nil then
+			self.cardMarketActionButton.Enable = canAct
+			local isTierOneOwned = fittingShipDefinition ~= nil and fittingShipDefinition.tier == 1 and ownedActiveShip
+			self.cardMarketActionButton.Entity.Enable = not isFitting or (isTierOneOwned and (selectedCard ~= nil or selectedSlotCardId ~= ""))
+			local action = "選擇卡片"
+			if self.cardMarketMode == "buy" then action = "買入 ×" .. tostring(self.cardMarketQuantity)
+			elseif self.cardMarketMode == "sell" then action = "出售 ×" .. tostring(self.cardMarketQuantity)
+			elseif isFitting and selectedCard == nil and selectedSlotCardId ~= "" then action = "拆下槽位 " .. tostring(self.selectedShipSlotIndex)
+			else action = "安裝到槽位 " .. tostring(self.selectedShipSlotIndex) end
+			self.cardMarketActionButton.Entity.TextGUIRendererComponent.Text = action
+		end
+		if self.cardMarketPagePrevButton ~= nil then
+			self:SetButtonEnabled("/ui/GreatVoyageAdventure/CardMarket/Window/Prev", self.cardMarketPagePrevButton, self.cardMarketPage > 1)
+		end
+		if self.cardMarketPageNextButton ~= nil then
+			self:SetButtonEnabled("/ui/GreatVoyageAdventure/CardMarket/Window/Next", self.cardMarketPageNextButton, self.cardMarketPage < pageCount)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnCardMarketActionClick(ButtonClickEvent event)
+		if _GreatVoyageVoyageState == nil or self.cardMarketActionButton == nil or not self.cardMarketActionButton.Enable then return end
+		if self.cardMarketMode ~= "install" and self.cardMarketSelectedCardId == "" then return end
+		if self.cardMarketMode == "buy" then
+			local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+			self.cardMarketPendingRevision = 0
+			if snapshot.ship ~= nil then self.cardMarketPendingRevision = snapshot.ship.revision or 0 end
+			_GreatVoyageVoyageState:BuyUpgradeCard(self.cardMarketSelectedCardId, self.cardMarketQuantity)
+			self.cardMarketFeedback = "已送出買入請求；等待伺服器確認。"
+		elseif self.cardMarketMode == "sell" then
+			local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+			self.cardMarketPendingRevision = 0
+			if snapshot.ship ~= nil then self.cardMarketPendingRevision = snapshot.ship.revision or 0 end
+			_GreatVoyageVoyageState:SellUpgradeCard(self.cardMarketSelectedCardId, self.cardMarketQuantity)
+			self.cardMarketFeedback = "已送出出售請求；等待伺服器確認。"
+		else
+			local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+			if snapshot.ship == nil then return end
+			self.cardMarketPendingRevision = 0
+			if snapshot.ship ~= nil then self.cardMarketPendingRevision = snapshot.ship.revision or 0 end
+			self:ConfigureSelectedShipSlotById(snapshot.ship.id, self.selectedShipSlotIndex, self.cardMarketSelectedCardId)
+			if self.cardMarketSelectedCardId == "" then self.cardMarketFeedback = "已送出拆卸請求；卡片會退回庫存。"
+			else self.cardMarketFeedback = "已送出安裝請求；替換卡片會退回庫存。" end
+		end
+		self.cardMarketRequestPending = true
+		self.cardMarketPendingElapsed = 0
+		self:RefreshCardMarket()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ConfigureSelectedShipSlotById(string shipId, integer slotIndex, string cardId)
+		if self.modalType ~= "card_market" or self.pendingShipShopRevision >= 0 or not self:IsNearPortMerchant() or _GreatVoyageVoyageState == nil or _GreatVoyageVoyageData == nil then return end
+		local definition = _GreatVoyageVoyageData:GetShipById(shipId)
+		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+		if snapshot.ship == nil or definition == nil or definition.tier ~= 1 or snapshot.ownedShips == nil or snapshot.ownedShips[shipId] == nil or slotIndex < 1 or slotIndex > 3 then return end
+		self.pendingShipShopRevision = snapshot.ship.revision
+		_GreatVoyageVoyageState:ConfigureShipSlot(shipId, slotIndex, cardId)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshShipShop()
+		-- 從伺服器快照和目錄更新船卡、槽位與按鈕狀態。
+		if _GreatVoyageVoyageState == nil or _GreatVoyageVoyageData == nil or not isvalid(self.shipShopDetailText) then return end
+		if isvalid(self.shipCabinContentEntity) then self.shipCabinContentEntity.Enable = false end
+		if isvalid(self.shipStatusText) then self.shipStatusText.Entity.Enable = false end
+		if isvalid(self.shipShopGoldText) then self.shipShopGoldText.Entity.Enable = false end
+		if isvalid(self.shipHeaderTitleText) then
+			self.shipHeaderTitleText.Text = "船舶買賣"
+			self.shipHeaderTitleText.Entity.Enable = true
+		end
+		if isvalid(self.shipShopTitleText) then self.shipShopTitleText.Entity.Enable = false end
+		local catalog = _GreatVoyageVoyageData:GetShipCatalog()
+		local upgradeCards = _GreatVoyageVoyageData:GetShipUpgradeCards()
+		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+		local activeShip = snapshot.ship
+		if activeShip == nil or snapshot.ownedShips == nil then
+			self.shipShopDetailText.Text = "正在同步船舶資料…"
+			self.shipShopActionButton.Enable = false
+			return
+		end
+		local shipActionUpdated = self.pendingShipShopRevision >= 0 and activeShip.revision > self.pendingShipShopRevision
+		if shipActionUpdated then self.pendingShipShopRevision = -1 end
+		local cardButtons = { self.shipShopCard1Button, self.shipShopCard2Button, self.shipShopCard3Button, self.shipShopCard4Button, self.shipShopCard5Button }
+		local cardIcons = { self.shipShopCard1Icon, self.shipShopCard2Icon, self.shipShopCard3Icon, self.shipShopCard4Icon, self.shipShopCard5Icon }
+		local cardTexts = { self.shipShopCard1Text, self.shipShopCard2Text, self.shipShopCard3Text, self.shipShopCard4Text, self.shipShopCard5Text }
+		for i = 1, 5 do
+			local button = cardButtons[i]
+			local shipInfo = catalog[i]
+			local icon = cardIcons[i]
+			local label = cardTexts[i]
+			if isvalid(button) then
+				button.Entity.Enable = shipInfo ~= nil
+				if shipInfo ~= nil then
+					local ownedShip = snapshot.ownedShips[shipInfo.id]
+					local marker = "未擁有"
+					if shipInfo.id == activeShip.id then marker = "目前使用"
+					elseif ownedShip ~= nil then marker = "已擁有" end
+					local price = "免費"
+					if shipInfo.price > 0 then price = tostring(shipInfo.price) .. " G" end
+					local selection = ""
+					if i == self.selectedShipCatalogIndex then selection = "◆ " end
+					if isvalid(label) then label.Text = selection .. shipInfo.name .. "\n" .. marker .. "\n" .. price end
+					button.Entity.SpriteGUIRendererComponent.Outline = i == self.selectedShipCatalogIndex
+					button.Entity.SpriteGUIRendererComponent.OutlineColor = Color(1, 0.82, 0.2, 1)
+					button.Entity.SpriteGUIRendererComponent.OutlineWidth = 3
+					if isvalid(icon) and shipInfo.spriteRuid ~= nil then
+						icon.ImageRUID = DataRef(shipInfo.spriteRuid)
+						icon.PreserveSprite = PreserveSpriteType.AspectOnly
+						icon.Color = Color(1, 1, 1, 1)
+					end
+				end
+			end
+		end
+		local selected = catalog[self.selectedShipCatalogIndex]
+		if selected == nil then
+			self.shipShopDetailText.Text = "船舶目錄同步中…"
+			self.shipShopActionButton.Enable = false
+			return
+		end
+		self.selectedShipId = selected.id
+		if isvalid(self.shipShopPreviewImage) then
+			self.shipShopPreviewImage.ImageRUID = DataRef(selected.spriteRuid or "")
+			self.shipShopPreviewImage.PreserveSprite = PreserveSpriteType.AspectOnly
+			self.shipShopPreviewImage.Color = Color(1, 1, 1, 1)
+		end
+		local owned = snapshot.ownedShips[selected.id]
+		local status = "尚未擁有"
+		if selected.id == activeShip.id then status = "目前使用中"
+		elseif owned ~= nil then status = "已擁有，可切換" end
+		local isTierOne = selected.tier == 1
+		local ownedDetail = owned
+		if ownedDetail == nil and selected.id == activeShip.id then ownedDetail = activeShip end
+		local maxHull = selected.maxHull
+		local maxShield = selected.maxShield
+		local maxArmor = selected.maxArmor
+		local cargoCapacity = selected.cargoCapacity
+		local cannonMultiplier = selected.cannonMultiplier
+		local durationMultiplier = selected.durationMultiplier
+		if ownedDetail ~= nil then
+			maxHull = ownedDetail.maxHull
+			maxShield = ownedDetail.maxShield
+			maxArmor = ownedDetail.maxArmor
+			cargoCapacity = ownedDetail.cargoCapacity
+			cannonMultiplier = ownedDetail.cannonMultiplier
+			durationMultiplier = ownedDetail.durationMultiplier
+		end
+		local durationPercent = math.floor((durationMultiplier - 1) * 100 + 0.5)
+		local durationEffect = "航程時間維持基準"
+		if durationPercent < 0 then durationEffect = "航程時間 -" .. tostring(math.abs(durationPercent)) .. "%"
+		elseif durationPercent > 0 then durationEffect = "航程時間 +" .. tostring(durationPercent) .. "%" end
+		local preview = ""
+		if cannonMultiplier > 1 then preview = "炮擊傷害 +" .. tostring(math.floor((cannonMultiplier - 1) * 100 + 0.5)) .. "%" end
+		local effectText = durationEffect
+		if preview ~= "" then effectText = durationEffect .. "・" .. preview end
+		local slotGuidance = ""
+		if isTierOne then slotGuidance = "\nT1：前往「船舶改裝」可安裝三個通用槽。" end
+		self.shipShopDetailText.Text = "<size=40>" .. selected.name .. "</size>\n<size=22>" .. status .. "</size>\n<size=24>" .. selected.description .. "</size>\n船體 " .. tostring(maxHull) .. "　護盾 " .. tostring(maxShield) .. "\n裝甲 " .. tostring(maxArmor) .. "　貨艙 " .. tostring(cargoCapacity) .. " 格\n<size=24>" .. (isTierOne and "三個通用改裝槽" or "T0 無改裝槽") .. "</size>\n<size=20>" .. effectText .. "</size>"
+		if isvalid(self.shipWalletText) then
+			self.shipWalletText.Text = "持有 " .. tostring(snapshot.money or 0) .. " G"
+			self.shipWalletText.Entity.Enable = true
+		end
+		if isvalid(self.shipShopGoldText) then self.shipShopGoldText.Text = "" end
+		if isvalid(self.shipShopMessageText) then
+			self.shipShopMessageText.Text = "選擇船舶查看規格；購買或切換會以伺服器結果更新。"
+			if shipActionUpdated and activeShip.message ~= "" then self.shipShopMessageText.Text = activeShip.message end
+		end
+		local slotButtons = { self.shipShopSlot1Button, self.shipShopSlot2Button, self.shipShopSlot3Button }
+		local slotLabels = { self.shipShopSlot1Label, self.shipShopSlot2Label, self.shipShopSlot3Label }
+		local slotValues = { "", "", "" }
+		if ownedDetail ~= nil and ownedDetail.slots ~= nil then
+			slotValues = { ownedDetail.slots.slot1, ownedDetail.slots.slot2, ownedDetail.slots.slot3 }
+		end
+		for i = 1, 3 do
+			if isvalid(slotButtons[i]) then slotButtons[i].Entity.Enable = false; slotButtons[i].Enable = false end
+			if isvalid(slotLabels[i]) then slotLabels[i].Entity.Enable = false end
+		end
+		local upgradeButtons = { self.shipShopUpgrade1Button, self.shipShopUpgrade2Button, self.shipShopUpgrade3Button }
+		local canConfigure = isTierOne and ownedDetail ~= nil and self:IsNearPortMerchant() and _GreatVoyageVoyageState.clientSnapshotStatus ~= "sailing" and self.pendingShipShopRevision < 0
+		for i = 1, 3 do if isvalid(upgradeButtons[i]) then upgradeButtons[i].Enable = false; upgradeButtons[i].Entity.Enable = false end end
+		if isvalid(self.shipShopUpgradeClearButton) then
+			self.shipShopUpgradeClearButton.Enable = false
+		end
+		local canTrade = self:IsNearPortMerchant() and _GreatVoyageVoyageState.clientSnapshotStatus ~= "sailing" and self.pendingShipShopRevision < 0
+		self.shipShopActionButton.Enable = canTrade and selected.id ~= activeShip.id
+		if self.pendingShipShopRevision >= 0 then
+			self.shipShopActionButton.Entity.TextGUIRendererComponent.Text = "處理中…"
+		elseif selected.id == activeShip.id then
+			self.shipShopActionButton.Entity.TextGUIRendererComponent.Text = "目前使用中"
+		elseif owned ~= nil then
+			self.shipShopActionButton.Entity.TextGUIRendererComponent.Text = "切換為這艘船"
+		else
+			local price = "免費"
+			if selected.price > 0 then price = tostring(selected.price) .. " G" end
+			self.shipShopActionButton.Entity.TextGUIRendererComponent.Text = "購買　" .. price
+		end
+		if not canTrade then
+			if not self:IsNearPortMerchant() then
+				self.shipStatusText.Text = "請靠近港口商人後進行船舶交易。"
+			elseif _GreatVoyageVoyageState.clientSnapshotStatus == "sailing" then
+				self.shipStatusText.Text = "航行中無法購買或切換船隻。"
+			end
+		elseif activeShip.message ~= "" then
+			self.shipStatusText.Text = activeShip.message
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipRepairClick(ButtonClickEvent event)
+		if self.modalType ~= "ship" or _GreatVoyageVoyageState == nil or self.pendingShipRepairRevision >= 0 then return end
+		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+		local ship = snapshot.ship
+		if ship == nil or ship.hull == nil or _GreatVoyageVoyageData == nil then return end
+		local definition = _GreatVoyageVoyageData:GetShipById(ship.id)
+		local isT1 = definition ~= nil and definition.tier == 1
+		if _GreatVoyageVoyageState:GetPortIdFromMap(self.currentMapName) == "" or snapshot.status == "sailing" then return end
+		if isT1 and not self:IsNearPortMerchant() then
+			self.shipStatusText.Text = "T1 維修請靠近港口商人。"
+			return
+		end
+		self.pendingShipRepairRevision = ship.revision
+		if isT1 then _GreatVoyageVoyageState:RepairShip()
+		else _GreatVoyageVoyageState:RepairStarterShip() end
+		self:RefreshShipPanel()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipCargoGridPrevClick(ButtonClickEvent event)
+		-- 向前切換貨艙格位頁。
+		self.shipCargoGridPage = math.max(1, self.shipCargoGridPage - 1)
+		self:RefreshShipPanel()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnShipCargoGridNextClick(ButtonClickEvent event)
+		-- 向後切換貨艙格位頁。
+		local pageCount = 1
+		if _GreatVoyageVoyageState ~= nil then
+			local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+			if snapshot.ship ~= nil then pageCount = self:GetShipCargoGridPageCount(snapshot.ship.cargoCapacity or 0) end
+		end
+		self.shipCargoGridPage = math.min(pageCount, self.shipCargoGridPage + 1)
+		self:RefreshShipPanel()
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer GetShipCargoGridPageCount(integer capacity)
+		local pageSize = math.max(1, self.shipCargoGridPageSize)
+		return math.max(1, math.ceil(math.max(0, capacity) / pageSize))
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshShipPanel()
+		-- 依伺服器船況更新船圖、貨艙格與已裝卡。
+		if _GreatVoyageVoyageState == nil or not isvalid(self.shipConditionText) then return end
+		local showingShipShop = isvalid(self.shipShopPanel) and self.shipShopPanel.Enable
+		if isvalid(self.shipCabinContentEntity) then self.shipCabinContentEntity.Enable = not showingShipShop end
+		if isvalid(self.shipCargoContentEntity) then self.shipCargoContentEntity.Enable = not showingShipShop end
+		if isvalid(self.shipInstalledContentEntity) then self.shipInstalledContentEntity.Enable = not showingShipShop end
+		if isvalid(self.shipStatusText) then self.shipStatusText.Entity.Enable = not showingShipShop end
+		if isvalid(self.shipFooterHintEntity) then self.shipFooterHintEntity.Enable = not showingShipShop end
+		if isvalid(self.shipRepairButton) then self.shipRepairButton.Entity.Enable = not showingShipShop end
+		if isvalid(self.shipNameText) then self.shipNameText.Entity.Enable = not showingShipShop end
+		if isvalid(self.shipBadgeText) then self.shipBadgeText.Entity.Enable = false end
+		if isvalid(self.shipPreviewImage) then self.shipPreviewImage.Entity.Enable = not showingShipShop end
+		if isvalid(self.shipCargoHintText) then self.shipCargoHintText.Entity.Enable = not showingShipShop end
+		if isvalid(self.shipHeaderTitleText) then
+			self.shipHeaderTitleText.Text = showingShipShop and "船舶買賣" or "船艙管理"
+			self.shipHeaderTitleText.Entity.Enable = true
+		end
+		local ship = _GreatVoyageVoyageState.clientShip
+		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+		if ship.hull == nil or snapshot.playerId == "" then
+			if isvalid(self.shipNameText) then self.shipNameText.Text = "船舶同步中…" end
+			if isvalid(self.shipBadgeText) then self.shipBadgeText.Text = "正在取得船型資料" end
+			if isvalid(self.shipModsText) then self.shipModsText.Text = "" end
+			self.shipConditionText.Text = "船況同步中…"
+			self.shipWalletText.Text = "持有 — G"
+			self.shipCapacityText.Text = "貨艙同步中…"
+			self.shipCargoText.Text = "等待港口資料"
+			self.shipCargoIcon.Entity.Enable = false
+			local cargoCells = { self.shipCargoGridCell1, self.shipCargoGridCell2, self.shipCargoGridCell3, self.shipCargoGridCell4, self.shipCargoGridCell5, self.shipCargoGridCell6, self.shipCargoGridCell7, self.shipCargoGridCell8, self.shipCargoGridCell9, self.shipCargoGridCell10, self.shipCargoGridCell11, self.shipCargoGridCell12, self.shipCargoGridCell13, self.shipCargoGridCell14, self.shipCargoGridCell15, self.shipCargoGridCell16, self.shipCargoGridCell17, self.shipCargoGridCell18 }
+			for i = 1, 18 do if isvalid(cargoCells[i]) then cargoCells[i].Enable = false end end
+			self.shipRepairButton.Enable = false
+			self.shipStatusText.Text = "正在取得伺服器船況"
+			return
+		end
+		if self.pendingShipRepairRevision >= 0 and ship.revision > self.pendingShipRepairRevision then self.pendingShipRepairRevision = -1 end
+		if self.pendingShipShopRevision >= 0 and ship.revision > self.pendingShipShopRevision then self.pendingShipShopRevision = -1 end
+		-- 顯示目前啟用船的伺服器投影；航行中亦可唯讀查看改裝。
+		local definition = nil
+		if _GreatVoyageVoyageData ~= nil then definition = _GreatVoyageVoyageData:GetShipById(ship.id) end
+		local isT1 = definition ~= nil and definition.tier == 1
+		if isvalid(self.shipPreviewImage) then
+			self.shipPreviewImage.Entity.Enable = not showingShipShop and definition ~= nil and definition.spriteRuid ~= nil and definition.spriteRuid ~= ""
+			if definition ~= nil and definition.spriteRuid ~= nil then
+				self.shipPreviewImage.ImageRUID = DataRef(definition.spriteRuid)
+				self.shipPreviewImage.PreserveSprite = PreserveSpriteType.AspectOnly
+				self.shipPreviewImage.Color = Color(1, 1, 1, 1)
+			end
+		end
+		if isvalid(self.shipNameText) then
+			self.shipNameText.Entity.Enable = not showingShipShop
+			local tierText = "T0"
+			if isT1 then tierText = "T1" end
+			self.shipNameText.Text = (ship.name or "飛空船") .. " · " .. tierText
+		end
+		if isvalid(self.shipBadgeText) then
+			self.shipBadgeText.Entity.Enable = false
+			self.shipBadgeText.Text = "新手船 · 四港免費維修"
+			if isT1 then self.shipBadgeText.Text = "T1 · 3 個通用改裝槽" end
+		end
+		if isvalid(self.shipModsText) then self.shipModsText.Text = "" end
+		self.shipConditionText.FontSize = 28
+		self.shipConditionText.FontColor = Color(0.29, 0.19, 0.13, 1)
+		local modSlotButtons = { self.shipModSlot1Button, self.shipModSlot2Button, self.shipModSlot3Button }
+		local modSlotLabels = { self.shipModSlot1Label, self.shipModSlot2Label, self.shipModSlot3Label }
+		local cardIds = { "", "", "" }
+		if ship.slots ~= nil then cardIds = { ship.slots.slot1 or "", ship.slots.slot2 or "", ship.slots.slot3 or "" } end
+		local atPort = _GreatVoyageVoyageState:GetPortIdFromMap(self.currentMapName) ~= "" and snapshot.status ~= "sailing"
+		for slotIndex = 1, 3 do
+			local slotButton = modSlotButtons[slotIndex]
+			local slotLabel = modSlotLabels[slotIndex]
+			if isvalid(slotButton) then
+				local card = _GreatVoyageVoyageData:GetShipUpgradeCardById(cardIds[slotIndex])
+				local artRuid = "2860136c06ab075439721c027de365af"
+				local slotRuid = _GreatVoyageVoyageData:GetCardSlotRuid()
+				if slotRuid ~= nil and slotRuid ~= "" then artRuid = slotRuid end
+				local name = "空槽  ＋"
+				if card ~= nil then
+					name = card.name
+					if card.artRuid ~= nil and card.artRuid ~= "" then artRuid = card.artRuid end
+				end
+				slotButton.Entity.SpriteGUIRendererComponent.ImageRUID = DataRef(artRuid)
+				slotButton.Entity.SpriteGUIRendererComponent.PreserveSprite = PreserveSpriteType.AspectOnly
+				slotButton.Entity.SpriteGUIRendererComponent.Color = Color(1, 1, 1, 1)
+				if isvalid(slotLabel) then
+					slotLabel.Text = tostring(slotIndex) .. " · " .. name
+					slotLabel.FontColor = Color(1, 0.93, 0.75, 1)
+					slotLabel.FontSize = 20
+				end
+				local ownedShip = snapshot.ownedShips ~= nil and snapshot.ownedShips[ship.id] ~= nil
+				slotButton.Entity.Enable = isT1 and ownedShip
+				slotButton.Enable = isT1 and ownedShip and atPort and self:IsNearPortMerchant() and self.pendingShipShopRevision < 0
+			end
+		end
+		if isvalid(self.shipCargoHintText) then self.shipCargoHintText.Text = "每格一件；圖示代表貨物，其餘為空位。" end
+		local repairQuote = _GreatVoyageVoyageData:GetRepairQuote(ship)
+		if isvalid(self.shipRepairButton) then
+			self.shipRepairButton.Entity.TextGUIRendererComponent.Text = "免費維修 · 0 G"
+			if isT1 then self.shipRepairButton.Entity.TextGUIRendererComponent.Text = "T1 維修 · " .. tostring(repairQuote) .. " G" end
+		end
+		self.shipConditionText.Text = "船體\n護盾\n裝甲"
+		local currentConditions = { ship.hull or 0, ship.shield or 0, ship.armor or 0 }
+		local maximumConditions = { ship.maxHull or 0, ship.maxShield or 0, ship.maxArmor or 0 }
+		local conditionFills = { self.shipHullBarFillTransform, self.shipShieldBarFillTransform, self.shipArmorBarFillTransform }
+		local conditionValues = { self.shipHullValueText, self.shipShieldValueText, self.shipArmorValueText }
+		for i = 1, 3 do
+			local maximum = maximumConditions[i]
+			local current = currentConditions[i]
+			local ratio = 0
+			if maximum > 0 then ratio = math.max(0, math.min(1, current / maximum)) end
+			if isvalid(conditionFills[i]) then
+				conditionFills[i].RectSize = Vector2(255 * ratio, 13)
+				conditionFills[i].Entity.Enable = ratio > 0
+			end
+			if isvalid(conditionValues[i]) then
+				conditionValues[i].Text = tostring(current) .. " / " .. tostring(maximum)
+				conditionValues[i].FontSize = 27
+				conditionValues[i].FontColor = Color(0.29, 0.19, 0.13, 1)
+			end
+		end
+		self.shipWalletText.Text = "持有 " .. tostring(snapshot.money) .. " G"
+		local quantity = snapshot.cargo.quantity or 0
+		local capacity = math.max(0, ship.cargoCapacity or 0)
+		self.shipCapacityText.Text = tostring(quantity) .. " / " .. tostring(ship.cargoCapacity) .. "　·　空位 " .. tostring(math.max(0, ship.cargoCapacity - quantity))
+		local good = nil
+		if quantity > 0 and _GreatVoyageVoyageData ~= nil then good = _GreatVoyageVoyageData:GetGoodById(snapshot.cargo.id) end
+		local gridCells = { self.shipCargoGridCell1, self.shipCargoGridCell2, self.shipCargoGridCell3, self.shipCargoGridCell4, self.shipCargoGridCell5, self.shipCargoGridCell6, self.shipCargoGridCell7, self.shipCargoGridCell8, self.shipCargoGridCell9, self.shipCargoGridCell10, self.shipCargoGridCell11, self.shipCargoGridCell12, self.shipCargoGridCell13, self.shipCargoGridCell14, self.shipCargoGridCell15, self.shipCargoGridCell16, self.shipCargoGridCell17, self.shipCargoGridCell18 }
+		local gridIcons = { self.shipCargoGridIcon1, self.shipCargoGridIcon2, self.shipCargoGridIcon3, self.shipCargoGridIcon4, self.shipCargoGridIcon5, self.shipCargoGridIcon6, self.shipCargoGridIcon7, self.shipCargoGridIcon8, self.shipCargoGridIcon9, self.shipCargoGridIcon10, self.shipCargoGridIcon11, self.shipCargoGridIcon12, self.shipCargoGridIcon13, self.shipCargoGridIcon14, self.shipCargoGridIcon15, self.shipCargoGridIcon16, self.shipCargoGridIcon17, self.shipCargoGridIcon18 }
+		local gridLabels = { self.shipCargoGridLabel1, self.shipCargoGridLabel2, self.shipCargoGridLabel3, self.shipCargoGridLabel4, self.shipCargoGridLabel5, self.shipCargoGridLabel6, self.shipCargoGridLabel7, self.shipCargoGridLabel8, self.shipCargoGridLabel9, self.shipCargoGridLabel10, self.shipCargoGridLabel11, self.shipCargoGridLabel12, self.shipCargoGridLabel13, self.shipCargoGridLabel14, self.shipCargoGridLabel15, self.shipCargoGridLabel16, self.shipCargoGridLabel17, self.shipCargoGridLabel18 }
+		local cargoGridPageSize = self.shipCargoGridPageSize
+		local cargoGridPageCount = self:GetShipCargoGridPageCount(capacity)
+		-- 每頁為 UIBuilder 靜態 4×3 格位；第 13 至 18 格作為備用頁面位置。
+		for i = 13, 18 do
+			if isvalid(gridCells[i]) then gridCells[i].Enable = false end
+			if isvalid(gridIcons[i]) then gridIcons[i].Entity.Enable = false end
+			if isvalid(gridLabels[i]) then gridLabels[i].Entity.Enable = false end
+		end
+		self.shipCargoGridPage = math.min(math.max(1, self.shipCargoGridPage), cargoGridPageCount)
+		local cargoGridOffset = (self.shipCargoGridPage - 1) * cargoGridPageSize
+		local occupiedCount = math.min(capacity, math.max(0, quantity))
+		for i = 1, cargoGridPageSize do
+			local cargoIndex = cargoGridOffset + i
+			local isCapacityCell = cargoIndex <= capacity
+			local isOccupied = isCapacityCell and cargoIndex <= occupiedCount
+			if isvalid(gridCells[i]) then gridCells[i].Enable = isCapacityCell end
+			if isvalid(gridIcons[i]) then
+				gridIcons[i].Entity.Enable = isOccupied and good ~= nil
+				gridIcons[i].Color = Color(1, 1, 1, 1)
+				gridIcons[i].Type = 1
+				if isOccupied and good ~= nil then
+					gridIcons[i].ImageRUID = DataRef("thumbnail://" .. good.iconRuid)
+					gridIcons[i].PreserveSprite = PreserveSpriteType.CastFrom(0)
+				end
+			end
+			if isvalid(gridLabels[i]) then
+				gridLabels[i].Entity.Enable = isCapacityCell
+				gridLabels[i].Text = "空位"
+				gridLabels[i].FontSize = 20
+				gridLabels[i].FontColor = Color(0.29, 0.19, 0.13, 1)
+				if isOccupied then
+					gridLabels[i].Text = "×1"
+					gridLabels[i].FontColor = Color(0.29, 0.19, 0.13, 1)
+					if good == nil then gridLabels[i].Text = "同步中" end
+				end
+			end
+		end
+		if isvalid(self.shipCargoHintText) then self.shipCargoHintText.Entity.Enable = false end
+		if isvalid(self.shipCargoGridPageText) then
+			self.shipCargoGridPageText.Text = tostring(self.shipCargoGridPage) .. " / " .. tostring(cargoGridPageCount)
+			self.shipCargoGridPageText.Entity.Enable = cargoGridPageCount > 1
+		end
+		if isvalid(self.shipCargoGridPrevButton) then
+			self.shipCargoGridPrevButton.Entity.Enable = cargoGridPageCount > 1
+			self:SetButtonEnabled("/ui/GreatVoyageAdventure/ShipModal/Window/Cargo/Prev", self.shipCargoGridPrevButton, self.shipCargoGridPage > 1)
+		end
+		if isvalid(self.shipCargoGridNextButton) then
+			self.shipCargoGridNextButton.Entity.Enable = cargoGridPageCount > 1
+			self:SetButtonEnabled("/ui/GreatVoyageAdventure/ShipModal/Window/Cargo/Next", self.shipCargoGridNextButton, self.shipCargoGridPage < cargoGridPageCount)
+		end
+		self.shipCargoIcon.Entity.Enable = false
+		if good ~= nil then
+			self.shipCargoIcon.ImageRUID = DataRef(good.iconRuid)
+			self.shipCargoText.Text = good.displayName .. " ×" .. tostring(quantity) .. "　·　買入 " .. tostring(snapshot.cargoBuyPrice) .. " G／件\n產地：" .. self:GetPortName(good.originId)
+		else
+			self.shipCargoText.Text = "貨艙空空的；可在港口商人購買特產。"
+		end
+		local damaged = ship.hull < ship.maxHull or ship.shield < ship.maxShield or ship.armor < ship.maxArmor
+		local repairAllowed = atPort and (not isT1 or self:IsNearPortMerchant())
+		self.shipRepairButton.Entity.Enable = not showingShipShop
+		self.shipRepairButton.Enable = not showingShipShop and repairAllowed and damaged and self.pendingShipRepairRevision < 0
+		if self.shipRepairButton.Enable then
+			self.shipRepairButton.Entity.SpriteGUIRendererComponent.Color = Color(1, 1, 1, 1)
+		else
+			self.shipRepairButton.Entity.SpriteGUIRendererComponent.Color = Color(0.6, 0.6, 0.6, 1)
+		end
+		if self.pendingShipRepairRevision >= 0 then
+			self.shipStatusText.Text = "維修請求已送出…"
+		elseif not atPort then
+			self.shipStatusText.Text = "航行中可查看船況；請抵港後維修。"
+		elseif isT1 and not self:IsNearPortMerchant() then
+			self.shipStatusText.Text = "T1 維修需靠近港口商人。"
+		elseif not damaged then
+			self.shipStatusText.Text = "船況完好，隨時可以啟航！"
+		else
+			self.shipStatusText.Text = ship.message or "船況受損，可於港口支付報價維修。"
+		end
 	end
 
 	@ExecSpace("ClientOnly")
@@ -479,7 +2209,7 @@ script GreatVoyageAdventureController extends Logic
 	@ExecSpace("ClientOnly")
 	method void RefreshSelectionText()
 		-- 目的港名稱與徽章選取狀態同步，讓航線端點不用靠記憶辨認。
-		self.selectedText.Text = "目前：" .. self:GetPortName(self.currentPortId) .. "　→　目的地：" .. self:GetPortName(self.selectedDestinationId)
+		self.selectedText.Entity.Enable = false
 		self:RefreshPortSelection()
 		self:RefreshRoutePreview()
 	end
@@ -494,13 +2224,10 @@ script GreatVoyageAdventureController extends Logic
 			local selected = portId == self.selectedDestinationId
 			local button = buttons[index]
 			if isvalid(button) and button.Entity.SpriteGUIRendererComponent ~= nil then
-				if selected then
-					button.Entity.SpriteGUIRendererComponent.Color = Color(1, 1, 1, 1)
-				elseif portId == self.currentPortId then
-					button.Entity.SpriteGUIRendererComponent.Color = Color(0.55, 0.55, 0.55, 1)
-				else
-					button.Entity.SpriteGUIRendererComponent.Color = Color(0.76, 0.73, 0.67, 1)
-				end
+				button.Entity.SpriteGUIRendererComponent.Color = Color(1, 1, 1, 1)
+				button.Entity.SpriteGUIRendererComponent.Outline = selected
+				button.Entity.SpriteGUIRendererComponent.OutlineColor = Color(1, 0.82, 0.2, 1)
+				button.Entity.SpriteGUIRendererComponent.OutlineWidth = 3
 			end
 			local label = labels[index]
 			if isvalid(label) then
@@ -526,6 +2253,28 @@ script GreatVoyageAdventureController extends Logic
 	end
 
 	@ExecSpace("ClientOnly")
+	method void PlaceWorldMapPin(UITransformComponent pinTransform, any portPosition)
+		-- 依 MapArt 實際尺寸定位圖釘，讓針尖對準資料中的港口座標。
+		if not isvalid(pinTransform) or not isvalid(self.mapArtTransform) or portPosition == nil then return end
+		local mapPosition = self.mapArtTransform.anchoredPosition
+		local mapSize = self.mapArtTransform.RectSize
+		-- 圖釘尖端位於來源圖 y=0.795；中心上移讓尖端落在港口座標。
+		local tipOffsetY = pinTransform.RectSize.y * 0.295
+		pinTransform.anchoredPosition = Vector2(
+			mapPosition.x + (portPosition.x - 0.5) * mapSize.x,
+			mapPosition.y + (portPosition.y - 0.5) * mapSize.y + tipOffsetY)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshWorldMapPins()
+		-- 每次更新航線預覽時同步四港圖釘的位置。
+		self:PlaceWorldMapPin(self.forestMapPinTransform, self:GetPortPosition("forest"))
+		self:PlaceWorldMapPin(self.skyMapPinTransform, self:GetPortPosition("sky"))
+		self:PlaceWorldMapPin(self.ludusMapPinTransform, self:GetPortPosition("ludus"))
+		self:PlaceWorldMapPin(self.nihalMapPinTransform, self:GetPortPosition("nihal"))
+	end
+
+	@ExecSpace("ClientOnly")
 	method string GetRiskLevel(number risk)
 		if risk >= 0.35 then return "極高" end
 		if risk >= 0.25 then return "高" end
@@ -536,7 +2285,8 @@ script GreatVoyageAdventureController extends Logic
 	@ExecSpace("ClientOnly")
 	method void RefreshRoutePreview()
 		-- 地圖箭頭和空域文字都以相同的航線快照更新。
-		if not isvalid(self.routeTransform) or not isvalid(self.routeArrowTransform) then return end
+		self:RefreshWorldMapPins()
+		if not isvalid(self.routeTransform) or not isvalid(self.routeArrowTransform) or not isvalid(self.mapArtTransform) then return end
 		local preview = nil
 		if _GreatVoyageVoyageState ~= nil then
 			preview = _GreatVoyageVoyageState:PreviewDirectRoute(self.currentPortId, self.selectedDestinationId)
@@ -544,6 +2294,8 @@ script GreatVoyageAdventureController extends Logic
 			preview = _GreatVoyageVoyageData:PreviewDirectRoute(self.currentPortId, self.selectedDestinationId)
 		end
 		if preview == nil then return end
+		local journey = _EntityService:GetEntityByPath("/ui/GreatVoyageAdventure/WorldMapModal/Window/JourneyText")
+		if isvalid(journey) then journey.TextGUIRendererComponent.Text = "目前：" .. self:GetPortName(self.currentPortId) .. "　→　目的地：" .. self:GetPortName(self.selectedDestinationId) end
 		local origin = self:GetPortPosition(self.currentPortId)
 		local destination = self:GetPortPosition(self.selectedDestinationId)
 		if origin == nil or destination == nil or preview.accepted ~= true then
@@ -554,10 +2306,12 @@ script GreatVoyageAdventureController extends Logic
 			if isvalid(self.segmentDetailsText) then self.segmentDetailsText.Text = "請選擇其他港口" end
 			return
 		end
-		local mapX = -165
-		local mapY = -39
-		local mapWidth = 640
-		local mapHeight = 475
+		local mapPosition = self.mapArtTransform.anchoredPosition
+		local mapSize = self.mapArtTransform.RectSize
+		local mapX = mapPosition.x
+		local mapY = mapPosition.y
+		local mapWidth = mapSize.x
+		local mapHeight = mapSize.y
 		local dx = (destination.x - origin.x) * mapWidth
 		local dy = (destination.y - origin.y) * mapHeight
 		local lineLength = math.sqrt(dx * dx + dy * dy)
@@ -574,16 +2328,19 @@ script GreatVoyageAdventureController extends Logic
 		self.routeTransform.RectSize = Vector2(lineLength, 8)
 		self.routeTransform.anchoredPosition = Vector2(mapX + (origin.x + destination.x - 1) * mapWidth * 0.5, mapY + (origin.y + destination.y - 1) * mapHeight * 0.5)
 		self.routeTransform:Rotate(angle - self.routeAngle)
-		self.routeArrowTransform.anchoredPosition = Vector2(mapX + (destination.x - 0.5) * mapWidth, mapY + (destination.y - 0.5) * mapHeight)
-		-- UI 旋轉的正方向與地圖座標的 y 軸相反；箭頭須反轉角度才會指向目的港。
-		self.routeArrowTransform:Rotate(-angle - self.routeArrowAngle)
+		local arrowRetreat = math.min(self.routeArrowTransform.RectSize.x * 0.455, lineLength * 0.35)
+		local angleRadians = angle * math.pi / 180
+		self.routeArrowTransform.anchoredPosition = Vector2(
+			mapX + (destination.x - 0.5) * mapWidth - math.cos(angleRadians) * arrowRetreat,
+			mapY + (destination.y - 0.5) * mapHeight - math.sin(angleRadians) * arrowRetreat)
+		-- 箭頭圖片沿航線角度正向旋轉，讓箭尖朝向目的港。
+		self.routeArrowTransform:Rotate(angle - self.routeArrowAngle)
 		self.routeAngle = angle
-		self.routeArrowAngle = -angle
+		self.routeArrowAngle = angle
 		log("[MapRoute] " .. self.currentPortId .. "->" .. self.selectedDestinationId .. " start=" .. tostring(origin.x) .. "," .. tostring(origin.y) .. " end=" .. tostring(destination.x) .. "," .. tostring(destination.y))
 		if isvalid(self.previewSummaryText) then
-			local expectedCount = preview.expectedEncounterCount or preview.expectedEncounter or 0
 			local distance = math.floor(preview.distance + 0.5)
-			self.previewSummaryText.Text = "直航 60 秒　·　距離 " .. tostring(distance) .. "\n" .. self:GetRiskLevel(preview.risk) .. "風險　·　預期 " .. tostring(expectedCount) .. " 次遭遇\n遇襲時倒數仍會繼續"
+			self.previewSummaryText.Text = "直航距離 " .. tostring(distance)
 		end
 		local details = ""
 		local accumulatedDistance = 0
@@ -603,7 +2360,7 @@ script GreatVoyageAdventureController extends Logic
 			shownShare = roundedShare
 			details = details .. shortName .. "  " .. tostring(distance) .. "／" .. tostring(share) .. "%"
 		end
-		if isvalid(self.airspaceOrderText) then self.airspaceOrderText.Text = "依序穿越 " .. tostring(#preview.segments) .. " 個空域（距離／占比）" end
+		if isvalid(self.airspaceOrderText) then self.airspaceOrderText.Text = "空域順序（距離／占比）" end
 		if isvalid(self.segmentDetailsText) then self.segmentDetailsText.Text = details end
 		log("[Adventure] route preview " .. self.currentPortId .. "->" .. self.selectedDestinationId .. " distance=" .. tostring(preview.distance))
 	end
@@ -646,84 +2403,183 @@ script GreatVoyageAdventureController extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void ArriveAtDestination()
-		local player = _UserService.LocalPlayer
-		if player ~= nil and player.PlayerComponent ~= nil then
-			if _GreatVoyageVoyageState ~= nil then
-				local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
-				if snapshot == nil or snapshot.pendingEncounter == nil then return end
-				if snapshot.raidRemaining > 0 then
-					self.messageText.Text = "菇菇尚未擊退；也可以撐到抵港！"
-					return
-				end
-				-- 舵輪只處理進行中的事件；航程倒數不受事件影響。
-				_GreatVoyageVoyageState:ResolveEncounter("deck_resolved")
-				log("[Adventure] deck encounter resolved by local player")
-			else
-				local targetMap = "map_orbis_port"
-				local targetPosition = Vector2(0.7, -0.45)
-				if self.pendingDestinationId == "forest" then
-					targetMap = "map_forest_port"
-					targetPosition = Vector2(5.5, -0.25)
-				elseif self.pendingDestinationId == "ludus" then
-					targetMap = "map_ludus_port"
-					targetPosition = Vector2(0, -0.45)
-				elseif self.pendingDestinationId == "nihal" then
-					targetMap = "map_nihal_port"
-					targetPosition = Vector2(0.7, -0.45)
-				end
-				player.PlayerComponent:MoveToMapPosition(targetMap, targetPosition)
-			end
-		end
-		self.messageText.Text = "事件已處理，繼續沿原航線前進"
+		-- 航程僅由伺服器倒數抵港，舊舵輪入口不能提前傳送或結算。
+		if isvalid(self.messageText) then self.messageText.Text = "航程倒數結束後會自動抵港。" end
 	end
 
 	@ExecSpace("ClientOnly")
 	method void RefreshShop()
-		-- 三個欄位列本港特產；右欄以同一份資料試算預定目的港價差。
-		local game = _Phase0VoyagePrototype
-		if game == nil then return end
-		local snapshot = nil
-		if _GreatVoyageVoyageState ~= nil then snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot() end
-		local prefix1 = "  "
-		local prefix2 = "  "
-		local prefix3 = "  "
-		if game.selectedGoodIndex == 1 then prefix1 = "▶ " elseif game.selectedGoodIndex == 2 then prefix2 = "▶ " else prefix3 = "▶ " end
-		if snapshot == nil or snapshot.playerId == "" then
-			self.shopGoldText.Text = "持有 -- G（同步中）"
-			self.shopCargoText.Text = "貨艙等待伺服器同步"
-		else
-			self.shopGoldText.Text = "持有 " .. tostring(snapshot.money) .. " G"
-			self.shopCargoText.Text = game:GetCargoText()
-			if snapshot.economyRevision ~= self.lastShopEconomyRevision then
-				self.lastShopEconomyRevision = snapshot.economyRevision
-				if snapshot.economyRevision > 0 and snapshot.economyMessage ~= "" then self.shopStatusMessage = snapshot.economyMessage end
+		-- 共用六格貨架與交易區；只顯示產地、商品簡介及本港售價。
+		if _GreatVoyageVoyageData == nil or _GreatVoyageVoyageState == nil then return end
+		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+		local entries = self:GetShopEntries()
+		self.shopSelectedIndex = math.max(1, math.min(self.shopSelectedIndex, #entries))
+		if self.shopTab == "goods" and _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype.selectedGoodIndex = self.shopSelectedIndex end
+		local pageCount = math.max(1, math.ceil(#entries / 6))
+		self.shopPage = math.max(1, math.min(self.shopPage, pageCount))
+		local root = "/ui/GreatVoyageAdventure/ShopModal/Window/"
+		local titles = { goods = "港口貨架", cards = "改裝卡貨架", inventory = "未安裝庫存", catalog = "全港商品圖鑑" }
+		self:SetMerchantText(root .. "Goods/Title", titles[self.shopTab] or titles.goods)
+		local fullCards = self.shopTab == "cards" or self.shopTab == "inventory"
+		local pagedCards = fullCards and pageCount > 1
+		local shelf = _EntityService:GetEntityByPath(root .. "Goods")
+		local shelfTitle = _EntityService:GetEntityByPath(root .. "Goods/Title")
+		if isvalid(shelf) then shelf.UITransformComponent.RectSize = Vector2(660, fullCards and 590 or 537) end
+		if isvalid(shelfTitle) then shelfTitle.UITransformComponent.anchoredPosition = Vector2(0, fullCards and 226 or 199) end
+		self.shopNpcNameText.Text = self:GetPortName(self.currentPortId) .. "商人"
+		self.shopDialogText.Text = "航線由你決定。選好貨物、備妥船隻，就去探索各港口的商機吧！"
+		if self.shopTab == "cards" then self.shopDialogText.Text = "本港備有六張改裝卡，依售價排列；挑選適合你船隻的改裝吧。" end
+		if self.shopTab == "catalog" then self.shopDialogText.Text = "全港商品圖鑑。選擇貨物可查看產地與簡介；尚未開放的港口也收錄於此。" end
+		self.shopGoldText.Text = "持有 " .. tostring(snapshot.money or 0) .. " G"
+		if snapshot.playerId == "" then self.shopGoldText.Text = "持有 -- G（同步中）" end
+		if snapshot.economyRevision ~= self.lastShopEconomyRevision then
+			self.lastShopEconomyRevision = snapshot.economyRevision
+			if snapshot.economyMessage ~= "" then self.shopStatusMessage = snapshot.economyMessage end
+		end
+		if snapshot.ship ~= nil and (snapshot.ship.revision or 0) ~= (self._T.merchantShipRevision or -1) then
+			self._T.merchantShipRevision = snapshot.ship.revision or 0
+			if self.shopTab ~= "goods" and (snapshot.ship.message or "") ~= "" then self.shopStatusMessage = snapshot.ship.message end
+		end
+		for tile = 1, 6 do
+			local index = (self.shopPage - 1) * 6 + tile
+			local item = entries[index]
+			local entity = _EntityService:GetEntityByPath(root .. "Goods/Good" .. tostring(tile))
+			if isvalid(entity) then
+				entity.Enable = item ~= nil
+				if item ~= nil then
+					local tileY = tile <= 3 and 79 or -122
+					if fullCards then tileY = tile <= 3 and 85 or -153 end
+					if pagedCards then tileY = tile <= 3 and 95 or -110 end
+					entity.UITransformComponent.anchoredPosition = Vector2((tile - 1) % 3 * 204 - 204, tileY)
+					entity.UITransformComponent.RectSize = fullCards and Vector2(180, 226) or Vector2(194, 192)
+					if pagedCards then entity.UITransformComponent.RectSize = Vector2(180, 210) end
+					entity.SpriteGUIRendererComponent.ImageRUID = DataRef(fullCards and item.artRuid or "4dec9e34d3bc422a9d2157f6fa321ba4")
+					entity.SpriteGUIRendererComponent.Type = ImageType.Simple
+					entity.SpriteGUIRendererComponent.PreserveSprite = fullCards and PreserveSpriteType.AspectOnly or PreserveSpriteType.None
+					self:SetMerchantText(entity.Path .. "/Name", item.displayName or item.name or "商品")
+					self:SetMerchantText(entity.Path .. "/Price", tostring(item.price or 0) .. " G")
+					if self.shopTab == "inventory" then self:SetMerchantText(entity.Path .. "/Price", "持有 " .. tostring((snapshot.cardInventory or {})[item.id] or 0) .. " 張") end
+					local nameLabel = _EntityService:GetEntityByPath(entity.Path .. "/Name")
+					local priceLabel = _EntityService:GetEntityByPath(entity.Path .. "/Price")
+					if isvalid(nameLabel) then
+						nameLabel.UITransformComponent.anchoredPosition = Vector2(0, fullCards and -58 or -21)
+						if pagedCards then nameLabel.UITransformComponent.anchoredPosition = Vector2(0, -58) end
+						nameLabel.UITransformComponent.RectSize = Vector2(fullCards and 156 or 144, fullCards and 26 or 44)
+						nameLabel.TextGUIRendererComponent.BestFit = true
+						nameLabel.TextGUIRendererComponent.Overflow = fullCards and TextOverflowMode.Overflow or TextOverflowMode.Ellipsis
+						nameLabel.TextGUIRendererComponent.MinSize = fullCards and 17 or 14
+						nameLabel.TextGUIRendererComponent.FontSize = fullCards and 18 or 21
+						nameLabel.TextGUIRendererComponent.MaxSize = fullCards and 18 or 21
+					end
+					if isvalid(priceLabel) then
+						priceLabel.UITransformComponent.anchoredPosition = Vector2(0, fullCards and -78 or -55)
+						if pagedCards then priceLabel.UITransformComponent.anchoredPosition = Vector2(0, -78) end
+						priceLabel.UITransformComponent.RectSize = Vector2(fullCards and 154 or 176, fullCards and 22 or 24)
+						priceLabel.TextGUIRendererComponent.FontSize = fullCards and 18 or 21
+						priceLabel.TextGUIRendererComponent.MaxSize = fullCards and 18 or 21
+					end
+					local icon = _EntityService:GetEntityByPath(entity.Path .. "/Icon")
+					local ruid = item.iconRuid or item.artRuid or ""
+					if isvalid(icon) then
+						icon.Enable = ruid ~= "" and not fullCards
+						if ruid ~= "" then icon.SpriteGUIRendererComponent.ImageRUID = DataRef(ruid) end
+						-- 原生 ETC 圖示的資源 pivot 會使 AspectOnly 偏移；None 保持在格位內。
+						icon.SpriteGUIRendererComponent.PreserveSprite = item.artRuid ~= nil and PreserveSpriteType.AspectOnly or PreserveSpriteType.None
+					end
+					entity.SpriteGUIRendererComponent.Outline = index == self.shopSelectedIndex
+					entity.SpriteGUIRendererComponent.OutlineColor = Color(1, 0.82, 0.2, 1)
+					entity.SpriteGUIRendererComponent.OutlineWidth = 3
+				end
 			end
 		end
-		self.shopNpcNameText.Text = self:GetPortName(self.currentPortId) .. "商人"
-		local destinationId = self:GetPlannedTradeDestinationId()
-		self.shopDialogText.Text = "本港特產在外港更值錢。下一站暫定 " .. self:GetPortName(destinationId) .. "；選貨後看右側收購價。"
-		self.shopGood1Text.Text = prefix1 .. game:GetGoodName(1)
-		self.shopGood2Text.Text = prefix2 .. game:GetGoodName(2)
-		self.shopGood3Text.Text = prefix3 .. game:GetGoodName(3)
-		if isvalid(self.shopGood1PriceText) then self.shopGood1PriceText.Text = tostring(game:GetCurrentMarketPrice(1)) .. " G" end
-		if isvalid(self.shopGood2PriceText) then self.shopGood2PriceText.Text = tostring(game:GetCurrentMarketPrice(2)) .. " G" end
-		if isvalid(self.shopGood3PriceText) then self.shopGood3PriceText.Text = tostring(game:GetCurrentMarketPrice(3)) .. " G" end
-		if _GreatVoyageVoyageData ~= nil then
-			local good1 = _GreatVoyageVoyageData:GetLocalGood(self.currentPortId, 1)
-			local good2 = _GreatVoyageVoyageData:GetLocalGood(self.currentPortId, 2)
-			local good3 = _GreatVoyageVoyageData:GetLocalGood(self.currentPortId, 3)
-			if good1 ~= nil and isvalid(self.shopGood1Icon) then self.shopGood1Icon.ImageRUID = DataRef(good1.iconRuid) end
-			if good2 ~= nil and isvalid(self.shopGood2Icon) then self.shopGood2Icon.ImageRUID = DataRef(good2.iconRuid) end
-			if good3 ~= nil and isvalid(self.shopGood3Icon) then self.shopGood3Icon.ImageRUID = DataRef(good3.iconRuid) end
+		self:SetMerchantText(root .. "Goods/Page", tostring(self.shopPage) .. " / " .. tostring(pageCount))
+		for _, key in ipairs({ "Prev", "Next", "Page" }) do
+			local entity = _EntityService:GetEntityByPath(root .. "Goods/" .. key)
+			if isvalid(entity) then
+				entity.Enable = pageCount > 1
+				local pagerX = key == "Prev" and -210 or (key == "Next" and 210 or 0)
+				entity.UITransformComponent.anchoredPosition = Vector2(pagerX, fullCards and -227 or -242)
+			end
 		end
-		self.shopSelectedText.Text = "已選：" .. game:GetGoodName(game.selectedGoodIndex)
-		self.shopQuantityText.Text = "數量　" .. tostring(game.tradeQuantity)
-		if isvalid(self.shopQuoteText) and _GreatVoyageVoyageData ~= nil then
-			local selectedGood = _GreatVoyageVoyageData:GetLocalGood(self.currentPortId, game.selectedGoodIndex)
-			if selectedGood ~= nil then
-				local salePrice = _GreatVoyageVoyageData:GetSalePrice(destinationId, selectedGood.id)
-				local spread = (salePrice - selectedGood.price) * game.tradeQuantity
-				self.shopQuoteText.Text = self:GetPortName(destinationId) .. "收購 " .. tostring(salePrice) .. " G／件\n×" .. tostring(game.tradeQuantity) .. " 預估價差 +" .. tostring(spread) .. " G"
+		local selected = entries[self.shopSelectedIndex]
+		self.shopSelectedText.Text = "貨架準備中…"
+		self.shopQuoteText.Text = "正在取得本港貨架。"
+		if selected ~= nil then
+			self.shopSelectedText.Text = selected.displayName or selected.name
+			self.shopQuoteText.Text = selected.description or ""
+		end
+		-- 圖鑑另有封裝、版本與待補圖註記，為完整簡介保留高度。
+		local catalogDescription = self.shopTab == "catalog"
+		local insight = _EntityService:GetEntityByPath(root .. "Trade/MarketInsight")
+		if isvalid(insight) then
+			insight.UITransformComponent.RectSize = Vector2(404, catalogDescription and 130 or 96)
+			insight.UITransformComponent.anchoredPosition = Vector2(0, catalogDescription and 70 or 79)
+		end
+		self.shopQuoteText.Entity.UITransformComponent.RectSize = Vector2(382, catalogDescription and 118 or 84)
+		self.shopQuoteText.BestFit = true
+		self.shopQuoteText.MinSize = catalogDescription and 16 or 19
+		self.shopQuoteText.MaxSize = catalogDescription and 20 or 23
+		self.shopQuoteText.FontSize = catalogDescription and 20 or 23
+		local icon = _EntityService:GetEntityByPath(root .. "Trade/SelectedIcon")
+		local ruid = ""
+		if selected ~= nil then ruid = selected.iconRuid or selected.artRuid or "" end
+		if isvalid(icon) then
+			icon.Enable = ruid ~= ""
+			if ruid ~= "" then icon.SpriteGUIRendererComponent.ImageRUID = DataRef(ruid) end
+			icon.SpriteGUIRendererComponent.PreserveSprite = selected ~= nil and selected.artRuid ~= nil and PreserveSpriteType.AspectOnly or PreserveSpriteType.None
+		end
+		local quantity = 1
+		if _Phase0VoyagePrototype ~= nil then quantity = _Phase0VoyagePrototype.tradeQuantity end
+		self.shopQuantityText.Text = "數量　" .. tostring(quantity)
+		local cargo = snapshot.cargo or {}
+		local capacity = 0
+		if snapshot.ship ~= nil then capacity = snapshot.ship.cargoCapacity or 0 end
+		if self.shopTab == "goods" then
+			if (cargo.quantity or 0) > 0 then
+				local cargoName = "未知商品"
+				if _GreatVoyageVoyageData ~= nil then
+					local cargoGood = _GreatVoyageVoyageData:GetGoodById(cargo.id or "")
+					if cargoGood ~= nil then cargoName = cargoGood.displayName or cargoGood.name or cargoName end
+				end
+				self.shopCargoText.Text = "貨艙：" .. cargoName .. " ×" .. tostring(cargo.quantity) .. "/" .. tostring(capacity)
+			else
+				self.shopCargoText.Text = "貨艙：空艙"
+			end
+		else
+			self.shopCargoText.Text = "貨艙 " .. tostring(cargo.quantity or 0) .. "/" .. tostring(capacity)
+		end
+		if self.shopTab == "cards" or self.shopTab == "inventory" then
+			local owned = 0
+			if selected ~= nil then owned = (snapshot.cardInventory or {})[selected.id] or 0 end
+			self.shopCargoText.Text = "未安裝持有 " .. tostring(owned) .. " 張"
+		end
+		local viewing = self.shopTab == "catalog"
+		for _, component in ipairs({ self.shopMinusButton, self.shopPlusButton, self.shopBuyButton, self.shopSellButton, self.shopQuantityText }) do
+			if isvalid(component) then component.Entity.Enable = not viewing end
+		end
+		local remainingCardCapacity = 99
+		if selected ~= nil and self.shopTab == "cards" then remainingCardCapacity = self:GetRemainingCardCapacity(snapshot, selected.id) end
+		if remainingCardCapacity > 0 and self.shopTab == "cards" and _Phase0VoyagePrototype ~= nil then
+			_Phase0VoyagePrototype.tradeQuantity = math.min(quantity, remainingCardCapacity)
+			quantity = _Phase0VoyagePrototype.tradeQuantity
+			self.shopQuantityText.Text = "數量　" .. tostring(quantity)
+		end
+		local canAfford = selected ~= nil and (snapshot.money or 0) >= (selected.price or 0) * quantity
+		self.shopBuyButton.Enable = not viewing and selected ~= nil and self.shopTab ~= "inventory" and snapshot.playerId ~= "" and remainingCardCapacity > 0 and canAfford
+		local canSell = (cargo.quantity or 0) > 0
+		if self.shopTab ~= "goods" then canSell = selected ~= nil and (selected.sellPrice or 0) > 0 and ((snapshot.cardInventory or {})[selected.id] or 0) >= quantity end
+		local sellButtonText = self.shopSellButton.Entity.TextGUIRendererComponent
+		local sellText = self.shopTab == "goods" and "出售貨物" or "賣出"
+		if isvalid(sellButtonText) then sellButtonText.Text = sellText end
+		local sellVisual = self._T.reskinVisuals["/ui/GreatVoyageAdventure/ShopModal/Window/Trade/Sell"]
+		if sellVisual ~= nil and isvalid(sellVisual.label) then sellVisual.label.Text = sellText end
+		self:SetButtonEnabled("/ui/GreatVoyageAdventure/ShopModal/Window/Trade/Sell", self.shopSellButton, not viewing and snapshot.playerId ~= "" and canSell)
+		for _, tab in ipairs({ { "MarketGoodsTab", "goods" }, { "MarketCardsTab", "cards" }, { "CatalogTab", "catalog" }, { "MarketInventoryTab", "inventory" } }) do
+			local entity = _EntityService:GetEntityByPath(root .. tab[1])
+			if isvalid(entity) then
+				local active = self.shopTab == tab[2]
+				entity.SpriteGUIRendererComponent.ImageRUID = DataRef(active and "e17a958c47984b66ae042fe461461c49" or "ce825ba2880b43f2a43c5ac011ffeb99")
+				entity.TextGUIRendererComponent.FontColor = active and Color(0.27, 0.13, 0.04, 1) or Color(1, 0.95, 0.78, 1)
 			end
 		end
 		self.shopStatusText.Text = self.shopStatusMessage
@@ -741,33 +2597,58 @@ script GreatVoyageAdventureController extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void CycleGood(integer delta)
-		local game = _Phase0VoyagePrototype
-		if game == nil then return end
-		game:CycleTradeGood(delta)
-		self.shopStatusMessage = "已選擇 " .. game:GetGoodName(game.selectedGoodIndex)
+		-- 使用共用貨架索引循環，並將分頁移到選取商品。
+		local entries = self:GetShopEntries()
+		if #entries == 0 then return end
+		self.shopSelectedIndex = (self.shopSelectedIndex - 1 + delta) % #entries + 1
+		self.shopPage = math.floor((self.shopSelectedIndex - 1) / 6) + 1
 		self:RefreshShop()
 	end
 
 	@ExecSpace("ClientOnly")
 	method void SelectGood(integer index)
-		local game = _Phase0VoyagePrototype
-		if game == nil then return end
-		game.selectedGoodIndex = index
-		self.shopStatusMessage = "已選擇 " .. game:GetGoodName(index)
+		-- tile 索引轉為此頁的商品索引，空格不接受選取。
+		local indexOnPage = (self.shopPage - 1) * 6 + index
+		if self:GetShopEntries()[indexOnPage] == nil then return end
+		self.shopSelectedIndex = indexOnPage
+		if self.shopTab == "inventory" and _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype.tradeQuantity = 1 end
 		self:RefreshShop()
 	end
 
 	@ExecSpace("ClientOnly")
 	method void AdjustQuantity(integer delta)
+		-- 改裝卡數量獨立於貨艙容量；出售不能超過未安裝庫存。
 		local game = _Phase0VoyagePrototype
 		if game == nil then return end
-		game:AdjustTradeQuantity(delta)
+		if self.shopTab == "cards" or self.shopTab == "inventory" then
+			local upper = 99
+			if self.shopTab == "cards" and _GreatVoyageVoyageState ~= nil then
+				local selected = self:GetShopEntries()[self.shopSelectedIndex]
+				if selected ~= nil then upper = self:GetRemainingCardCapacity(_GreatVoyageVoyageState:GetVoyageSnapshot(), selected.id) end
+			end
+			if self.shopTab == "inventory" and _GreatVoyageVoyageState ~= nil then
+				local selected = self:GetShopEntries()[self.shopSelectedIndex]
+				if selected ~= nil then upper = math.max(1, (_GreatVoyageVoyageState:GetVoyageSnapshot().cardInventory or {})[selected.id] or 0) end
+			end
+			game.tradeQuantity = math.max(1, math.min(upper, game.tradeQuantity + delta))
+		else
+			game:AdjustTradeQuantity(delta)
+		end
 		self.shopStatusMessage = "交易數量調整為 " .. tostring(game.tradeQuantity)
 		self:RefreshShop()
 	end
 
 	@ExecSpace("ClientOnly")
 	method void BuyGood()
+		-- 改裝卡沿用共用數量，實際上架驗證由伺服器處理。
+		if self.shopTab ~= "goods" then
+			local selected = self:GetShopEntries()[self.shopSelectedIndex]
+			if self.shopTab == "cards" and selected ~= nil and _GreatVoyageVoyageState ~= nil then
+				_GreatVoyageVoyageState:BuyUpgradeCard(selected.id, _Phase0VoyagePrototype.tradeQuantity)
+				self.shopStatusMessage = "已送出改裝卡買入請求。"
+			end
+			return
+		end
 		local game = _Phase0VoyagePrototype
 		if game == nil then return end
 		if _GreatVoyageVoyageState == nil then
@@ -782,6 +2663,15 @@ script GreatVoyageAdventureController extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void SellGood()
+		-- 卡片出售只針對選取卡的未安裝庫存。
+		if self.shopTab ~= "goods" then
+			local selected = self:GetShopEntries()[self.shopSelectedIndex]
+			if self.shopTab ~= "catalog" and selected ~= nil and _GreatVoyageVoyageState ~= nil then
+				_GreatVoyageVoyageState:SellUpgradeCard(selected.id, _Phase0VoyagePrototype.tradeQuantity)
+				self.shopStatusMessage = "已送出未安裝改裝卡賣出請求。"
+			end
+			return
+		end
 		-- 賣出的是貨艙原貨物，不是目的港貨架同序號的商品。
 		local game = _Phase0VoyagePrototype
 		if game == nil then return end
@@ -846,6 +2736,24 @@ script GreatVoyageAdventureController extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void OnEndPlay()
+		-- 成對回收本次加到可見 child 按鈕的狀態事件。
+		for _, subscription in ipairs(self._T.reskinStateHandlers or {}) do
+			if isvalid(subscription.entity) and subscription.eventHandler ~= nil then
+				subscription.entity:DisconnectEvent(ButtonStateChangeEvent, subscription.eventHandler)
+			end
+		end
+		self._T.reskinStateHandlers = {}
+		-- 回收本次商店新增的事件連線。
+		for _, subscription in ipairs(self._T.merchantEvents or {}) do
+			if isvalid(subscription.entity) then subscription.entity:DisconnectEvent(ButtonClickEvent, subscription.eventHandler) end
+		end
+		self._T.merchantEvents = {}
+		self.clientAirBattle = nil
+		if isvalid(self.shipOpenButton) and self.shipOpenHandler ~= nil then self.shipOpenButton.Entity:DisconnectEvent(ButtonClickEvent, self.shipOpenHandler) end
+		if isvalid(self.shipCloseButton) and self.shipCloseHandler ~= nil then self.shipCloseButton.Entity:DisconnectEvent(ButtonClickEvent, self.shipCloseHandler) end
+		if isvalid(self.shipRepairButton) and self.shipRepairHandler ~= nil then self.shipRepairButton.Entity:DisconnectEvent(ButtonClickEvent, self.shipRepairHandler) end
+		if isvalid(self.shipCargoGridPrevButton) and self.shipCargoGridPrevHandler ~= nil then self.shipCargoGridPrevButton.Entity:DisconnectEvent(ButtonClickEvent, self.shipCargoGridPrevHandler) end
+		if isvalid(self.shipCargoGridNextButton) and self.shipCargoGridNextHandler ~= nil then self.shipCargoGridNextButton.Entity:DisconnectEvent(ButtonClickEvent, self.shipCargoGridNextHandler) end
 		if isvalid(self.promptButton) and self.promptHandler ~= nil then self.promptButton.Entity:DisconnectEvent(ButtonClickEvent, self.promptHandler) end
 		if isvalid(self.forestButton) and self.forestHandler ~= nil then self.forestButton.Entity:DisconnectEvent(ButtonClickEvent, self.forestHandler) end
 		if isvalid(self.skyButton) and self.skyHandler ~= nil then self.skyButton.Entity:DisconnectEvent(ButtonClickEvent, self.skyHandler) end
@@ -861,6 +2769,139 @@ script GreatVoyageAdventureController extends Logic
 		if isvalid(self.shopPlusButton) and self.plusHandler ~= nil then self.shopPlusButton.Entity:DisconnectEvent(ButtonClickEvent, self.plusHandler) end
 		if isvalid(self.shopBuyButton) and self.buyHandler ~= nil then self.shopBuyButton.Entity:DisconnectEvent(ButtonClickEvent, self.buyHandler) end
 		if isvalid(self.shopSellButton) and self.sellHandler ~= nil then self.shopSellButton.Entity:DisconnectEvent(ButtonClickEvent, self.sellHandler) end
+		if isvalid(self.shopShipButton) and self.shopShipHandler ~= nil then self.shopShipButton.Entity:DisconnectEvent(ButtonClickEvent, self.shopShipHandler) end
+		if isvalid(self.shipShopCloseButton) and self.shipShopCloseHandler ~= nil then self.shipShopCloseButton.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopCloseHandler) end
+		if isvalid(self.shipShopBackButton) and self.shipShopBackHandler ~= nil then self.shipShopBackButton.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopBackHandler) end
+		if isvalid(self.shipShopActionButton) and self.shipShopActionHandler ~= nil then self.shipShopActionButton.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopActionHandler) end
+		if isvalid(self.shipShopCard1Button) and self.shipShopCard1Handler ~= nil then self.shipShopCard1Button.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopCard1Handler) end
+		if isvalid(self.shipShopCard2Button) and self.shipShopCard2Handler ~= nil then self.shipShopCard2Button.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopCard2Handler) end
+		if isvalid(self.shipShopCard3Button) and self.shipShopCard3Handler ~= nil then self.shipShopCard3Button.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopCard3Handler) end
+		if isvalid(self.shipShopCard4Button) and self.shipShopCard4Handler ~= nil then self.shipShopCard4Button.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopCard4Handler) end
+		if isvalid(self.shipShopCard5Button) and self.shipShopCard5Handler ~= nil then self.shipShopCard5Button.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopCard5Handler) end
+		if isvalid(self.shipShopSlot1Button) and self.shipShopSlot1Handler ~= nil then self.shipShopSlot1Button.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopSlot1Handler) end
+		if isvalid(self.shipShopSlot2Button) and self.shipShopSlot2Handler ~= nil then self.shipShopSlot2Button.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopSlot2Handler) end
+		if isvalid(self.shipShopSlot3Button) and self.shipShopSlot3Handler ~= nil then self.shipShopSlot3Button.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopSlot3Handler) end
+		if isvalid(self.shipShopUpgrade1Button) and self.shipShopUpgrade1Handler ~= nil then self.shipShopUpgrade1Button.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopUpgrade1Handler) end
+		if isvalid(self.shipShopUpgrade2Button) and self.shipShopUpgrade2Handler ~= nil then self.shipShopUpgrade2Button.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopUpgrade2Handler) end
+		if isvalid(self.shipShopUpgrade3Button) and self.shipShopUpgrade3Handler ~= nil then self.shipShopUpgrade3Button.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopUpgrade3Handler) end
+		if isvalid(self.shipShopUpgradeClearButton) and self.shipShopUpgradeClearHandler ~= nil then self.shipShopUpgradeClearButton.Entity:DisconnectEvent(ButtonClickEvent, self.shipShopUpgradeClearHandler) end
+		if isvalid(self.shopCardMarketButton) and self.shopCardMarketHandler ~= nil then self.shopCardMarketButton.Entity:DisconnectEvent(ButtonClickEvent, self.shopCardMarketHandler) end
+		if isvalid(self.shipModSlot1Button) and self.shipModSlot1Handler ~= nil then self.shipModSlot1Button.Entity:DisconnectEvent(ButtonClickEvent, self.shipModSlot1Handler) end
+		if isvalid(self.shipModSlot2Button) and self.shipModSlot2Handler ~= nil then self.shipModSlot2Button.Entity:DisconnectEvent(ButtonClickEvent, self.shipModSlot2Handler) end
+		if isvalid(self.shipModSlot3Button) and self.shipModSlot3Handler ~= nil then self.shipModSlot3Button.Entity:DisconnectEvent(ButtonClickEvent, self.shipModSlot3Handler) end
+		if isvalid(self.cardMarketTabBuyButton) and self.cardMarketTabBuyHandler ~= nil then self.cardMarketTabBuyButton.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketTabBuyHandler) end
+		if isvalid(self.cardMarketTabSellButton) and self.cardMarketTabSellHandler ~= nil then self.cardMarketTabSellButton.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketTabSellHandler) end
+		if isvalid(self.cardMarketPagePrevButton) and self.cardMarketPagePrevHandler ~= nil then self.cardMarketPagePrevButton.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketPagePrevHandler) end
+		if isvalid(self.cardMarketPageNextButton) and self.cardMarketPageNextHandler ~= nil then self.cardMarketPageNextButton.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketPageNextHandler) end
+		if isvalid(self.cardMarketMinusButton) and self.cardMarketMinusHandler ~= nil then self.cardMarketMinusButton.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketMinusHandler) end
+		if isvalid(self.cardMarketPlusButton) and self.cardMarketPlusHandler ~= nil then self.cardMarketPlusButton.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketPlusHandler) end
+		if isvalid(self.cardMarketActionButton) and self.cardMarketActionHandler ~= nil then self.cardMarketActionButton.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketActionHandler) end
+		if isvalid(self.cardMarketBackButton) and self.cardMarketBackHandler ~= nil then self.cardMarketBackButton.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketBackHandler) end
+		if isvalid(self.cardMarketCloseButton) and self.cardMarketCloseHandler ~= nil then self.cardMarketCloseButton.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketCloseHandler) end
+		if isvalid(self.cardMarketCard1Button) and self.cardMarketCard1Handler ~= nil then self.cardMarketCard1Button.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketCard1Handler) end
+		if isvalid(self.cardMarketCard2Button) and self.cardMarketCard2Handler ~= nil then self.cardMarketCard2Button.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketCard2Handler) end
+		if isvalid(self.cardMarketCard3Button) and self.cardMarketCard3Handler ~= nil then self.cardMarketCard3Button.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketCard3Handler) end
+		if isvalid(self.cardMarketCard4Button) and self.cardMarketCard4Handler ~= nil then self.cardMarketCard4Button.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketCard4Handler) end
+		if isvalid(self.cardMarketCard5Button) and self.cardMarketCard5Handler ~= nil then self.cardMarketCard5Button.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketCard5Handler) end
+		if isvalid(self.cardMarketCard6Button) and self.cardMarketCard6Handler ~= nil then self.cardMarketCard6Button.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketCard6Handler) end
+		if isvalid(self.cardMarketFitSlot1Button) and self.cardMarketFitSlot1Handler ~= nil then self.cardMarketFitSlot1Button.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketFitSlot1Handler) end
+		if isvalid(self.cardMarketFitSlot2Button) and self.cardMarketFitSlot2Handler ~= nil then self.cardMarketFitSlot2Button.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketFitSlot2Handler) end
+		if isvalid(self.cardMarketFitSlot3Button) and self.cardMarketFitSlot3Handler ~= nil then self.cardMarketFitSlot3Button.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketFitSlot3Handler) end
+		if isvalid(self.cardMarketShipMerchantButton) and self.cardMarketShipMerchantHandler ~= nil then self.cardMarketShipMerchantButton.Entity:DisconnectEvent(ButtonClickEvent, self.cardMarketShipMerchantHandler) end
 		if self.keyHandler ~= nil then _InputService:DisconnectEvent(KeyDownEvent, self.keyHandler) end
 	end
+
+	@ExecSpace("ClientOnly")
+	method void ConnectMerchantGrid()
+		-- 動態格位與頁籤保留成對事件連線，以便 OnEndPlay 回收。
+		self._T.merchantEvents = {}
+		local root = "/ui/GreatVoyageAdventure/ShopModal/Window/"
+		local actions = {
+			{ path = "MarketGoodsTab", callback = function() self:SetShopTab("goods") end },
+			{ path = "CatalogTab", callback = function() self:SetShopTab("catalog") end },
+			{ path = "MarketInventoryTab", callback = function() self:SetShopTab("inventory") end },
+			{ path = "Goods/Prev", callback = function() self:ChangeShopPage(-1) end },
+			{ path = "Goods/Next", callback = function() self:ChangeShopPage(1) end }
+		}
+		for tile = 4, 6 do
+			local capturedTile = tile
+			table.insert(actions, { path = "Goods/Good" .. tostring(tile), callback = function() self:SelectGood(capturedTile) end })
+		end
+		for _, action in ipairs(actions) do
+			local entity = _EntityService:GetEntityByPath(root .. action.path)
+			if isvalid(entity) then
+				local connection = entity:ConnectEvent(ButtonClickEvent, action.callback)
+				table.insert(self._T.merchantEvents, { entity = entity, eventHandler = connection })
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetMerchantText(string path, string text)
+		-- 修改共用貨架子標籤，缺少節點時安全略過。
+		local entity = _EntityService:GetEntityByPath(path)
+		if isvalid(entity) and isvalid(entity.TextGUIRendererComponent) then entity.TextGUIRendererComponent.Text = text end
+	end
+
+	@ExecSpace("ClientOnly")
+	method any GetShopEntries()
+		-- 貨物、六張上架卡、玩家庫存及全港圖鑑共用同一資料投影。
+		if _GreatVoyageVoyageData == nil then return {} end
+		if self.shopTab == "catalog" then return _GreatVoyageVoyageData:GetCommodityCatalog() end
+		if self.shopTab == "goods" then
+			local port = _GreatVoyageVoyageData:GetPort(self.currentPortId)
+			if port ~= nil then return port.goods end
+			return {}
+		end
+		if _GreatVoyageVoyageState == nil then return {} end
+		local list = {}
+		if self.shopTab == "cards" then
+			for _, cardId in ipairs(_GreatVoyageVoyageState:GetClientCardMarket(self.currentPortId)) do
+				local card = _GreatVoyageVoyageData:GetShipUpgradeCardById(cardId)
+				if card ~= nil then table.insert(list, card) end
+			end
+		else
+			local inventory = _GreatVoyageVoyageState:GetVoyageSnapshot().cardInventory or {}
+			for _, card in ipairs(_GreatVoyageVoyageData:GetShipUpgradeCards()) do
+				if (inventory[card.id] or 0) > 0 then table.insert(list, card) end
+			end
+			table.sort(list, function(a, b) if a.price == b.price then return a.id < b.id end return a.price < b.price end)
+		end
+		return list
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetShopTab(string tab)
+		-- 切換頁籤只改投影，不重新抽取港口改裝卡。
+		self.shopTab = tab
+		self.shopPage = 1
+		self.shopSelectedIndex = 1
+		self.shopStatusMessage = "選擇商品查看簡介。"
+		if _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype.tradeQuantity = 1 end
+		if tab == "cards" and _GreatVoyageVoyageState ~= nil then _GreatVoyageVoyageState:RequestCardMarket() end
+		self:RefreshShop()
+		log("[MerchantGrid] tab=" .. tab)
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer GetRemainingCardCapacity(any snapshot, string cardId)
+		-- 持有上限包含未安裝及所有船上已安裝副本。
+		local count = (snapshot.cardInventory or {})[cardId] or 0
+		for _, ownedShip in pairs(snapshot.ownedShips or {}) do
+			for _, installedId in pairs(ownedShip.slots or {}) do
+				if installedId == cardId then count = count + 1 end
+			end
+		end
+		return math.max(0, 99 - count)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ChangeShopPage(integer delta)
+		-- 分頁在上下界停止，選取新頁第一筆有效商品。
+		local count = math.max(1, math.ceil(#self:GetShopEntries() / 6))
+		self.shopPage = math.max(1, math.min(count, self.shopPage + delta))
+		self.shopSelectedIndex = (self.shopPage - 1) * 6 + 1
+		self:RefreshShop()
+	end
+
 end

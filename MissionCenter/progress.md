@@ -1,21 +1,17 @@
+<!-- mission-center-managed-summary v=1 -->
 # Progress
 
 - Project: MSW Great Voyage
-- Objective: 執行 Great Voyage M1：四港資料／幾何、世界地圖 UI、甲板遭遇與整合 QA。
-- Cycle: Great Voyage M1
-- Current status: 26/36 tasks Done；GV-M1 In Progress，P1/P2 Review，P3 In Progress，L10 In Progress
-- Milestone: M1 港口資料、世界地圖 UI 與整合 QA
-- Progress bar: [#######---] 72%
+- Objective: 楓之谷風格的空中航海冒險；以既有三場景原型為基線，完成 Great Voyage M1 四港、直航多空域航圖、地方商品貿易、甲板遭遇與整合 QA。
+- Current status: 22/42 tasks
+- Milestone: Next slice
+- Progress bar: [#####-----] 52%
 - Active tasks:
-  - GV-M1-P1 Phase 1：Data & Geometry (Review)
-  - GV-M1-P2 Phase 2：World Map UI (Review)
-  - GV-M1-P3 Phase 3：Ports Integration & QA (In Progress; 森林→天空遭遇倒數持續與存活抵港已測，四港往返／擊殺／交易待測)
-  - GV-M1-L10 校正繁中原文與多語言顯示 (In Progress; zh-tw 已確認，跨語言實測待完成)
-  - E2 貿易貨物與價格結算 (Backlog)
-  - E5 後續玩法 Backlog (Backlog)
-  - P0-T4 建立交易貨物與素材規則 (Backlog)
+  - GV-AUDIT-20261004 全程抓蟲、修復與局部效能最佳化 (Review)
   - AC-T7 更多港口／貨物／路線怪、角色升級與技能書商店 (Backlog)
   - B-T1 高難航線玩家離船空戰 (Backlog)
-- Outstanding acceptance:
-  - 四港往返、擊殺結算、交易價差及 PC 主觀視覺；手機基本點按屬非阻塞後續檢查。
-- Next update: 補四港與甲板 Maker 實測；盤點 UI 字串與支援元件，在發佈版跑跨語言驗收。PC 視覺驗收通過後才關閉 M1。
+  - GV-M1-P1 Phase 1：Data & Geometry (Review)
+  - GV-M1-P2 Phase 2：World Map UI (Review)
+- Blocked by:
+  - GV-COMMODITY-CATALOG 全港 184 項商品圖鑑與缺圖素材補齊
+- Next update: Re-run sync after any task or smoke-test change.

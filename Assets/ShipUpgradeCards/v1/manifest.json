@@ -1,0 +1,698 @@
+{
+  "promptProvenance": "Prompts are reconstructed from the per-asset generation brief, not exact original tool-call transcripts; sourcePath and SHA-256 identify the actual generated PNG.",
+  "version": "v1",
+  "generatedBy": "built-in image_gen",
+  "generatedAt": "2026-10-03T03:36:23.794Z",
+  "assets": [
+    {
+      "id": "fire",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/fire.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a small cheerful bronze ship cannon firing one bright orange flame spark as its emblem. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-a46d9039-909a-4694-af1a-76461e19dfd8.png",
+      "sha256": "fced2e08ea435fd9a0667f70c85bfd88291ce545d70bcdd7f2b822cad9ff2b2c",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 346481,
+        "outer40NonzeroPixels": 76,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "speed",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/speed.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a cheerful turquoise wind-up ship engine and compact spinning propeller emblem. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-5f673bcc-7272-45b7-acfb-63e92c851237.png",
+      "sha256": "5f60dc528575761fae27ded6fe51057eed935fa9dfb0b4040dd795d81764a5cc",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 223661,
+        "outer40NonzeroPixels": 16817,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "cargo",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/cargo.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a small wooden cargo crate reinforced with brass corners and one neat shipping rope. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-39eb0be1-937e-48cf-a83e-514c6b82462f.png",
+      "sha256": "31909e2bafa71cc79348d8f8c119ad3b5819734dba974e3bd50a560b7d1e5b38",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 345453,
+        "outer40NonzeroPixels": 95,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "rack",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/rack.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a compact wooden ship storage rack carrying several small cargo boxes. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-102ab02c-213e-47df-ab0f-f671f735856a.png",
+      "sha256": "959b327bee5e7e13ae6c955c2cc250d0a17228e2a7af1f75f3306d0556835608",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 345961,
+        "outer40NonzeroPixels": 0,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "light_hull",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/light_hull.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a slim pale wooden boat hull plank with a small feather suggesting light weight. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-f6ec2306-5060-4835-acfc-4e2615c84546.png",
+      "sha256": "32764f23d53e98b31a7b1f3bad9c85b01015120d344acf14d73f6884e4de815d",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 351595,
+        "outer40NonzeroPixels": 549,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "keel",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/keel.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a thick dark oak ship keel timber with sturdy brass nails. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-87473878-fc0c-4500-a129-fabb92ebe1af.png",
+      "sha256": "0aa7b87dab2364bc12f1f1240f3bffb60fa32876c755e3f0c08fcf4b3a1970f4",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 324711,
+        "outer40NonzeroPixels": 466,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "hull",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/hull.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a warm reddish-brown heart-shaped ship hull plank emblem with wooden planks and brass pegs. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-8a1175ba-6d8f-47d8-938e-baeaecd65674.png",
+      "sha256": "7ab9995021a6c68b4b4798dd1e7674dee4ee0a8592b8fa5634b949ba9a25fee4",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 306164,
+        "outer40NonzeroPixels": 648,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "armor",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/armor.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a compact overlapping steel ship armor plate with rivets and a bright silver edge. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-ff16bfae-ab06-41a8-b196-daf54807122e.png",
+      "sha256": "cb0da90f761d49d0f5deab9afef26e75241710c8736cba13466c1577e78fe599",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 346115,
+        "outer40NonzeroPixels": 0,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "shield",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/shield.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a small glowing blue magical shield with a gold rim. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-036127a0-9d0f-4f23-93c4-82114f813d81.png",
+      "sha256": "d0638425927526ff68d572a901a79f7da304d4f93d76151f91c7a9112dfe5a18",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 335950,
+        "outer40NonzeroPixels": 0,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "regen",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/regen.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a friendly green repair wrench crossed with a small glowing heart. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-c4619dd0-0b18-4631-84b1-6b5039933249.png",
+      "sha256": "3f2555ef1bd3d880463d629e818071875dfde2a85898ca3ce2819a2bb1965457",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 346385,
+        "outer40NonzeroPixels": 619,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "transmission",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/transmission.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a brass mechanical transmission gear assembly with one large toothed gear and a small axle. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-dd110c04-e2cd-45e3-b34e-f1ba671a9e16.png",
+      "sha256": "690a6dfdc8d0ad06d6d5006ca80dce7d44b7d32662c90f795c17219e169d780a",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 318747,
+        "outer40NonzeroPixels": 1012,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "modular_deck",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/modular_deck.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a tidy toolbox attached to a modular ship deck panel with simple fittings. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-b0c52fac-0785-4323-96d4-67dcb60c353b.png",
+      "sha256": "b73d4a284d594ed65de4f34207d0e05012da60022040d235028c64a4f457132c",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 347471,
+        "outer40NonzeroPixels": 0,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "powder",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/powder.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a compact wooden gunpowder barrel beside one round cannonball. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-70b16098-378a-424b-8ab3-dd85adca595c.png",
+      "sha256": "270097e2af41ef44d519915f9d62fd87ccac11ab4abed9dadc2f811b4f311fd7",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 286226,
+        "outer40NonzeroPixels": 2571,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "wing",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/wing.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a small pale feather wing paired with a tiny triangular ship sail. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-8d25198d-0303-4dac-9617-7a954e5866e9.png",
+      "sha256": "bf6a64a2c38cf2d344d484d49778089c3d72d07bcb28fbd7e80915ddad4ddafc",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 347527,
+        "outer40NonzeroPixels": 1,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "boiler",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/boiler.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a cheerful compact brass steam boiler with a chimney and gentle white steam puffs. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-c4d0fb5d-52ae-411b-8b8d-50b08d889cec.png",
+      "sha256": "8b15fd96a6bd692545a936d134f8b7c676a08b9aed50535034e826082445dfd0",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 348538,
+        "outer40NonzeroPixels": 6,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "stealth",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/stealth.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a mysterious violet shadow cloak draped around a tiny ship silhouette. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-9e697bb7-5b23-4876-9af1-d3950f7c42b1.png",
+      "sha256": "e6206ae4a52a54ca906da6ea062bf657d1c980f5db1361d5437a7dcfa92dd566",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 322764,
+        "outer40NonzeroPixels": 802,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "lure",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/lure.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a tiny glowing signal antenna with soft golden radiating rings. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-459b91bc-73ac-4e67-8614-210984dd5a98.png",
+      "sha256": "a0c442498a43fe73ed5792860c7a64a1da1c09a1448bb4380ade767ec96863e8",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 348196,
+        "outer40NonzeroPixels": 0,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "fog",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/fog.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a compact ship fog generator puffing a few soft blue-white clouds. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-03098b46-993c-4e53-a02e-8554c6710189.png",
+      "sha256": "860cd5936df6157f7308dc1120418a7c9ce424965e267fe9721b5d6d00f3a9e8",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 346750,
+        "outer40NonzeroPixels": 0,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "monster_bait",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/monster_bait.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a juicy red meat bait on a fishing hook with a tiny playful wing accent. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-0df7c9c7-3617-47f1-9510-7b786629df8d.png",
+      "sha256": "ecfdc4a8baff50b15a37897ed9ec366996aa8b542112f13b15ed0d1697679e34",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 239477,
+        "outer40NonzeroPixels": 23975,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "magic_resonator",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/magic_resonator.png",
+      "prompt": "Use case: game-asset. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a glowing violet amethyst crystal with magical resonance rings. Style/frame: cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of a beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Transparent alpha outside the card; crisp edges; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-ffc3d77c-1914-4fd8-9f96-78b346d983c6.png",
+      "sha256": "988725fbc9a17b69a39bcf0a6a9988a99cd3adcf8a54a3bb8d47c8dda94bd44d",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 334803,
+        "outer40NonzeroPixels": 1104,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "empty_slot",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/empty_slot.png",
+      "prompt": "Use case: game-asset. Empty ship-upgrade card slot sprite, strict 2:3 portrait ratio. Recessed rounded rectangle frame in antique wood and copper around a dark matte parchment interior, small pale-gold plus sign centered; cute MapleStory-inspired 2D pixel art, thick dark-brown outline, crisp shading, subtle wood grain and copper rivets. Transparent alpha outside the slot silhouette. No card, other icon, text, logo, watermark, background, checkerboard, or external shadow.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-25a1050d-67dd-495b-84ce-6304f636940c.png",
+      "sha256": "66d5204d37a16cef0c118dca81ba6de8be9047e14b305fe8ccf3c18dee5eb14a",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 401764,
+        "outer40NonzeroPixels": 143,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "stabilizer",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/stabilizer.png",
+      "prompt": "Use case: game-asset, locked design-catalog entry. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a compact bronze cannon mount with a small crosshair sight aligned above it. Style/frame: match fire.png as card-frame reference only; cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Show the design clearly without a lock symbol. Transparent alpha outside the card; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-4df09b93-a6ea-4282-b0e5-659ea801fe91.png",
+      "sha256": "24f3689b3d26795a014ef000907759015bdfd8625c4258054bcefd59216c7c0c",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 303538,
+        "outer40NonzeroPixels": 1786,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "folding_cabin",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/folding_cabin.png",
+      "prompt": "Use case: game-asset, locked design-catalog entry. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a tiny cozy ship cabin with a folding roof hinge and one folding chair. Style/frame: match fire.png as card-frame reference only; cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Show the design clearly without a lock symbol. Transparent alpha outside the card; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-32f1ed46-3263-4497-8528-07b2124d7020.png",
+      "sha256": "53cc9372168218a4500dacc3555cd6d5cdabd44d5eada9ef8e2edd1de02cd9e0",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 339088,
+        "outer40NonzeroPixels": 667,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "fire_compartment",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/fire_compartment.png",
+      "prompt": "Use case: game-asset, locked design-catalog entry. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a bright red fire extinguisher beside a small brass ship compartment door. Style/frame: match fire.png as card-frame reference only; cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Show the design clearly without a lock symbol. Transparent alpha outside the card; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-c33c9690-8b3c-429a-8a90-291625a47518.png",
+      "sha256": "af4a45d22bc72e90189cf6f92e9382e6e33c94e9a8810544e43de9e562ff073a",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 303025,
+        "outer40NonzeroPixels": 791,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "boarding",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/boarding.png",
+      "prompt": "Use case: game-asset, locked design-catalog entry. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a coiled grappling hook and a short wooden boarding gangplank with rope rail. Style/frame: match fire.png as card-frame reference only; cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Show the design clearly without a lock symbol. Transparent alpha outside the card; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-80426b49-3d9e-4ac7-a0f9-7c7a75fa9dad.png",
+      "sha256": "b1788e47a5e0c43c77e23317e61cfe4705a1c5f11b979f8f6baa6e37220e7919",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 301769,
+        "outer40NonzeroPixels": 756,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "civil_disguise",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/civil_disguise.png",
+      "prompt": "Use case: game-asset, locked design-catalog entry. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a neat civilian merchant pennant with a simple gold civic crest, no lettering. Style/frame: match fire.png as card-frame reference only; cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Show the design clearly without a lock symbol. Transparent alpha outside the card; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-ef5e4429-9395-4030-9688-020f2787f570.png",
+      "sha256": "d1ac98cefb0de09707fa506b3d2e64d9a07798e4ca96e4be5fddf6d4341240b5",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 290943,
+        "outer40NonzeroPixels": 1957,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "false_flag",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/false_flag.png",
+      "prompt": "Use case: game-asset, locked design-catalog entry. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a black pirate flag with a small pale skull and crossed bones, no lettering. Style/frame: match fire.png as card-frame reference only; cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Show the design clearly without a lock symbol. Transparent alpha outside the card; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-767afeae-485e-40a0-938f-44cec52538b0.png",
+      "sha256": "2c4079320ece750cd5f94ffe135b8d13faed95ff1274b307fa883ec7f3add2f5",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 322036,
+        "outer40NonzeroPixels": 340,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "fake_gold",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/fake_gold.png",
+      "prompt": "Use case: game-asset, locked design-catalog entry. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a small ornate wooden chest partly open with bright gold coins visible inside. Style/frame: match fire.png as card-frame reference only; cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Show the design clearly without a lock symbol. Transparent alpha outside the card; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-c62832f9-c0fe-4f54-bd4d-514e944bfd17.png",
+      "sha256": "e581f6f0f011efd94a2f9d9ba46d583bc5c6642823a9a8d7b6d8d8e149920314",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 315804,
+        "outer40NonzeroPixels": 554,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "giant_lure",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/giant_lure.png",
+      "prompt": "Use case: game-asset, locked design-catalog entry. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a large curled sea-monster lure horn with a glowing warm amber tip. Style/frame: match fire.png as card-frame reference only; cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Show the design clearly without a lock symbol. Transparent alpha outside the card; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-ae1e0596-9851-4dfb-9868-b3534a2a10df.png",
+      "sha256": "c1ffdc64ad6c9bc337e4dcb2b1bcd076e9488e5dac60b8cfb5d838375c1d9ec9",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 302226,
+        "outer40NonzeroPixels": 2735,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    },
+    {
+      "id": "distress_beacon",
+      "path": "D:/MyGame/MSW_GreatVoyage/Assets/ShipUpgradeCards/v1/distress_beacon.png",
+      "prompt": "Use case: game-asset, locked design-catalog entry. Asset type: 2:3 portrait ship-upgrade card sprite for MapleStory Worlds UI. Primary request: a bright red ship distress beacon with a small golden flashing-light emblem. Style/frame: match fire.png as card-frame reference only; cute MapleStory-inspired 2D pixel-art, chunky readable shapes, thick dark-brown outlines, warm pixel shading; centered emblem in upper 70% of beige parchment card with rounded dark-brown and antique-gold/copper border; lower 25% quiet parchment reserved for UI text. Show the design clearly without a lock symbol. Transparent alpha outside the card; no baked text, letters, numbers, logos, watermark, external shadow, background, or checkerboard.",
+      "generated": true,
+      "sourcePath": "C:/Users/USER/.codex/generated_images/01a0ffae-8413-7151-8d96-bc87ffab7e3e/exec-dc37c791-d0bb-4bbd-b529-02b04f33f603.png",
+      "sha256": "33224268ee928d56e455343a1658eb5dd14f49cdadcd5e83af27c078b70ae0f4",
+      "png": {
+        "width": 1024,
+        "height": 1536,
+        "colorType": 6
+      },
+      "alpha": {
+        "zeroPixels": 351628,
+        "outer40NonzeroPixels": 0,
+        "corners": {
+          "topLeft": 0,
+          "topRight": 0,
+          "bottomLeft": 0,
+          "bottomRight": 0
+        }
+      }
+    }
+  ]
+}

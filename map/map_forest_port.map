@@ -4074,7 +4074,7 @@
                 "z": 0.0
               },
               "Position": {
-                "x": 4.763862,
+                "x": 4.536507,
                 "y": -0.315,
                 "z": 999.968
               },
@@ -4150,7 +4150,7 @@
       {
         "id": "0ee76e45-48ee-4ff1-aa18-ba9917191af5",
         "path": "/maps/map_forest_port/GV_PlayerShip",
-        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.CustomFootholdComponent",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.CustomFootholdComponent,script.GVShipVisualClient",
         "jsonString": {
           "name": "GV_PlayerShip",
           "path": "/maps/map_forest_port/GV_PlayerShip",
@@ -4207,7 +4207,7 @@
               "PlayRate": 1.0,
               "RenderSetting": 0,
               "SortingLayer": "MapLayer6",
-              "SpriteRUID": "b4973e0def274436a33d0a6e9dad5fe8",
+              "SpriteRUID": "",
               "StartFrameIndex": 0,
               "Color": {
                 "r": 1.0,
@@ -4215,7 +4215,7 @@
                 "b": 1.0,
                 "a": 1.0
               },
-              "Enable": true
+              "Enable": false
             },
             {
               "@type": "MOD.Core.CustomFootholdComponent",
@@ -4231,6 +4231,10 @@
                   }
                 ]
               ],
+              "Enable": true
+            },
+            {
+              "@type": "script.GVShipVisualClient",
               "Enable": true
             }
           ],
@@ -4290,7 +4294,7 @@
               "PlayRate": 1.0,
               "RenderSetting": 0,
               "SortingLayer": "MapLayer6",
-              "SpriteRUID": "eb4c963ffb754ce3847d2dac46efffb1",
+              "SpriteRUID": "",
               "StartFrameIndex": 0,
               "Color": {
                 "r": 1.0,
@@ -4298,7 +4302,7 @@
                 "b": 1.0,
                 "a": 1.0
               },
-              "Enable": true
+              "Enable": false
             }
           ],
           "@version": 1

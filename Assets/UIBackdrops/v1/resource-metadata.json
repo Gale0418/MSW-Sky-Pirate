@@ -1,0 +1,147 @@
+{
+  "oak": {
+    "ruid": "cee020376fe4405e976d7fd8c9da6a4f",
+    "version": "6ac0a5e36326a1bab644bd40",
+    "file": "Assets/UIBackdrops/v1/oak.png",
+    "put": {
+      "status": 200,
+      "ok": true,
+      "exitCode": 0,
+      "errorCode": ""
+    },
+    "properties": [
+      {
+        "key": "filter_mode",
+        "value": "Bilinear"
+      },
+      {
+        "key": "wrap_mode",
+        "value": "Clamp"
+      },
+      {
+        "key": "pivot_x",
+        "value": "0.5"
+      },
+      {
+        "key": "pivot_y",
+        "value": "0.5"
+      }
+    ]
+  },
+  "walnut": {
+    "ruid": "1e0c021111c2425d9e285ed3fdffdde8",
+    "version": "6ac0a5eeef24ff11274e2234",
+    "file": "Assets/UIBackdrops/v1/walnut.png",
+    "put": {
+      "status": 200,
+      "ok": true,
+      "exitCode": 0,
+      "errorCode": ""
+    },
+    "properties": [
+      {
+        "key": "filter_mode",
+        "value": "Bilinear"
+      },
+      {
+        "key": "wrap_mode",
+        "value": "Clamp"
+      },
+      {
+        "key": "pivot_x",
+        "value": "0.5"
+      },
+      {
+        "key": "pivot_y",
+        "value": "0.5"
+      }
+    ]
+  },
+  "parchment": {
+    "ruid": "0e5fd4ad6a944665b2ae41ba2387fd62",
+    "version": "6ac0a5fe6326a1bab644bd46",
+    "file": "Assets/UIBackdrops/v1/parchment.png",
+    "put": {
+      "status": 200,
+      "ok": true,
+      "exitCode": 0,
+      "errorCode": ""
+    },
+    "properties": [
+      {
+        "key": "filter_mode",
+        "value": "Bilinear"
+      },
+      {
+        "key": "wrap_mode",
+        "value": "Clamp"
+      },
+      {
+        "key": "pivot_x",
+        "value": "0.5"
+      },
+      {
+        "key": "pivot_y",
+        "value": "0.5"
+      }
+    ]
+  },
+  "pin": {
+    "ruid": "23f9ad7e6d794f83b04115c02585be49",
+    "version": "6ac0a61d895ad76d6a66016d",
+    "file": "Assets/UIBackdrops/v1/pin.png",
+    "put": {
+      "status": 200,
+      "ok": true,
+      "exitCode": 0,
+      "errorCode": ""
+    },
+    "properties": [
+      {
+        "key": "filter_mode",
+        "value": "Bilinear"
+      },
+      {
+        "key": "wrap_mode",
+        "value": "Clamp"
+      },
+      {
+        "key": "pivot_x",
+        "value": "0.5"
+      },
+      {
+        "key": "pivot_y",
+        "value": "0.5"
+      }
+    ]
+  },
+  "arrow": {
+    "ruid": "35110ae607e74ff0af9c70c373fa4c51",
+    "version": "6ac0a62b895ad76d6a660178",
+    "file": "Assets/UIBackdrops/v1/arrow.png",
+    "put": {
+      "status": 200,
+      "ok": true,
+      "exitCode": 0,
+      "errorCode": ""
+    },
+    "properties": [
+      {
+        "key": "filter_mode",
+        "value": "Bilinear"
+      },
+      {
+        "key": "wrap_mode",
+        "value": "Clamp"
+      },
+      {
+        "key": "pivot_x",
+        "value": "0.5"
+      },
+      {
+        "key": "pivot_y",
+        "value": "0.5"
+      }
+    ]
+  }
+}

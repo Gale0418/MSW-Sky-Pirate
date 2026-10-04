@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-03",
+  "properties": [
+    {
+      "key": "filter_mode",
+      "value": "Point"
+    },
+    {
+      "key": "wrap_mode",
+      "value": "Clamp"
+    },
+    {
+      "key": "pivot_x",
+      "value": "0.5"
+    },
+    {
+      "key": "pivot_y",
+      "value": "0.5"
+    }
+  ],
+  "assets": {
+    "fire": {
+      "ruid": "e545df0e5c124aae9a549f23ff1d9687",
+      "version": "6ac073bbd23811cc47a96f62",
+      "file": "Assets/ShipUpgradeCards/v1/fire.png"
+    },
+    "empty_slot": {
+      "ruid": "4e145218d5e3404586496c969504f3df",
+      "version": "6ac0740eb44c5e265e8e26d1",
+      "file": "Assets/ShipUpgradeCards/v1/empty_slot.png"
+    },
+    "speed": {
+      "ruid": "9187780b006c42c2a62bba35269bb0a6",
+      "version": "6ac074169441c722b968952d",
+      "file": "Assets/ShipUpgradeCards/v1/speed.png"
+    },
+    "cargo": {
+      "ruid": "f719bf91ee7844db949b2d71b81f7368",
+      "version": "6ac07486453a2c9e12177c0f",
+      "file": "Assets/ShipUpgradeCards/v1/cargo.png"
+    },
+    "rack": {
+      "ruid": "1252519e3aa7447e92d3172c6a0344c5",
+      "version": "6ac07490453a2c9e12177c20",
+      "file": "Assets/ShipUpgradeCards/v1/rack.png"
+    },
+    "keel": {
+      "ruid": "23431468a8694aa68b71e6494d9e8121",
+      "version": "6ac0749a453a2c9e12177c35",
+      "file": "Assets/ShipUpgradeCards/v1/keel.png"
+    },
+    "hull": {
+      "ruid": "61d2c4cc11e944f084048a381772e04a",
+      "version": "6ac074a6cd57f8c8ffdafe3b",
+      "file": "Assets/ShipUpgradeCards/v1/hull.png"
+    },
+    "light_hull": {
+      "ruid": "b85fa6d69ef740f8a66e024398fd552a",
+      "version": "6ac074b0453a2c9e12177c6f",
+      "file": "Assets/ShipUpgradeCards/v1/light_hull.png"
+    },
+    "armor": {
+      "ruid": "f7c188d2368b4f44a64e7a9766be5b17",
+      "version": "6ac0777a3f247c81036e13a7",
+      "file": "Assets/ShipUpgradeCards/v1/armor.png"
+    },
+    "shield": {
+      "ruid": "1059fbc7f51c44a8a6afb494ea2931b8",
+      "version": "6ac077854c59728bcd00ad48",
+      "file": "Assets/ShipUpgradeCards/v1/shield.png"
+    },
+    "regen": {
+      "ruid": "c4c756c4883c44c38a4aeef8a54f15e5",
+      "version": "6ac0778f4c59728bcd00ad49",
+      "file": "Assets/ShipUpgradeCards/v1/regen.png"
+    },
+    "transmission": {
+      "ruid": "11e1d5db32c748749da15a84a97d806f",
+      "version": "6ac0779a9441c722b96895dc",
+      "file": "Assets/ShipUpgradeCards/v1/transmission.png"
+    },
+    "modular_deck": {
+      "ruid": "ee1fe86ac0e049529ad19bf3f55af83f",
+      "version": "6ac077b2eb2b80207d0ca9e5",
+      "file": "Assets/ShipUpgradeCards/v1/modular_deck.png"
+    },
+    "powder": {
+      "ruid": "8ef8c02a8869455caa58b803aa293854",
+      "version": "6ac07834d23811cc47a9707f",
+      "file": "Assets/ShipUpgradeCards/v1/powder.png"
+    },
+    "wing": {
+      "ruid": "4f2b6fa2194843ac99fc3721f91c287d",
+      "version": "6ac078486067111150eb81b0",
+      "file": "Assets/ShipUpgradeCards/v1/wing.png"
+    },
+    "boiler": {
+      "ruid": "7c6ceedb2d1c454cb895cd5391985f79",
+      "version": "6ac07857f301a614d4bb34cc",
+      "file": "Assets/ShipUpgradeCards/v1/boiler.png"
+    },
+    "stealth": {
+      "ruid": "76844d62176549b4ad01af4a2286d75c",
+      "version": "6ac07863f301a614d4bb34d2",
+      "file": "Assets/ShipUpgradeCards/v1/stealth.png"
+    },
+    "lure": {
+      "ruid": "7039ee56536c4008aae61a7c7ca5d9ca",
+      "version": "6ac0786f895ad76d6a65ffe8",
+      "file": "Assets/ShipUpgradeCards/v1/lure.png"
+    },
+    "fog": {
+      "ruid": "2a7c4ac5c93346418b57c65820ff11f2",
+      "version": "6ac0787bf301a614d4bb34df",
+      "file": "Assets/ShipUpgradeCards/v1/fog.png"
+    },
+    "monster_bait": {
+      "ruid": "e39979a1e7d94e6b8fb934044f195d5a",
+      "version": "6ac0789b555b0fc036472c7d",
+      "file": "Assets/ShipUpgradeCards/v1/monster_bait.png"
+    },
+    "magic_resonator": {
+      "ruid": "909238e31e0f43799d20f818523238ae",
+      "version": "6ac078a9f301a614d4bb34e1",
+      "file": "Assets/ShipUpgradeCards/v1/magic_resonator.png"
+    },
+    "stabilizer": {
+      "ruid": "2b07655af5064390b50fcf26646db440",
+      "version": "6ac078b3f301a614d4bb34e2",
+      "file": "Assets/ShipUpgradeCards/v1/stabilizer.png"
+    },
+    "folding_cabin": {
+      "ruid": "a9402a97c9ad430eb30d8ba9d18f2880",
+      "version": "6ac078bdf301a614d4bb34e3",
+      "file": "Assets/ShipUpgradeCards/v1/folding_cabin.png"
+    },
+    "fire_compartment": {
+      "ruid": "6a5b3bbc54184a879d788e2bc9898adb",
+      "version": "6ac078c7b44c5e265e8e2788",
+      "file": "Assets/ShipUpgradeCards/v1/fire_compartment.png"
+    },
+    "boarding": {
+      "ruid": "0479fd26edb74c529a663c9c18dc383c",
+      "version": "6ac078d44c59728bcd00ad78",
+      "file": "Assets/ShipUpgradeCards/v1/boarding.png"
+    },
+    "civil_disguise": {
+      "ruid": "17a46a95410242f5a7acb758e2c6e0b8",
+      "version": "6ac078f64c59728bcd00ad90",
+      "file": "Assets/ShipUpgradeCards/v1/civil_disguise.png"
+    },
+    "false_flag": {
+      "ruid": "7842ca73402d4582bd0b1709293c5a6b",
+      "version": "6ac078ff394547462f9cf2df",
+      "file": "Assets/ShipUpgradeCards/v1/false_flag.png"
+    },
+    "fake_gold": {
+      "ruid": "7b0e5238a1534c8bb53b11c1324c2cd0",
+      "version": "6ac07908b44c5e265e8e27a3",
+      "file": "Assets/ShipUpgradeCards/v1/fake_gold.png"
+    },
+    "giant_lure": {
+      "ruid": "950bc16061c447d78016e514a9a6e775",
+      "version": "6ac07912394547462f9cf2ee",
+      "file": "Assets/ShipUpgradeCards/v1/giant_lure.png"
+    },
+    "distress_beacon": {
+      "ruid": "a2c3edca094340488910240c9c4082ec",
+      "version": "6ac0791d394547462f9cf2fa",
+      "file": "Assets/ShipUpgradeCards/v1/distress_beacon.png"
+    }
+  },
+  "versionNote": "首13張 version 為 creation version；RUID為穩定識別，metadata更新可能產生較新版本。後17張保存 metadata-update version。"
+}

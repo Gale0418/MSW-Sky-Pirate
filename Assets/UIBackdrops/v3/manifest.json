@@ -1,0 +1,394 @@
+{
+  "version": 3,
+  "generationTool": "image_gen.imagegen",
+  "purpose": "將主人核准五頁示意實作為可互動的原生UI",
+  "sourceDesign": "MissionCenter/design-previews/2026-10-03-five-pages/README.md",
+  "nineSlice": false,
+  "resourceMap": {
+    "frame": "b5a1555b881541088211c6c11cfe32a1",
+    "panel": "3b8d213aa521408faa8af20d585e90d2",
+    "plaque": "ce825ba2880b43f2a43c5ac011ffeb99",
+    "cargo_slot": "4dec9e34d3bc422a9d2157f6fa321ba4",
+    "gold_button": "e17a958c47984b66ae042fe461461c49",
+    "parchment": "071e11bbda8e4bf4a949a9e8dc5bfc21"
+  },
+  "entries": [
+    {
+      "id": "frame",
+      "key": "woodProductionFrame",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-030092e5-88f7-4e30-83ec-55378881f3a3.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v3/frame-transparent.png",
+      "prompt": "Use case: background-extraction. Edit target: the supplied approved MapleStory-style 2D cartoon wooden game UI frame. Change ONLY the region outside the irregular outer silhouette of the wooden frame, brass corners, ropes and clouds to genuine alpha transparency. Preserve the exact framing, proportions, large opaque inner wood plank surface, top compass and blank dark title plaque, left flag and lamp, all outlines and colors. The interior wood is part of the UI panel and must remain opaque. Remove only the dark blue/green environmental backdrop visible outside the frame edges and rounded corners. Do not add any objects or text. Keep the current landscape aspect ratio and silhouette at the same coordinates. Clean anti-aliased alpha edges, no white matte, no checkerboard painted into image. Output a transparent PNG.",
+      "transparent_background": true,
+      "bytes": 1864618,
+      "width": 1453,
+      "height": 1082,
+      "sha256": "4d7b99069f1a44ea4d6789ae3ca96bc220b2a4a26fc6917c51982284dccb8926",
+      "alpha_bounds": [
+        0,
+        0,
+        1452,
+        1082
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "metadata": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"status\":{\"code\":0,\"message\":\"\",\"statusCode\":0,\"details\":[]},\"ugcInfo\":{\"ruid\":\"b5a1555b881541088211c6c11cfe32a1\",\"version\":\"6ac0dd7f7469cf4159ec1ecc\",\"resourceType\":\"sprite\",\"name\":\"GV Approved UI transparent frame v3\",\"description\":\"\\u6953\\u8C37\\u539A\\u5BE6\\u5361\\u901A\\u6728\\u6846\\uFF0C\\u5916\\u8F2A\\u5ED3\\u771F\\u900F\\u660E alpha\\uFF0C\\u5167\\u90E8\\u6728\\u677F\\u4FDD\\u7559\\uFF1B1360\\u00D71040 \\u4E94\\u9801\\u5171\\u7528\\u4ECB\\u9762\\u3002\",\"category\":\"sprite\",\"subcategory\":\"background\",\"createDate\":639266213114695021,\"modifyDate\":639266213313792180,\"extraInfoList\":[],\"originRuid\":\"\",\"acl\":0,\"properties\":[{\"key\":\"pivot_x\",\"value\":\"0.5\"},{\"key\":\"pivot_y\",\"value\":\"0.5\"},{\"key\":\"filter_mode\",\"value\":\"Bilinear\"},{\"key\":\"wrap_mode\",\"value\":\"Clamp\"}],\"modFiles\":{\"win\":{\"path\":\"b5/a1/b5a1555b881541088211c6c11cfe32a1/6ac0dd7f7469cf4159ec1ecc/b5a1555b881541088211c6c11cfe32a1.win.mod\",\"size\":1864697,\"md5\":\"2b22633e8fc86eae069eaf79a3258bd1\",\"format\":\"win\"}},\"assetKind\":0,\"owner\":{\"ownerType\":0},\"sanctionState\":\"\"}}"
+          }
+        ]
+      },
+      "ruid": "b5a1555b881541088211c6c11cfe32a1",
+      "nine_slice": false,
+      "replaces": {
+        "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v3/frame.png",
+        "ruid": "d090d111b06146809340c354350df3f5",
+        "sha256": "2df432bdb051456754a6ea5b07fe8eb8d48d86757864664095bbfb3b783baf55"
+      }
+    },
+    {
+      "id": "panel",
+      "key": "woodProductionPanel",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-1557ce37-6f1b-4861-b5de-66c17bb14ef0.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v3/panel.png",
+      "prompt": "Use case: background-extraction. Asset type: one reusable EMPTY game UI parchment panel sprite. Use the supplied approved fitting UI as an ART STYLE reference only. Draw exactly one landscape rectangular pale warm cream parchment panel with gently rounded corners, thin layered golden-oak and bronze illustrated frame, subtle ornate curly corner brackets, same thick cartoon MapleStory nautical fantasy style as the reference's ship preview and inventory panels. No compass crest, no title plaque, no rope or lamp. Quiet nearly plain cream interior with extremely faint broad hand-painted paper shading; frame is narrow about 4% of image width, uniform straight edges so this sprite can be stretched or nine-sliced. The panel rectangle occupies 95% of image width and height with small transparent outer margins. Landscape aspect 4:3. No text, no numbers, no ship, no cards, no icons, no controls. Chunky clean brown colored outlines, 2D anime/cartoon game cel shading, not realistic. GENUINELY TRANSPARENT exterior around the frame, fully opaque cream interior. Isolated single panel only.",
+      "transparent_background": true,
+      "bytes": 1337025,
+      "width": 1448,
+      "height": 1086,
+      "sha256": "da8270c770929bd95fa78092086bb221792b2b0b1ebc982226ea41cb51686594",
+      "alpha_bounds": [
+        15,
+        21,
+        1432,
+        1044
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "metadata": {
+        "status": {
+          "code": 0,
+          "message": "",
+          "statusCode": 0,
+          "details": []
+        },
+        "ugcInfo": {
+          "ruid": "3b8d213aa521408faa8af20d585e90d2",
+          "version": "6ac0d8bcab71a91b3ecf95e6",
+          "resourceType": "sprite",
+          "name": "GV Approved UI panel v3",
+          "description": "楓谷空賊王 五頁定稿可組裝介面素材 panel v3",
+          "category": "sprite",
+          "subcategory": "background",
+          "createDate": 639266200923993700,
+          "modifyDate": 639266202272516700,
+          "extraInfoList": [],
+          "originRuid": "",
+          "acl": 0,
+          "properties": [
+            {
+              "key": "filter_mode",
+              "value": "Bilinear"
+            },
+            {
+              "key": "wrap_mode",
+              "value": "Clamp"
+            },
+            {
+              "key": "pivot_x",
+              "value": "0.5"
+            },
+            {
+              "key": "pivot_y",
+              "value": "0.5"
+            }
+          ],
+          "modFiles": {
+            "win": {
+              "path": "3b/8d/3b8d213aa521408faa8af20d585e90d2/6ac0d8bcab71a91b3ecf95e6/3b8d213aa521408faa8af20d585e90d2.win.mod",
+              "size": 1337103,
+              "md5": "917eabbdf8ea5b600c4fd06129f92f2d",
+              "format": "win"
+            }
+          },
+          "assetKind": 0,
+          "owner": {
+            "ownerType": 0
+          },
+          "sanctionState": ""
+        }
+      },
+      "ruid": "3b8d213aa521408faa8af20d585e90d2",
+      "nine_slice": false
+    },
+    {
+      "id": "plaque",
+      "key": "woodProductionPlaqueCorrected",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-0b9e2909-c19f-48b8-8b77-aad4b9354d42.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v3/plaque.png",
+      "prompt": "Precise correction to this reusable blank UI plaque: remove the excessive transparent padding above and below, and make the plaque a more compact EXACT 3:1 width-to-height rectangular shape by increasing the HEIGHT of the wooden plaque body. Final canvas must be WIDE 3:1 landscape and the plaque must fill 94% width AND 90% HEIGHT, not a skinny strip floating in a large square. Preserve its dark walnut center, golden bevel, clipped corners and two end rivets, clean MapleStory cartoon style. Center remains empty for native text. Exterior genuinely transparent with only a NARROW margin around all four sides. Do not add any words, numbers, icons or extra objects. Only adjust body proportion and canvas padding.",
+      "transparent_background": true,
+      "bytes": 1052610,
+      "width": 2172,
+      "height": 724,
+      "sha256": "877ad6794c212674d9b771c300d0ea180835a8e08b1198c5da47bbb7ab7a2cc1",
+      "alpha_bounds": [
+        11,
+        77,
+        2159,
+        605
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "metadata": {
+        "status": {
+          "code": 0,
+          "message": "",
+          "statusCode": 0,
+          "details": []
+        },
+        "ugcInfo": {
+          "ruid": "ce825ba2880b43f2a43c5ac011ffeb99",
+          "version": "6ac0d8c2c52e84e379d46107",
+          "resourceType": "sprite",
+          "name": "GV Approved UI plaque v3",
+          "description": "楓谷空賊王 五頁定稿可組裝介面素材 plaque v3",
+          "category": "sprite",
+          "subcategory": "background",
+          "createDate": 639266200983877900,
+          "modifyDate": 639266202285864100,
+          "extraInfoList": [],
+          "originRuid": "",
+          "acl": 0,
+          "properties": [
+            {
+              "key": "filter_mode",
+              "value": "Bilinear"
+            },
+            {
+              "key": "wrap_mode",
+              "value": "Clamp"
+            },
+            {
+              "key": "pivot_x",
+              "value": "0.5"
+            },
+            {
+              "key": "pivot_y",
+              "value": "0.5"
+            }
+          ],
+          "modFiles": {
+            "win": {
+              "path": "ce/82/ce825ba2880b43f2a43c5ac011ffeb99/6ac0d8c2c52e84e379d46107/ce825ba2880b43f2a43c5ac011ffeb99.win.mod",
+              "size": 1052688,
+              "md5": "2f6722ef2df7d13614dc60e48bd52d76",
+              "format": "win"
+            }
+          },
+          "assetKind": 0,
+          "owner": {
+            "ownerType": 0
+          },
+          "sanctionState": ""
+        }
+      },
+      "ruid": "ce825ba2880b43f2a43c5ac011ffeb99",
+      "nine_slice": false
+    },
+    {
+      "id": "cargo_slot",
+      "key": "woodProductionCargoSlot",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-9392e873-e55d-43c8-8d27-a546b1aa7832.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v3/cargo_slot.png",
+      "prompt": "Use case: stylized-concept. Asset type: one reusable EMPTY SQUARE CARGO SLOT sprite for a MapleStory-style cartoon nautical game inventory. Art style must match supplied fitting reference's thick golden wooden/brass panel borders. Single square compartment with softly beveled rounded corners, narrow honey oak frame with brass corner studs, inset pale tan cream floor and a small subtle bottom shadow giving shallow compartment depth. Broad blank center for a native item icon overlay. Frame uses warm dark-brown colored outline, clean 2D anime/cartoon cel shading, no realism. Slot fills 92% width and height of a SQUARE canvas, uniform narrow transparent margin. GENUINELY TRANSPARENT outside the square frame, opaque light tan inside. No crate, no cargo items, no symbols, no text, no numbers, no plus, no lock, no selection glow, no watermark. One isolated square slot only, readable at 80x80.",
+      "transparent_background": true,
+      "bytes": 1196648,
+      "width": 1254,
+      "height": 1254,
+      "sha256": "fb38084386815546f2e294b55041f1b1f7097be04f3f9b9197ea37d115a96c2e",
+      "alpha_bounds": [
+        78,
+        47,
+        1178,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "metadata": {
+        "status": {
+          "code": 0,
+          "message": "",
+          "statusCode": 0,
+          "details": []
+        },
+        "ugcInfo": {
+          "ruid": "4dec9e34d3bc422a9d2157f6fa321ba4",
+          "version": "6ac0d8c8ab71a91b3ecf95e7",
+          "resourceType": "sprite",
+          "name": "GV Approved UI cargo_slot v3",
+          "description": "楓谷空賊王 五頁定稿可組裝介面素材 cargo_slot v3",
+          "category": "sprite",
+          "subcategory": "background",
+          "createDate": 639266201043116000,
+          "modifyDate": 639266202308604700,
+          "extraInfoList": [],
+          "originRuid": "",
+          "acl": 0,
+          "properties": [
+            {
+              "key": "filter_mode",
+              "value": "Bilinear"
+            },
+            {
+              "key": "wrap_mode",
+              "value": "Clamp"
+            },
+            {
+              "key": "pivot_x",
+              "value": "0.5"
+            },
+            {
+              "key": "pivot_y",
+              "value": "0.5"
+            }
+          ],
+          "modFiles": {
+            "win": {
+              "path": "4d/ec/4dec9e34d3bc422a9d2157f6fa321ba4/6ac0d8c8ab71a91b3ecf95e7/4dec9e34d3bc422a9d2157f6fa321ba4.win.mod",
+              "size": 1196726,
+              "md5": "14b6b63e34bb474033da2fb5ec94b9af",
+              "format": "win"
+            }
+          },
+          "assetKind": 0,
+          "owner": {
+            "ownerType": 0
+          },
+          "sanctionState": ""
+        }
+      },
+      "ruid": "4dec9e34d3bc422a9d2157f6fa321ba4",
+      "nine_slice": false
+    },
+    {
+      "id": "gold_button",
+      "key": "woodProductionGoldButton",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-82e92776-c5e0-4bcc-9908-3aaf90a62d5e.png",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v3/gold_button.png",
+      "prompt": "Use case: background-extraction. Asset type: ONE BLANK GOLD PRIMARY BUTTON sprite matching the supplied MapleStory nautical fitting UI. Draw a single wide horizontal rounded beveled brass/gold button in EXACT 3:1 aspect ratio; warm amber outer bevel, dark brown cartoon edge, bright buttery-gold flat center with a thin cream inset line, subtly clipped octagonal corners. Simple broad cel-shading and compact illustrated shape matching the reference's �w�˨�Ѧ�2 button. No icon or text baked in; native UI will add labels. The button MUST fill 95% of a WIDE 3:1 landscape canvas in BOTH width and height, narrow transparent margin only, no large top/bottom padding. GENUINELY TRANSPARENT exterior, opaque golden center. No shadow background, no other objects, no symbols, words, numbers, logo or watermark. Not realistic and not 3D.",
+      "transparent_background": true,
+      "bytes": 924785,
+      "width": 2172,
+      "height": 724,
+      "sha256": "c6a7208520996f7cd00046737d54fbeb1468fc18a70c18b272a06bf70bc180da",
+      "alpha_bounds": [
+        0,
+        94,
+        2159,
+        684
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "metadata": {
+        "status": {
+          "code": 0,
+          "message": "",
+          "statusCode": 0,
+          "details": []
+        },
+        "ugcInfo": {
+          "ruid": "e17a958c47984b66ae042fe461461c49",
+          "version": "6ac0d8cec52e84e379d46108",
+          "resourceType": "sprite",
+          "name": "GV Approved UI gold_button v3",
+          "description": "楓谷空賊王 五頁定稿可組裝介面素材 gold_button v3",
+          "category": "sprite",
+          "subcategory": "background",
+          "createDate": 639266201101792000,
+          "modifyDate": 639266202315993000,
+          "extraInfoList": [],
+          "originRuid": "",
+          "acl": 0,
+          "properties": [
+            {
+              "key": "filter_mode",
+              "value": "Bilinear"
+            },
+            {
+              "key": "wrap_mode",
+              "value": "Clamp"
+            },
+            {
+              "key": "pivot_x",
+              "value": "0.5"
+            },
+            {
+              "key": "pivot_y",
+              "value": "0.5"
+            }
+          ],
+          "modFiles": {
+            "win": {
+              "path": "e1/7a/e17a958c47984b66ae042fe461461c49/6ac0d8cec52e84e379d46108/e17a958c47984b66ae042fe461461c49.win.mod",
+              "size": 924863,
+              "md5": "5049b7e807ec7f386e61ac1908985c9d",
+              "format": "win"
+            }
+          },
+          "assetKind": 0,
+          "owner": {
+            "ownerType": 0
+          },
+          "sanctionState": ""
+        }
+      },
+      "ruid": "e17a958c47984b66ae042fe461461c49",
+      "nine_slice": false
+    },
+    {
+      "id": "parchment",
+      "file": "D:/MyGame/MSW_GreatVoyage/Assets/UIBackdrops/v3/parchment-transparent.png",
+      "source": "C:/Users/USER/.codex/generated_images/01a0fbbb-b46b-78d0-a820-fecea5f784f7/exec-b2a431b4-c92a-4dca-8730-3953aab6ec2d.png",
+      "prompt": "Use case: background-extraction. Edit target: this MapleStory 2D cartoon parchment panel. Make ONLY the pale flat rectangular background outside the dark brown irregular outer paper outline fully alpha transparent. Preserve the paper itself, its entire cream interior, its brown outline, curled corners, folds, spots and faint compass exactly. Keep the same landscape size and paper coordinates. Transparent exterior cutout with clean antialiased edges; the parchment interior remains opaque. No added text, objects, geography, or white matte. No painted checkerboard.",
+      "transparent_background": true,
+      "bytes": 1644844,
+      "width": 1434,
+      "height": 1097,
+      "sha256": "809bcb470b5faf9cc83bb0eb892d4dd0ef736b9bab06c0d1c249c7f49da30ce8",
+      "alpha_bounds": [
+        0,
+        0,
+        1434,
+        1097
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "ruid": "071e11bbda8e4bf4a949a9e8dc5bfc21",
+      "metadata": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"status\":{\"code\":0,\"message\":\"\",\"statusCode\":0,\"details\":[]},\"ugcInfo\":{\"ruid\":\"071e11bbda8e4bf4a949a9e8dc5bfc21\",\"version\":\"6ac0de43c52e84e379d46153\",\"resourceType\":\"sprite\",\"name\":\"GV Approved UI transparent parchment v3\",\"description\":\"\\u6953\\u8C37\\u5361\\u901A\\u822A\\u5716\\u7F8A\\u76AE\\u7D19\\uFF0C\\u5916\\u8F2A\\u5ED3\\u771F\\u900F\\u660Ealpha\\uFF0C\\u5167\\u90E8\\u7D19\\u9762\\u4FDD\\u7559\\u3002\",\"category\":\"sprite\",\"subcategory\":\"background\",\"createDate\":639266215076636261,\"modifyDate\":639266215322999654,\"extraInfoList\":[],\"originRuid\":\"\",\"acl\":0,\"properties\":[{\"key\":\"pivot_x\",\"value\":\"0.5\"},{\"key\":\"pivot_y\",\"value\":\"0.5\"},{\"key\":\"filter_mode\",\"value\":\"Bilinear\"},{\"key\":\"wrap_mode\",\"value\":\"Clamp\"}],\"modFiles\":{\"win\":{\"path\":\"07/1e/071e11bbda8e4bf4a949a9e8dc5bfc21/6ac0de43c52e84e379d46153/071e11bbda8e4bf4a949a9e8dc5bfc21.win.mod\",\"size\":1644923,\"md5\":\"db036aca856b4afcd423a9856f675d11\",\"format\":\"win\"}},\"assetKind\":0,\"owner\":{\"ownerType\":0},\"sanctionState\":\"\"}}"
+          }
+        ]
+      },
+      "nine_slice": false
+    }
+  ],
+  "transparencyRequirement": "全部正式元件具有真實alpha透明外圍；木板/羊皮紙內容為實際底板保留。2026-10-03主人明確要求。"
+}
