@@ -345,13 +345,13 @@ script GVShipVisualClient extends Component
 			shot.SpriteRendererComponent.OrderInLayer = 21
 			shot.SpriteRendererComponent.Color = Color(1, 0.75, 0.2, 1)
 			shot.SpriteRendererComponent.Enable = false
-			shot.TransformComponent.Scale = Vector3(0.8, 0.8, 1)
+			shot.TransformComponent.Scale = Vector3(2.0, 2.0, 1)
 			enemyShot.SpriteRendererComponent.SpriteRUID = "7543d83767874b968f6871068931bd2e"
 			enemyShot.SpriteRendererComponent.SortingLayer = self:GetMapSortingLayer()
 			enemyShot.SpriteRendererComponent.OrderInLayer = 21
 			enemyShot.SpriteRendererComponent.Color = Color(0.4, 0.8, 1, 1)
 			enemyShot.SpriteRendererComponent.Enable = false
-			enemyShot.TransformComponent.Scale = Vector3(0.8, 0.8, 1)
+			enemyShot.TransformComponent.Scale = Vector3(2.0, 2.0, 1)
 			self.appliedBattleId = battle.id
 			self.lastEnemyHp = battle.enemyHp
 			log("[AirBattleVisual] created id=" .. battle.id .. " enemy=" .. battle.enemyId)
@@ -368,10 +368,16 @@ script GVShipVisualClient extends Component
 		if (battle.playerShotSequence or 0) > self.lastPlayerShotSequence then
 			self.lastPlayerShotSequence = battle.playerShotSequence
 			self.shotElapsed = math.max(0, battle.playerShotElapsed or 0)
+			if self.shotElapsed < self.shotFlightSeconds then
+				log("[AirBattleVisual] player shot started seq=" .. tostring(self.lastPlayerShotSequence))
+			end
 		end
 		if (battle.enemyShotSequence or 0) > self.lastEnemyShotSequence then
 			self.lastEnemyShotSequence = battle.enemyShotSequence
 			self.enemyShotElapsed = math.max(0, battle.enemyShotElapsed or 0)
+			if self.enemyShotElapsed < self.shotFlightSeconds then
+				log("[AirBattleVisual] enemy shot started seq=" .. tostring(self.lastEnemyShotSequence))
+			end
 		end
 		if battle.enemyHp < self.lastEnemyHp then self.enemyHitFlashRemaining = 0.2 end
 		self.lastEnemyHp = battle.enemyHp
@@ -379,10 +385,20 @@ script GVShipVisualClient extends Component
 		self.localBattleEnemy.TransformComponent.Position = enemyPosition
 		local shotProgress = math.min(1, self.shotElapsed / self.shotFlightSeconds)
 		self.localBattleShot.TransformComponent.Position = Vector3(-4.35 + (enemyPosition.x + 4.35) * shotProgress, -0.8 + (enemyPosition.y + 0.8) * shotProgress, 0)
-		self.localBattleShot.SpriteRendererComponent.Enable = self.shotElapsed < self.shotFlightSeconds
+		local playerShotVisible = self.shotElapsed < self.shotFlightSeconds
+		local wasPlayerShotVisible = self.localBattleShot.SpriteRendererComponent.Enable
+		self.localBattleShot.SpriteRendererComponent.Enable = playerShotVisible
+		if wasPlayerShotVisible and not playerShotVisible then
+			log("[AirBattleVisual] player shot hidden seq=" .. tostring(self.lastPlayerShotSequence))
+		end
 		local enemyShotProgress = math.min(1, self.enemyShotElapsed / self.shotFlightSeconds)
 		self.localEnemyShot.TransformComponent.Position = Vector3(enemyPosition.x + (-3.5 - enemyPosition.x) * enemyShotProgress, enemyPosition.y + (-0.8 - enemyPosition.y) * enemyShotProgress, 0)
-		self.localEnemyShot.SpriteRendererComponent.Enable = self.enemyShotElapsed < self.shotFlightSeconds
+		local enemyShotVisible = self.enemyShotElapsed < self.shotFlightSeconds
+		local wasEnemyShotVisible = self.localEnemyShot.SpriteRendererComponent.Enable
+		self.localEnemyShot.SpriteRendererComponent.Enable = enemyShotVisible
+		if wasEnemyShotVisible and not enemyShotVisible then
+			log("[AirBattleVisual] enemy shot hidden seq=" .. tostring(self.lastEnemyShotSequence))
+		end
 		if self.enemyHitFlashRemaining > 0 then
 			self.localBattleEnemy.SpriteRendererComponent.Color = Color(1, 0.5, 0.5, 1)
 		else

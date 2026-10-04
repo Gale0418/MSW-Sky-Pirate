@@ -3745,11 +3745,12 @@
             },
             {
               "@type": "MOD.Core.SoundComponent",
-              "AudioClipRUID": "02301b8112894626a78f8d517aada78a",
+              "AudioClipRUID": "877280f8701844378acfa6cee83dfede",
               "Bgm": true,
               "PlayOnEnable": true,
-              "Volume": 1,
-              "Enable": true
+              "Volume": 0.4,
+              "Enable": true,
+              "Loop": true
             }
           ],
           "@version": 1

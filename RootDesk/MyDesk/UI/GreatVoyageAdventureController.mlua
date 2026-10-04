@@ -2408,17 +2408,61 @@ script GreatVoyageAdventureController extends Logic
 	end
 
 	@ExecSpace("ClientOnly")
+	method string GetCommodityDescription(any good)
+		-- 依商品來源地補上精簡的航路風味，不改動圖鑑原始描述。
+		if good == nil then return "" end
+		local description = good.description or ""
+		local region = good.sourceRegion or ""
+		local flavor = ""
+		if region == "楓之島" then
+			flavor = "島上素材常隨短程商船集運。"
+		elseif region == "魔法森林" then
+			flavor = "森林貨品多樣，果實與液體封裝運送。"
+		elseif region == "弓箭手村" then
+			flavor = "村落周邊素材整理裝箱後運往各港。"
+		elseif region == "墮落城市" then
+			flavor = "近海貨物封箱後，適合長途轉運。"
+		elseif region == "天空城" then
+			flavor = "雲端精靈往來，星屑貨物輕巧易運。"
+		elseif region == "冰原雪域" or region == "廢棄礦坑" then
+			flavor = "雪原礦坑素材需妥善封裝運送。"
+		elseif region == "玩具城" then
+			flavor = "玩具與日用品常隨商船集運。"
+		elseif region == "玩具工廠" then
+			flavor = "工廠玩具整箱裝船，方便點收。"
+		elseif region == "時間塔上層" or region == "時間塔下層" then
+			flavor = "時間塔稀有素材多經仔細封裝。"
+		elseif region == "地球防衛總部" then
+			flavor = "科技與補給貨物整理裝箱後運出。"
+		elseif region == "童話村" then
+			flavor = "童話村特產帶著神祕氣息。"
+		elseif region == "阿里安特" then
+			flavor = "綠洲商路貨物匯集，封裝需防風沙。"
+		elseif region == "瑪迦提亞" then
+			flavor = "實驗素材繁多，標記清楚方便交接。"
+		end
+		-- 已知來源地以地域短介取代制式產地／量產文案，避免重複且保留閱讀空間。
+		if flavor ~= "" then return flavor end
+		return description
+	end
+
+	@ExecSpace("ClientOnly")
 	method void RefreshShop()
 		-- 共用六格貨架與交易區；只顯示產地、商品簡介及本港售價。
 		if _GreatVoyageVoyageData == nil or _GreatVoyageVoyageState == nil then return end
 		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
 		local entries = self:GetShopEntries()
-		self.shopSelectedIndex = math.max(1, math.min(self.shopSelectedIndex, #entries))
-		if self.shopTab == "goods" and _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype.selectedGoodIndex = self.shopSelectedIndex end
+		if #entries == 0 then
+			self.shopSelectedIndex = 0
+			self.shopPage = 1
+		else
+			self.shopSelectedIndex = math.max(1, math.min(self.shopSelectedIndex, #entries))
+		end
+		if self.shopTab == "goods" and #entries > 0 and _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype.selectedGoodIndex = self.shopSelectedIndex end
 		local pageCount = math.max(1, math.ceil(#entries / 6))
 		self.shopPage = math.max(1, math.min(self.shopPage, pageCount))
 		local root = "/ui/GreatVoyageAdventure/ShopModal/Window/"
-		local titles = { goods = "港口貨架", cards = "改裝卡貨架", inventory = "未安裝庫存", catalog = "全港商品圖鑑" }
+		local titles = { goods = "港口貨架", cards = "改裝卡貨架", inventory = "未安裝庫存", sell = "出售貨物" }
 		self:SetMerchantText(root .. "Goods/Title", titles[self.shopTab] or titles.goods)
 		local fullCards = self.shopTab == "cards" or self.shopTab == "inventory"
 		local pagedCards = fullCards and pageCount > 1
@@ -2429,7 +2473,7 @@ script GreatVoyageAdventureController extends Logic
 		self.shopNpcNameText.Text = self:GetPortName(self.currentPortId) .. "商人"
 		self.shopDialogText.Text = "航線由你決定。選好貨物、備妥船隻，就去探索各港口的商機吧！"
 		if self.shopTab == "cards" then self.shopDialogText.Text = "本港備有六張改裝卡，依售價排列；挑選適合你船隻的改裝吧。" end
-		if self.shopTab == "catalog" then self.shopDialogText.Text = "全港商品圖鑑。選擇貨物可查看產地與簡介；尚未開放的港口也收錄於此。" end
+		if self.shopTab == "sell" then self.shopDialogText.Text = "看看貨艙裡帶來的貨物，在本港一次整批出售。" end
 		self.shopGoldText.Text = "持有 " .. tostring(snapshot.money or 0) .. " G"
 		if snapshot.playerId == "" then self.shopGoldText.Text = "持有 -- G（同步中）" end
 		if snapshot.economyRevision ~= self.lastShopEconomyRevision then
@@ -2459,6 +2503,12 @@ script GreatVoyageAdventureController extends Logic
 					self:SetMerchantText(entity.Path .. "/Name", item.displayName or item.name or "商品")
 					self:SetMerchantText(entity.Path .. "/Price", tostring(item.price or 0) .. " G")
 					if self.shopTab == "inventory" then self:SetMerchantText(entity.Path .. "/Price", "持有 " .. tostring((snapshot.cardInventory or {})[item.id] or 0) .. " 張") end
+					if self.shopTab == "sell" then
+						local cargoQuantity = (snapshot.cargo or {}).quantity or 0
+						local saleUnitPrice = _GreatVoyageVoyageData:GetSalePrice(self.currentPortId, item.id)
+						local unit = item.unit or "箱"
+						self:SetMerchantText(entity.Path .. "/Price", tostring(cargoQuantity) .. unit .. " · " .. tostring(saleUnitPrice) .. "G/" .. unit)
+					end
 					local nameLabel = _EntityService:GetEntityByPath(entity.Path .. "/Name")
 					local priceLabel = _EntityService:GetEntityByPath(entity.Path .. "/Price")
 					if isvalid(nameLabel) then
@@ -2474,9 +2524,16 @@ script GreatVoyageAdventureController extends Logic
 					if isvalid(priceLabel) then
 						priceLabel.UITransformComponent.anchoredPosition = Vector2(0, fullCards and -78 or -55)
 						if pagedCards then priceLabel.UITransformComponent.anchoredPosition = Vector2(0, -78) end
-						priceLabel.UITransformComponent.RectSize = Vector2(fullCards and 154 or 176, fullCards and 22 or 24)
-						priceLabel.TextGUIRendererComponent.FontSize = fullCards and 18 or 21
-						priceLabel.TextGUIRendererComponent.MaxSize = fullCards and 18 or 21
+						priceLabel.UITransformComponent.RectSize = Vector2(fullCards and 154 or 176, self.shopTab == "sell" and 38 or (fullCards and 22 or 24))
+						if self.shopTab == "sell" then
+							priceLabel.TextGUIRendererComponent.FontSize = 18
+							priceLabel.TextGUIRendererComponent.MinSize = 15
+							priceLabel.TextGUIRendererComponent.MaxSize = 18
+							priceLabel.TextGUIRendererComponent.BestFit = true
+						else
+							priceLabel.TextGUIRendererComponent.FontSize = fullCards and 18 or 21
+							priceLabel.TextGUIRendererComponent.MaxSize = fullCards and 18 or 21
+						end
 					end
 					local icon = _EntityService:GetEntityByPath(entity.Path .. "/Icon")
 					local ruid = item.iconRuid or item.artRuid or ""
@@ -2502,24 +2559,47 @@ script GreatVoyageAdventureController extends Logic
 			end
 		end
 		local selected = entries[self.shopSelectedIndex]
-		self.shopSelectedText.Text = "貨架準備中…"
-		self.shopQuoteText.Text = "正在取得本港貨架。"
+		local emptyTitles = { goods = "本港目前沒有商品", cards = "本港目前沒有改裝卡", inventory = "沒有未安裝卡片", sell = "貨艙目前沒有可出售的貨物" }
+		local emptyDescriptions = { goods = "本港目前沒有可購買的商品。", cards = "本港目前沒有可購買的改裝卡。", inventory = "尚未持有可安裝的改裝卡。", sell = "貨艙目前沒有可出售的貨物。" }
+		self.shopSelectedText.Text = emptyTitles[self.shopTab] or "目前沒有商品"
+		self.shopQuoteText.Text = emptyDescriptions[self.shopTab] or "目前沒有可顯示的項目。"
+		local detailDescription = ""
 		if selected ~= nil then
 			self.shopSelectedText.Text = selected.displayName or selected.name
-			self.shopQuoteText.Text = selected.description or ""
+			detailDescription = self:GetCommodityDescription(selected)
+			local sourcePortName = nil
+			if selected.originId ~= nil and selected.originId ~= "" then
+				sourcePortName = _GreatVoyageVoyageData:GetPortName(selected.originId)
+				if sourcePortName == "未知港口" then sourcePortName = nil end
+			end
+			local sourceRegion = selected.sourceRegion or ""
+			local sourceLine = ""
+			if sourcePortName ~= nil and sourceRegion ~= "" then sourceLine = "來源：" .. sourcePortName .. "港｜" .. sourceRegion
+			elseif sourcePortName ~= nil then sourceLine = "來源：" .. sourcePortName .. "港"
+			elseif sourceRegion ~= "" then sourceLine = "來源：" .. sourceRegion end
+			if sourceLine ~= "" then detailDescription = sourceLine .. "\n" .. detailDescription end
+			self.shopQuoteText.Text = detailDescription
 		end
-		-- 圖鑑另有封裝、版本與待補圖註記，為完整簡介保留高度。
-		local catalogDescription = self.shopTab == "catalog"
+		-- 出售頁擴大可見材質框與文字框，容納來源、單價及整批收入。
+		local extendedDescription = self.shopTab == "sell"
+		local insightHeight = extendedDescription and 144 or 96
+		local insightPositionY = extendedDescription and 77 or 79
+		local quoteHeight = extendedDescription and 118 or 84
 		local insight = _EntityService:GetEntityByPath(root .. "Trade/MarketInsight")
 		if isvalid(insight) then
-			insight.UITransformComponent.RectSize = Vector2(404, catalogDescription and 130 or 96)
-			insight.UITransformComponent.anchoredPosition = Vector2(0, catalogDescription and 70 or 79)
+			insight.UITransformComponent.RectSize = Vector2(404, insightHeight)
+			insight.UITransformComponent.anchoredPosition = Vector2(0, insightPositionY)
 		end
-		self.shopQuoteText.Entity.UITransformComponent.RectSize = Vector2(382, catalogDescription and 118 or 84)
+		local insightMaterial = _EntityService:GetEntityByPath(root .. "Trade/MarketInsight/Material")
+		if isvalid(insightMaterial) then
+			insightMaterial.UITransformComponent.RectSize = Vector2(423, insightHeight + 55)
+			insightMaterial.UITransformComponent.anchoredPosition = Vector2(0, -1)
+		end
+		self.shopQuoteText.Entity.UITransformComponent.RectSize = Vector2(382, quoteHeight)
 		self.shopQuoteText.BestFit = true
-		self.shopQuoteText.MinSize = catalogDescription and 16 or 19
-		self.shopQuoteText.MaxSize = catalogDescription and 20 or 23
-		self.shopQuoteText.FontSize = catalogDescription and 20 or 23
+		self.shopQuoteText.MinSize = extendedDescription and 15 or 19
+		self.shopQuoteText.MaxSize = extendedDescription and 16 or 23
+		self.shopQuoteText.FontSize = extendedDescription and 16 or 23
 		local icon = _EntityService:GetEntityByPath(root .. "Trade/SelectedIcon")
 		local ruid = ""
 		if selected ~= nil then ruid = selected.iconRuid or selected.artRuid or "" end
@@ -2530,21 +2610,11 @@ script GreatVoyageAdventureController extends Logic
 		end
 		local quantity = 1
 		if _Phase0VoyagePrototype ~= nil then quantity = _Phase0VoyagePrototype.tradeQuantity end
-		self.shopQuantityText.Text = "數量　" .. tostring(quantity)
 		local cargo = snapshot.cargo or {}
 		local capacity = 0
 		if snapshot.ship ~= nil then capacity = snapshot.ship.cargoCapacity or 0 end
-		if self.shopTab == "goods" then
-			if (cargo.quantity or 0) > 0 then
-				local cargoName = "未知商品"
-				if _GreatVoyageVoyageData ~= nil then
-					local cargoGood = _GreatVoyageVoyageData:GetGoodById(cargo.id or "")
-					if cargoGood ~= nil then cargoName = cargoGood.displayName or cargoGood.name or cargoName end
-				end
-				self.shopCargoText.Text = "貨艙：" .. cargoName .. " ×" .. tostring(cargo.quantity) .. "/" .. tostring(capacity)
-			else
-				self.shopCargoText.Text = "貨艙：空艙"
-			end
+		if self.shopTab == "goods" or self.shopTab == "sell" then
+			self.shopCargoText.Text = "剩餘空位：" .. tostring(math.max(0, capacity - (cargo.quantity or 0)))
 		else
 			self.shopCargoText.Text = "貨艙 " .. tostring(cargo.quantity or 0) .. "/" .. tostring(capacity)
 		end
@@ -2553,9 +2623,14 @@ script GreatVoyageAdventureController extends Logic
 			if selected ~= nil then owned = (snapshot.cardInventory or {})[selected.id] or 0 end
 			self.shopCargoText.Text = "未安裝持有 " .. tostring(owned) .. " 張"
 		end
-		local viewing = self.shopTab == "catalog"
-		for _, component in ipairs({ self.shopMinusButton, self.shopPlusButton, self.shopBuyButton, self.shopSellButton, self.shopQuantityText }) do
-			if isvalid(component) then component.Entity.Enable = not viewing end
+		local sellingCargo = self.shopTab == "sell"
+		for _, component in ipairs({ self.shopMinusButton, self.shopPlusButton }) do
+			if isvalid(component) then component.Entity.Enable = not sellingCargo end
+		end
+		if sellingCargo then
+			self.shopQuantityText.Text = "持有數量　" .. tostring(cargo.quantity or 0)
+		else
+			self.shopQuantityText.Text = "數量　" .. tostring(quantity)
 		end
 		local remainingCardCapacity = 99
 		if selected ~= nil and self.shopTab == "cards" then remainingCardCapacity = self:GetRemainingCardCapacity(snapshot, selected.id) end
@@ -2565,16 +2640,26 @@ script GreatVoyageAdventureController extends Logic
 			self.shopQuantityText.Text = "數量　" .. tostring(quantity)
 		end
 		local canAfford = selected ~= nil and (snapshot.money or 0) >= (selected.price or 0) * quantity
-		self.shopBuyButton.Enable = not viewing and selected ~= nil and self.shopTab ~= "inventory" and snapshot.playerId ~= "" and remainingCardCapacity > 0 and canAfford
-		local canSell = (cargo.quantity or 0) > 0
-		if self.shopTab ~= "goods" then canSell = selected ~= nil and (selected.sellPrice or 0) > 0 and ((snapshot.cardInventory or {})[selected.id] or 0) >= quantity end
+		self.shopBuyButton.Enable = not sellingCargo and selected ~= nil and self.shopTab ~= "inventory" and snapshot.playerId ~= "" and remainingCardCapacity > 0 and canAfford
+		local saleUnitPrice = 0
+		if (cargo.quantity or 0) > 0 and cargo.id ~= nil and cargo.id ~= "" then
+			saleUnitPrice = _GreatVoyageVoyageData:GetSalePrice(self.currentPortId, cargo.id)
+		end
+		if sellingCargo and selected ~= nil then
+			self.shopSelectedText.Text = (selected.displayName or selected.name or "貨物") .. " ×" .. tostring(cargo.quantity or 0)
+			local unit = selected.unit or "箱"
+			self.shopQuoteText.Text = detailDescription .. "\n單價 " .. tostring(saleUnitPrice) .. "G/" .. unit .. "\n整批收入 " .. tostring(saleUnitPrice * (cargo.quantity or 0)) .. "G"
+		end
+		local canSell = (cargo.quantity or 0) > 0 and saleUnitPrice > 0
+		if sellingCargo then canSell = selected ~= nil and canSell end
+		if self.shopTab ~= "goods" and not sellingCargo then canSell = selected ~= nil and (selected.sellPrice or 0) > 0 and ((snapshot.cardInventory or {})[selected.id] or 0) >= quantity end
 		local sellButtonText = self.shopSellButton.Entity.TextGUIRendererComponent
-		local sellText = self.shopTab == "goods" and "出售貨物" or "賣出"
+		local sellText = sellingCargo and "整批出售" or (self.shopTab == "goods" and "出售貨物" or "賣出")
 		if isvalid(sellButtonText) then sellButtonText.Text = sellText end
 		local sellVisual = self._T.reskinVisuals["/ui/GreatVoyageAdventure/ShopModal/Window/Trade/Sell"]
 		if sellVisual ~= nil and isvalid(sellVisual.label) then sellVisual.label.Text = sellText end
-		self:SetButtonEnabled("/ui/GreatVoyageAdventure/ShopModal/Window/Trade/Sell", self.shopSellButton, not viewing and snapshot.playerId ~= "" and canSell)
-		for _, tab in ipairs({ { "MarketGoodsTab", "goods" }, { "MarketCardsTab", "cards" }, { "CatalogTab", "catalog" }, { "MarketInventoryTab", "inventory" } }) do
+		self:SetButtonEnabled("/ui/GreatVoyageAdventure/ShopModal/Window/Trade/Sell", self.shopSellButton, snapshot.playerId ~= "" and canSell)
+		for _, tab in ipairs({ { "MarketGoodsTab", "goods" }, { "MarketCardsTab", "cards" }, { "CatalogTab", "sell" }, { "MarketInventoryTab", "inventory" } }) do
 			local entity = _EntityService:GetEntityByPath(root .. tab[1])
 			if isvalid(entity) then
 				local active = self.shopTab == tab[2]
@@ -2618,6 +2703,7 @@ script GreatVoyageAdventureController extends Logic
 	@ExecSpace("ClientOnly")
 	method void AdjustQuantity(integer delta)
 		-- 改裝卡數量獨立於貨艙容量；出售不能超過未安裝庫存。
+		if self.shopTab == "sell" then return end
 		local game = _Phase0VoyagePrototype
 		if game == nil then return end
 		if self.shopTab == "cards" or self.shopTab == "inventory" then
@@ -2641,6 +2727,7 @@ script GreatVoyageAdventureController extends Logic
 	@ExecSpace("ClientOnly")
 	method void BuyGood()
 		-- 改裝卡沿用共用數量，實際上架驗證由伺服器處理。
+		if self.shopTab == "sell" then return end
 		if self.shopTab ~= "goods" then
 			local selected = self:GetShopEntries()[self.shopSelectedIndex]
 			if self.shopTab == "cards" and selected ~= nil and _GreatVoyageVoyageState ~= nil then
@@ -2664,6 +2751,26 @@ script GreatVoyageAdventureController extends Logic
 	@ExecSpace("ClientOnly")
 	method void SellGood()
 		-- 卡片出售只針對選取卡的未安裝庫存。
+		if self.shopTab == "sell" then
+			if _GreatVoyageVoyageState == nil then
+				self.shopStatusMessage = "伺服器商店尚未就緒，無法交易。"
+			else
+				local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+				local cargo = snapshot.cargo or {}
+				local good = nil
+				if _GreatVoyageVoyageData ~= nil and cargo.id ~= nil and cargo.id ~= "" then good = _GreatVoyageVoyageData:GetGoodById(cargo.id) end
+				local saleUnitPrice = 0
+				if good ~= nil then saleUnitPrice = _GreatVoyageVoyageData:GetSalePrice(self.currentPortId, cargo.id) end
+				if snapshot.playerId == "" or (cargo.quantity or 0) <= 0 or good == nil or saleUnitPrice <= 0 then
+					self.shopStatusMessage = "貨艙沒有可出售的貨物。"
+				else
+					_GreatVoyageVoyageState:SellCargo()
+					self.shopStatusMessage = "已送出整批出售請求；等待伺服器確認。"
+				end
+			end
+			self:RefreshShop()
+			return
+		end
 		if self.shopTab ~= "goods" then
 			local selected = self:GetShopEntries()[self.shopSelectedIndex]
 			if self.shopTab ~= "catalog" and selected ~= nil and _GreatVoyageVoyageState ~= nil then
@@ -2818,7 +2925,7 @@ script GreatVoyageAdventureController extends Logic
 		local root = "/ui/GreatVoyageAdventure/ShopModal/Window/"
 		local actions = {
 			{ path = "MarketGoodsTab", callback = function() self:SetShopTab("goods") end },
-			{ path = "CatalogTab", callback = function() self:SetShopTab("catalog") end },
+			{ path = "CatalogTab", callback = function() self:SetShopTab("sell") end },
 			{ path = "MarketInventoryTab", callback = function() self:SetShopTab("inventory") end },
 			{ path = "Goods/Prev", callback = function() self:ChangeShopPage(-1) end },
 			{ path = "Goods/Next", callback = function() self:ChangeShopPage(1) end }
@@ -2845,15 +2952,21 @@ script GreatVoyageAdventureController extends Logic
 
 	@ExecSpace("ClientOnly")
 	method any GetShopEntries()
-		-- 貨物、六張上架卡、玩家庫存及全港圖鑑共用同一資料投影。
+		-- 貨物、六張上架卡、玩家庫存及整批出售頁共用同一資料投影。
 		if _GreatVoyageVoyageData == nil then return {} end
-		if self.shopTab == "catalog" then return _GreatVoyageVoyageData:GetCommodityCatalog() end
 		if self.shopTab == "goods" then
 			local port = _GreatVoyageVoyageData:GetPort(self.currentPortId)
 			if port ~= nil then return port.goods end
 			return {}
 		end
 		if _GreatVoyageVoyageState == nil then return {} end
+		if self.shopTab == "sell" then
+			local cargo = _GreatVoyageVoyageState:GetVoyageSnapshot().cargo or {}
+			if (cargo.quantity or 0) <= 0 or cargo.id == nil or cargo.id == "" then return {} end
+			local good = _GreatVoyageVoyageData:GetGoodById(cargo.id)
+			if good == nil then return {} end
+			return { good }
+		end
 		local list = {}
 		if self.shopTab == "cards" then
 			for _, cardId in ipairs(_GreatVoyageVoyageState:GetClientCardMarket(self.currentPortId)) do
@@ -2873,6 +2986,7 @@ script GreatVoyageAdventureController extends Logic
 	@ExecSpace("ClientOnly")
 	method void SetShopTab(string tab)
 		-- 切換頁籤只改投影，不重新抽取港口改裝卡。
+		if tab ~= "goods" and tab ~= "cards" and tab ~= "inventory" and tab ~= "sell" then return end
 		self.shopTab = tab
 		self.shopPage = 1
 		self.shopSelectedIndex = 1
@@ -2898,9 +3012,10 @@ script GreatVoyageAdventureController extends Logic
 	@ExecSpace("ClientOnly")
 	method void ChangeShopPage(integer delta)
 		-- 分頁在上下界停止，選取新頁第一筆有效商品。
-		local count = math.max(1, math.ceil(#self:GetShopEntries() / 6))
+		local entries = self:GetShopEntries()
+		local count = math.max(1, math.ceil(#entries / 6))
 		self.shopPage = math.max(1, math.min(count, self.shopPage + delta))
-		self.shopSelectedIndex = (self.shopPage - 1) * 6 + 1
+		self.shopSelectedIndex = #entries > 0 and ((self.shopPage - 1) * 6 + 1) or 0
 		self:RefreshShop()
 	end
 

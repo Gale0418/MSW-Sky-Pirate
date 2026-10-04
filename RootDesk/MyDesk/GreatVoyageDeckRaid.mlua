@@ -53,14 +53,23 @@ script GreatVoyageDeckRaid extends Logic
 		-- 離開飛船甲板後還原玩家原本的鏡頭追蹤設定。
 		if self.deckCameraActive == false then return end
 		local player = self.deckCameraPlayer
+		local deckOffset = self._T.deckCameraOffset
+		local originalOffset = self.previousCameraOffset
+		local originalScreenOffset = self.previousScreenOffset
+		local originalDamping = self.previousCameraDamping
+		local originalDeadZone = self.previousCameraDeadZone
+		local originalSoftZone = self.previousCameraSoftZone
+		local originalConfine = self.previousCameraConfine
+		local restored = false
 		if player ~= nil and isvalid(player) and player.CameraComponent ~= nil then
 			local camera = player.CameraComponent
-			camera.CameraOffset = self.previousCameraOffset
-			camera.ScreenOffset = self.previousScreenOffset
-			camera.Damping = self.previousCameraDamping
-			camera.DeadZone = self.previousCameraDeadZone
-			camera.SoftZone = self.previousCameraSoftZone
-			camera.ConfineCameraArea = self.previousCameraConfine
+			camera.CameraOffset = originalOffset
+			camera.ScreenOffset = originalScreenOffset
+			camera.Damping = originalDamping
+			camera.DeadZone = originalDeadZone
+			camera.SoftZone = originalSoftZone
+			camera.ConfineCameraArea = originalConfine
+			restored = true
 		end
 		self.deckCameraActive = false
 		self.deckCameraPlayer = nil
@@ -70,11 +79,17 @@ script GreatVoyageDeckRaid extends Logic
 		self.previousCameraDamping = nil
 		self.previousCameraDeadZone = nil
 		self.previousCameraSoftZone = nil
-		log("[DeckRaid] deck camera restored")
+		self._T.deckCameraOffset = nil
+		self._T.deckCameraSettleRemaining = nil
+		if deckOffset ~= nil then
+			log("[DeckRaid] deck camera restored=" .. tostring(restored) .. "; fixedOffset=(" .. tostring(deckOffset.x) .. "," .. tostring(deckOffset.y) .. ") originalOffset=" .. tostring(originalOffset) .. " screen=" .. tostring(originalScreenOffset) .. " damping=" .. tostring(originalDamping) .. " dead=" .. tostring(originalDeadZone) .. " soft=" .. tostring(originalSoftZone) .. " confine=" .. tostring(originalConfine))
+		else
+			log("[DeckRaid] deck camera restored=" .. tostring(restored) .. "; fixedOffset=uninitialized originalOffset=" .. tostring(originalOffset) .. " screen=" .. tostring(originalScreenOffset) .. " damping=" .. tostring(originalDamping) .. " dead=" .. tostring(originalDeadZone) .. " soft=" .. tostring(originalSoftZone) .. " confine=" .. tostring(originalConfine))
+		end
 	end
 
 	@ExecSpace("ClientOnly")
-	method void UpdateDeckCamera()
+	method void UpdateDeckCamera(number delta)
 		-- 航行時鏡頭固定在船身，玩家能在甲板上移動但不推動船的畫面位置。
 		local player = _UserService.LocalPlayer
 		if player == nil or player.CurrentMapName ~= "map_airship_deck" or player.CameraComponent == nil or player.TransformComponent == nil then
@@ -83,6 +98,11 @@ script GreatVoyageDeckRaid extends Logic
 		end
 		local camera = player.CameraComponent
 		if self.deckCameraActive and self.deckCameraPlayer ~= player then self:RestoreDeckCamera() end
+		if self.deckShipEntity == nil or not isvalid(self.deckShipEntity) then
+			self.deckShipEntity = _EntityService:GetEntityByPath("/maps/map_airship_deck/GV_PlayerShip")
+		end
+		local ship = self.deckShipEntity
+		if ship == nil or ship.TransformComponent == nil then return end
 		if self.deckCameraActive == false then
 			self.previousCameraOffset = camera.CameraOffset
 			self.previousScreenOffset = camera.ScreenOffset
@@ -97,22 +117,28 @@ script GreatVoyageDeckRaid extends Logic
 			camera.Damping = Vector2(0, 0)
 			camera.DeadZone = Vector2(0, 0)
 			camera.SoftZone = Vector2(0, 0)
-			log("[DeckRaid] deck camera centered without player-follow smoothing")
+			self._T.deckCameraSettleRemaining = 0.2
 		end
-		if self.deckShipEntity == nil or not isvalid(self.deckShipEntity) then
-			self.deckShipEntity = _EntityService:GetEntityByPath("/maps/map_airship_deck/GV_PlayerShip")
+		if self._T.deckCameraSettleRemaining ~= nil and self._T.deckCameraSettleRemaining > 0 then
+			local shipPosition = ship.TransformComponent.WorldPosition
+			local playerPosition = player.TransformComponent.WorldPosition
+			-- 短暫沿用船／玩家差值置中，避免沿用港口鏡頭位置直接鎖定。
+			local targetOffset = Vector2(shipPosition.x - 0.63 - playerPosition.x, shipPosition.y - 0.49 - playerPosition.y)
+			camera.CameraOffset = targetOffset
+			self._T.deckCameraSettleRemaining = math.max(0, self._T.deckCameraSettleRemaining - delta)
+			if self._T.deckCameraSettleRemaining == 0 then
+				self._T.deckCameraOffset = targetOffset
+				camera.DeadZone = Vector2(1, 1)
+				camera.SoftZone = Vector2(1, 1)
+				self._T.deckCameraSettleRemaining = nil
+				log("[DeckRaid] deck camera locked; fixedOffset=(" .. tostring(self._T.deckCameraOffset.x) .. "," .. tostring(self._T.deckCameraOffset.y) .. ") dead=(1,1) soft=(1,1) damping=(0,0) screen=(0.5,0.5) confine=false")
+			end
 		end
-		local ship = self.deckShipEntity
-		if ship == nil or ship.TransformComponent == nil then return end
-		local shipPosition = ship.TransformComponent.WorldPosition
-		local playerPosition = player.TransformComponent.WorldPosition
-		-- 原畫作的可見船身中心略偏向船錨點左下；鏡頭鎖住船而非玩家。
-		camera.CameraOffset = Vector2(shipPosition.x - 0.63 - playerPosition.x, shipPosition.y - 0.49 - playerPosition.y)
 	end
 
 	@ExecSpace("ClientOnly")
 	method void OnUpdate(number delta)
-		self:UpdateDeckCamera()
+		self:UpdateDeckCamera(delta)
 		-- 客戶端只發送節拍請求；Server 依實際經過秒數推進 60 秒航程。
 		self.voyageAdvanceElapsed = self.voyageAdvanceElapsed + delta
 		if self.voyageAdvanceElapsed >= 1.0 then

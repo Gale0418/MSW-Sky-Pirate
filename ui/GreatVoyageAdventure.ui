@@ -156,11 +156,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": 450,
-                "y": -220
+                "y": -70
               },
               "OffsetMin": {
                 "x": 20,
-                "y": -315.98676293622145
+                "y": -165.98676293622142
               },
               "Pivot": {
                 "x": 0,
@@ -179,7 +179,7 @@
               "UIVersion": 2,
               "anchoredPosition": {
                 "x": 20,
-                "y": -220
+                "y": -70
               },
               "Position": {
                 "x": 0,
@@ -18977,7 +18977,7 @@
               },
               "SizeFit": false,
               "SortingLayer": "UI",
-              "Text": "商品圖鑑",
+              "Text": "出售",
               "Underlay": false,
               "UseConstraintX": false,
               "UseConstraintY": false,

@@ -1296,11 +1296,12 @@
             },
             {
               "@type": "MOD.Core.SoundComponent",
-              "AudioClipRUID": "2a898d7dbe4c422189e42897708eba4b",
+              "AudioClipRUID": "a9f6762dcb0f447f9d7677554eabac7f",
               "Bgm": true,
               "PlayOnEnable": true,
-              "Volume": 1,
-              "Enable": true
+              "Volume": 0.4,
+              "Enable": true,
+              "Loop": true
             }
           ],
           "@version": 1
