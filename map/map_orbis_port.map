@@ -3745,7 +3745,7 @@
             },
             {
               "@type": "MOD.Core.SoundComponent",
-              "AudioClipRUID": "877280f8701844378acfa6cee83dfede",
+              "AudioClipRUID": "02301b8112894626a78f8d517aada78a",
               "Bgm": true,
               "PlayOnEnable": true,
               "Volume": 0.4,
@@ -8998,7 +8998,8 @@
                 "x": 0,
                 "y": 0
               },
-              "Enable": true
+              "Enable": true,
+              "Gravity": 1
             },
             {
               "@type": "MOD.Core.StateComponent",
@@ -9223,8 +9224,8 @@
                 "z": 0
               },
               "Position": {
-                "x": -0.45,
-                "y": -0.7,
+                "x": -0.5,
+                "y": 1.36,
                 "z": 999.9
               },
               "QuaternionRotation": {

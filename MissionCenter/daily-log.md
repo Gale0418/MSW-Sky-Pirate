@@ -1,6 +1,6 @@
 # Daily Log
 
-- Last organized: 2026-10-04
+- Last organized: 2026-10-07
 
 ## 2026-08-14
 - 完成 MissionCenter 0.3.1 契約遷移與歷史 Done 驗證債務正規化；未補造 Pass。
@@ -36,3 +36,15 @@
 - 17:37 GV-UI-RESKIN-20261004：root 建立 [handoff](../.builder-work/hud-redesign/handoff.md)；manifest 有 16 筆（15用途素材＋`gaugeFrameV2-v1.png` 重繪候選，未驗）。[critic-round1](../.builder-work/hud-redesign/critic-round1.md) 已記尚未修問題，尚不能宣稱無 P0/P1 或完成評論閉環。使用者暫停本輪並開新對話；交接回報新對話可連 map01 Edit，本輪未匯入／未套production／未原生驗收，任務保持 In Progress。
 
 - 2026-10-04 19:04：GV-UI-RESKIN-20261004完成：16透明PNG已匯入回查，13種26Material／322nodes，四HUD與五頁元件翻新，貨艙4×3每頁12，保留原容量。R4十五張原生圖、R5正確參數定點回歸、Luna一對一最終確認無未解P0/P1/P2；Maker已stop。R4測試probe Error保留，R5 build60/normal24全Info。Rust已依序committed InProgress→Review→Done，current completion passport通過。來源與證據：evidence/2026-10-04/ui-reskin/completion.md；風格：design/ui-material-style.md。未驗Mobile／GUI實體滑鼠／交易持久化；184商品與M1各任務狀態保留。
+
+- 2026-10-04 23:46｜GV-FEEDBACK-20261004：五項截圖回饋與四港商人server落下修復完成、本地受影響驗證通過；正式critic_full預算尚待回覆，狀態Review、未Done。正式發布UI擷取兩次逾時，沒有發布/填問卷/改公開地區。checkpoint見evidence/2026-10-04/screenshot-feedback/checkpoint.md。
+
+## 2026-10-05
+
+- 16:04｜網頁上架收尾：公開狀態、全發布地區、世界問卷9歲以上、繁中／英文名稱描述公告及YouTube社群已填與回查。類型／代表圖、30秒實錄與遊戲內報名仍待完成；Chrome圖片file chooser失敗，未宣稱上傳。保存[收尾證據](evidence/2026-10-05/publishing-closeout/closeout.md)。本輪無Maker執行／公開版本實玩驗證，遊戲Review狀態保留。
+
+- 17:12｜使用者Maker再發布後回查：空賊王封面代表圖片成功、官方預設4圖已移除；世界最後發布17:10、問卷9歲以上。公開類型仍「-」、影片未登記且YouTube公開頻道無影片。已更新收尾紀錄及新公開頁證據；正式競賽提交尚未完成。
+
+## 2026-10-07
+
+- 17:29｜依主人授權完成全 16 遊戲腳本 CodeRabbit 隔離審查（含舊腳本、排除大型資料／產生檔），1 次／0 issues；358 body 語法及 624 商品／港口案例通過。README 更新四港、動態市場與保存範圍，.builder-work 排除；main 提交／上傳待最後 Git 檢查。Maker MCP tools=[]，本輪實機未驗，既有M1/Review/Blocked不前進。[紀錄](../docs/CodeRabbit-Review-20261007.md)。

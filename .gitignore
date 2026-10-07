@@ -2,6 +2,7 @@
 .agents/
 .codex/
 .tmp/
+.builder-work/
 skills-lock.json
 AGENTS.md
 

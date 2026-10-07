@@ -1,0 +1,120 @@
+@Logic
+script GreatVoyageMarketPricing extends Logic
+
+	method table GetPolicy(any good)
+		-- 依商品層級回傳庫存壓力容量、恢復時間與最低倍率。
+		local isBoss = good ~= nil and good.isBoss == true
+		local tradeTier = "normal"
+		if good ~= nil and good.tradeTier ~= nil then tradeTier = good.tradeTier end
+		local policy = { capacity = 60, recoverySeconds = 7200, floorMultiplier = 0.8 }
+		if tradeTier == "starter" then policy.capacity = 120 policy.recoverySeconds = 1800 policy.floorMultiplier = 1.2 end
+		if isBoss then
+			policy.capacity = 10
+			policy.recoverySeconds = 28800
+			policy.floorMultiplier = 0.5
+			if tradeTier == "starter" then policy.floorMultiplier = 1.2 end
+		end
+		return policy
+	end
+
+	method number ClampPressure(number pressure)
+		-- 將輸入壓力限制在合法的 0 到 1 範圍。
+		return math.max(0, math.min(1, pressure))
+	end
+
+	method boolean IsWholePositive(integer quantity)
+		-- 檢查數量為正整數，避免報價與庫存消耗使用不同的數量規則。
+		return quantity >= 1 and quantity == math.floor(quantity)
+	end
+
+	method integer StableBossRestockTotal(string profileCode, string goodId, number cycle)
+		-- 以帳號、商品和週期產生跨重登入與伺服器一致的 1 到 10 庫存量。
+		local seed = profileCode .. "|" .. goodId .. "|" .. tostring(cycle)
+		local hash = 5381
+		for index = 1, #seed do
+			local byteValue = string.byte(seed, index)
+			hash = (hash * 33 + byteValue) % 2147483647
+		end
+		return math.floor(hash % 10) + 1
+	end
+
+	method table GetSaleQuote(table entries, string portId, string goodId, integer quantity, number now)
+		-- 計算逐件出售報價與售後壓力，不修改呼叫端提供的市場資料。
+		local emptyQuote = { total = 0, unitPrice = 0, nextPrice = 0, multiplier = 0, recoverySeconds = 0, pressureAfter = 0, at = now, valid = false }
+		if self:IsWholePositive(quantity) == false or _GreatVoyageVoyageData == nil then return emptyQuote end
+		local good = _GreatVoyageVoyageData:GetGoodById(goodId)
+		if good == nil or good.price == nil or good.price <= 0 then return emptyQuote end
+		local baselinePrice = _GreatVoyageVoyageData:GetSalePrice(portId, goodId)
+		if baselinePrice == nil or baselinePrice <= 0 then return emptyQuote end
+		local policy = self:GetPolicy(good)
+		local baseMultiplier = baselinePrice / good.price
+		local floorMultiplier = math.min(baseMultiplier, policy.floorMultiplier)
+		local stored = {}
+		if entries ~= nil and entries[goodId] ~= nil then stored = entries[goodId] end
+		local pressure = 0
+		if stored.pressure ~= nil then pressure = tonumber(stored.pressure) or 0 end
+		local storedAt = now
+		if stored.at ~= nil then storedAt = tonumber(stored.at) or now end
+		pressure = self:ClampPressure(pressure - math.max(0, now - storedAt) / policy.recoverySeconds)
+		local total = 0
+		local firstPrice = 0
+		local firstMultiplier = baseMultiplier
+		for index = 1, quantity do
+			local multiplier = baseMultiplier - (baseMultiplier - floorMultiplier) * pressure
+			local price = math.max(0, math.floor(good.price * multiplier + 0.5))
+			if index == 1 then firstPrice = price firstMultiplier = multiplier end
+			total = total + price
+			pressure = self:ClampPressure(pressure + 1 / policy.capacity)
+		end
+		local nextMultiplier = baseMultiplier - (baseMultiplier - floorMultiplier) * pressure
+		local nextPrice = math.max(0, math.floor(good.price * nextMultiplier + 0.5))
+		return { total = total, unitPrice = firstPrice, nextPrice = nextPrice, multiplier = firstMultiplier, recoverySeconds = pressure * policy.recoverySeconds, pressureAfter = pressure, at = now, valid = true }
+	end
+
+	method void ApplySale(table entries, string goodId, table quote)
+		-- 僅將有效報價的售後壓力與時間寫回商品記錄，保留庫存週期欄位。
+		if entries == nil or quote == nil or quote.valid ~= true or goodId == "" then return end
+		local record = entries[goodId]
+		if record == nil then record = {} entries[goodId] = record end
+		record.pressure = self:ClampPressure(tonumber(quote.pressureAfter) or 0)
+		record.at = tonumber(quote.at) or 0
+	end
+
+	method table GetBossStock(table entries, string profileCode, string goodId, number now)
+		-- 回傳本帳號商品在目前三小時補貨週期的固定庫存與剩餘秒數。
+		local cycle = math.floor(now / 10800)
+		local restockSeconds = 10800 - (now % 10800)
+		local result = { remaining = -1, cycle = cycle, restockSeconds = restockSeconds, total = -1 }
+		if _GreatVoyageVoyageData == nil then return result end
+		local good = _GreatVoyageVoyageData:GetGoodById(goodId)
+		if good == nil or good.isBoss ~= true then return result end
+		local total = self:StableBossRestockTotal(profileCode, goodId, cycle)
+		local bought = 0
+		if entries ~= nil and entries[goodId] ~= nil then
+			local record = entries[goodId]
+			if tonumber(record.cycle) == cycle then bought = math.max(0, math.floor(tonumber(record.bought) or 0)) end
+		end
+		bought = math.min(total, bought)
+		result.total = total
+		result.remaining = total - bought
+		return result
+	end
+
+	method boolean ConsumeBossStock(table entries, string profileCode, string goodId, integer quantity, number now)
+		-- 庫存足夠時才更新該週期已購數量，且不碰需求壓力欄位。
+		if self:IsWholePositive(quantity) == false or _GreatVoyageVoyageData == nil then return false end
+		local good = _GreatVoyageVoyageData:GetGoodById(goodId)
+		if good == nil then return false end
+		if good.isBoss ~= true then return true end
+		if entries == nil then return false end
+		local stock = self:GetBossStock(entries, profileCode, goodId, now)
+		if stock.remaining < quantity then return false end
+		local record = entries[goodId]
+		if record == nil then record = {} entries[goodId] = record end
+		local bought = 0
+		if tonumber(record.cycle) == stock.cycle then bought = math.max(0, math.floor(tonumber(record.bought) or 0)) end
+		record.cycle = stock.cycle
+		record.bought = math.min(stock.total, bought + quantity)
+		return true
+	end
+end

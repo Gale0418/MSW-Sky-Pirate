@@ -88,7 +88,7 @@ script Phase0VoyagePrototype extends Logic
 	@ExecSpace("ClientOnly")
 	method void StartVoyage()
 		if _GreatVoyageVoyageState == nil then
-			self:Notify("航行服務尚未就緒，無法送出航行請求。")
+			self:Notify("航行系統還在暖機，請稍後再試！")
 			return
 		end
 		_GreatVoyageVoyageState:StartVoyage(self.selectedDestinationId)
@@ -195,11 +195,11 @@ script Phase0VoyagePrototype extends Logic
 			return
 		end
 		if portId == self.currentPortId then
-			self:Notify("目的港不能與目前港口相同。")
+			self:Notify("目的地不能選現在這座港口喔！")
 			return
 		end
 		self.selectedDestinationId = portId
-		self:Notify("目的港已選擇：" .. self:GetPortName(portId))
+		self:Notify("目的地已設定為：" .. self:GetPortName(portId))
 	end
 
 	@ExecSpace("ClientOnly")
@@ -230,7 +230,7 @@ script Phase0VoyagePrototype extends Logic
 		if _GreatVoyageVoyageData == nil or _GreatVoyageVoyageState == nil then return 0 end
 		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
 		if snapshot.cargo == nil or snapshot.cargo.quantity <= 0 then return 0 end
-		return _GreatVoyageVoyageData:GetSalePrice(self.currentPortId, snapshot.cargo.id)
+		return _GreatVoyagePlayerMarket:GetClientQuote(self.currentPortId, snapshot.cargo.id, 1).unitPrice
 	end
 
 	@ExecSpace("ClientOnly")
@@ -252,7 +252,7 @@ script Phase0VoyagePrototype extends Logic
 		end
 		if goodsCount <= 0 then
 			self.selectedGoodIndex = 1
-			self:Notify("本港目前沒有可交易商品。")
+			self:Notify("這座港口目前沒有可交易的特產喔！")
 			return
 		end
 		self.selectedGoodIndex = ((self.selectedGoodIndex - 1 + delta) % goodsCount) + 1
@@ -268,24 +268,24 @@ script Phase0VoyagePrototype extends Logic
 	method void BuySelectedGood()
 		-- 客戶端只送出意圖；商品上架、價格、錢包與貨艙由 Server 驗證及提交。
 		if _GreatVoyageVoyageState == nil or _GreatVoyageVoyageData == nil then
-			self:Notify("伺服器商店尚未就緒，無法交易。")
+			self:Notify("港口商店連線中，暫時無法交易！")
 			return
 		end
 		local good = _GreatVoyageVoyageData:GetLocalGood(self.currentPortId, self.selectedGoodIndex)
 		if good == nil then return end
 		_GreatVoyageVoyageState:BuyGood(good.id, self.tradeQuantity)
-		self:Notify("交易請求已送至伺服器，等待確認。")
+		self:Notify("買進請求已送出，等待確認中…")
 	end
 
 	@ExecSpace("ClientOnly")
 	method void SellCargo()
 		-- 舊入口保留給既有 UI，但不再以 ClientOnly 錢包或貨艙自行結算。
 		if _GreatVoyageVoyageState == nil then
-			self:Notify("伺服器商店尚未就緒，無法交易。")
+			self:Notify("港口商店連線中，暫時無法交易！")
 			return
 		end
 		_GreatVoyageVoyageState:SellCargo()
-		self:Notify("賣出請求已送至伺服器，等待確認。")
+		self:Notify("賣出請求已送出，等待確認中…")
 	end
 
 	@ExecSpace("ClientOnly")
@@ -295,7 +295,7 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method string GetCargoText()
-		if _GreatVoyageVoyageState == nil then return "貨艙等待伺服器同步" end
+		if _GreatVoyageVoyageState == nil then return "貨艙資料讀取中…" end
 		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
 		local quantity = 0
 		if snapshot.cargo ~= nil then quantity = snapshot.cargo.quantity or 0 end

@@ -2164,7 +2164,7 @@
             },
             {
               "@type": "MOD.Core.SoundComponent",
-              "AudioClipRUID": "cc16343374894dd49ad90233a394c78d",
+              "AudioClipRUID": "2dd03c76b331416bbf9752f6a897988e",
               "Bgm": true,
               "PlayOnEnable": true,
               "Volume": 0.4,
@@ -6238,7 +6238,8 @@
                 "x": 0,
                 "y": 0
               },
-              "Enable": true
+              "Enable": true,
+              "Gravity": 1
             },
             {
               "@type": "MOD.Core.StateComponent",

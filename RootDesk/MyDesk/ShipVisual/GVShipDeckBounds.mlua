@@ -1,9 +1,9 @@
 @Component
 script GVShipDeckBounds extends Component
 
--- Shared world-space bounds for the five similarly sized ships.
+-- Shared safe walkable deck bounds for the five ship visuals.
 property number leftBound = -3.92
-property number rightBound = -0.04
+property number rightBound = -0.9
 property number footholdY = -1.462
 property number recoveryX = -1.98
 -- The avatar root/foot offset is intentionally tunable after Maker measurement.

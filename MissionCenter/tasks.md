@@ -1,4 +1,6 @@
 # Tasks
+> 2026-10-07 17:29：本輪 Git checkpoint 已獲主人授權直接 main 提交／推送。CodeRabbit 1 次審查全部 16 個有效腳本，回報 0 issues；358 methods 語法與 624 商品／港口行為案例通過。Maker initialize 成功但 tools/list=[]，實機未驗；UI lint 0 errors、Adventure 83 warnings（HEAD 81）／Onboarding 3，未冒充畫面通過。README 更新四港及市場保存範圍，.builder-work 排除。完整紀錄見 [審查與驗證](../docs/CodeRabbit-Review-20261007.md)；既有任務狀態保留。
+
 > 2026-10-04 06:21：主人已核定 critic_full 40k／每席8k／150工具／90分鐘。四席已派送；批次底層呼叫與封裝計數不一致，工具額度停止線已達，審查中斷。視覺提出天空城兩項裁切候選待驗證；其餘席位有未覆蓋路徑。Maker已實際stop，沒有獨立仲裁或最終closure，所有相關任務維持原狀，不Done。較早的「預算未核定／未派送」均為歷史紀錄；本輪現況以[council-interrupted.md](evidence/2026-10-04/council-interrupted.md)為準。
 > 2026-10-04 02:23：v15 本地受影響驗證通過：7張同版原生截圖、T0內文／footer／禁裝一致、森芽號買換及三槽安裝、18格滿艙36子件邊界、四空域百分比與實際Escape；build69 Info、normal84 Info，0 Error/Warning，Maker已stop。v14另有20種持有卡×99完整文字掃描0溢出與regen兩行修復；v13交易／替換拆下／空單滿艙／維修歷史證據保留。43PNG透明確認。正式critic_full未派送（四項數值預算未核定），標準GUI物理滑鼠unknown；未Done。 [成品審查資料](evidence/2026-10-03/ui-materials/v15-review-ready.md)／[同版日誌](evidence/2026-10-03/ui-materials/v15-inspection.json)。
 
@@ -19,6 +21,7 @@
 
 | ID | Title | Type | Parent | Priority | Status | Owner | Depends on | Next action | Verification | Estimate | Labels | Comments |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| GV-FEEDBACK-20261004 | 截圖回饋：頂部對齊、空戰視覺與隨機商品風味描述 | Task | GV-M1 | P1 | Review | Codex / Luna |  | 三席+獨立仲裁S1 limited；等待補圖最終closure，未發布 | ST-GV-FEEDBACK-20261004：三中心對齊、四港同份子集/重開穩定/新工作階段換貨、184商品/出售文案高度、未上架拒買/正常扣款、砲彈與空戰回收正面日誌 | M | execution, ui, shop | 主人已核定16k/每席4k/60工具/20分，非未核准。初稿及仲裁無確認P0/P1；P2短文重複經反證列偏好。正式目視覆蓋及同版closure未完成；本輪停止線已保存review-S1/result-limited.json。狀態Review，不Done；derived views待接手端sync。 |
 | GV-UI-RESKIN-20261004 | Great Voyage 全介面木質金框素材翻新 | Task | GV-M1 | P1 | Done | Codex |  | 本切片完成；成品、風格規格與素材可沿用 | ST-GV-UI-RESKIN-20261004 Pass；R4十五原生圖與凍結來源SHA、R5正確參數build60/normal24全Info、Luna最終無未解P0/P1/P2；closure見ui-reskin/completion.md | L | execution, ui, visual, verification | 16PNG已匯入回查；13種26Material322nodes/279原UUID保留；四HUD與五頁共用元件翻新，貨艙4×3每頁12/原容量不變。R4probe Error保留且R5已修；GUI物理滑鼠/Mobile/交易持久化未驗。本切片完成，不擴張M1或商品任務狀態。 |
 | GV-UI-ALIGN-20261004 | 五頁實機逼近示意與挑剔收斂 | Task | GV-M1 | P1 | Done | Codex |  | 本切片完成；成品與同版closure見ui-alignment/completion.md | ST-GV-UI-ALIGN-20261004 PASS；S3來源與圖資雜湊、三位Luna及獨立仲裁closure、Rust critic validator通過；六項全fixed | L | execution, verification | 主人核定本切片total/per-seat/tools/time無限；其他GV-AUDIT及完整M1維持各自狀態，未把局部驗收擴張為整個遊戲完成。 |
 | GV-AUDIT-20261004 | 全程抓蟲、修復與局部效能最佳化 | Task | GV-M1 | P1 | Review | Codex |  | 依council-interrupted.md補未知覆蓋、驗證兩項視覺裁切候選並完成獨立仲裁；已核定額度不可自行重設 | 五缺陷本地修復與原始Maker／離線證據保留；四席初稿Limited、沒有closure；Maker已stop | L | verification, optimization | 四項預算已核准；本轮工具批次計數錯誤達停止線，存可恢復checkpoint，沒有宣稱P0/P1清空或Done。43透明素材未改。GUI實體滑鼠／真人多人未知。 |

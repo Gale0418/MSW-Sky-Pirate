@@ -1,6 +1,6 @@
 <!-- Generated materialized view. Do not edit directly; rebuild from canonical MissionCenter files. -->
 <!-- Deprecated compatibility view: focus.md is generated from tasks.md only and must never be edited or treated as a second lifecycle source. -->
-<!-- mission-center-derived schema=1.0 fingerprint-format=sha256-v2-lf source-fingerprint=cb9543ca8390025eb704a678d317a604851e8cc0dcffda9de5fc86a0cd36dcee -->
+<!-- mission-center-derived schema=1.0 fingerprint-format=sha256-v2-lf source-fingerprint=a202af090cb334d9e7cb7a26ee47c969acae0babd0eee0a5de736273eab11e2d -->
 # P0 Focus
 
 - Source of truth: `tasks.md`

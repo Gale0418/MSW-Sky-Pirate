@@ -59,35 +59,35 @@ script GreatVoyageHUDController extends Logic
 		-- 執行一次航行並更新操作訊息。
 		log("[GreatVoyageHUD] 點擊啟航")
 		_Phase0VoyagePrototype:StartVoyage()
-		self.messageText.Text = "航行結果已更新"
+		self.messageText.Text = "航行戰報更新好囉！"
 	end
 
 	@ExecSpace("ClientOnly")
 	method void OnHullClick(ButtonClickEvent event)
 		-- 嘗試升級船體。
 		_Phase0VoyagePrototype:UpgradeHull()
-		self.messageText.Text = "已嘗試升級船體"
+		self.messageText.Text = "正在升級船體…"
 	end
 
 	@ExecSpace("ClientOnly")
 	method void OnShieldClick(ButtonClickEvent event)
 		-- 嘗試升級護盾。
 		_Phase0VoyagePrototype:UpgradeShield()
-		self.messageText.Text = "已嘗試升級護盾"
+		self.messageText.Text = "正在升級護盾…"
 	end
 
 	@ExecSpace("ClientOnly")
 	method void OnRefitClick(ButtonClickEvent event)
 		-- 在港口執行船隻整備。
 		_Phase0VoyagePrototype:RefitShip()
-		self.messageText.Text = "已嘗試港口整備"
+		self.messageText.Text = "正在進行港口整備…"
 	end
 
 	@ExecSpace("ClientOnly")
 	method void OnResetClick(ButtonClickEvent event)
 		-- 重置航海原型資料。
 		_Phase0VoyagePrototype:ResetPrototype()
-		self.messageText.Text = "航行測試已重置"
+		self.messageText.Text = "航行進度已重置！"
 	end
 
 	@ExecSpace("ClientOnly")

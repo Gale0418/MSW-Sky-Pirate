@@ -1787,7 +1787,7 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": 300.0,
-                "y": -113.0
+                "y": -109.0
               },
               "OffsetMin": {
                 "x": -300.0,
@@ -1799,7 +1799,7 @@
               },
               "RectSize": {
                 "x": 600.0,
-                "y": 32.0
+                "y": 36.0
               },
               "UIMode": 1,
               "UIScale": {
@@ -1872,7 +1872,7 @@
               },
               "SizeFit": false,
               "SortingLayer": "UI",
-              "Text": "選擇一個港口",
+              "Text": "挑選一個目的港吧！",
               "Underlay": false,
               "UseConstraintX": false,
               "UseConstraintY": false,
@@ -2370,7 +2370,7 @@
               },
               "SizeFit": false,
               "SortingLayer": "UI",
-              "Text": "沿航線出發",
+              "Text": "順著航線出發！",
               "Underlay": false,
               "UseConstraintX": false,
               "UseConstraintY": false,

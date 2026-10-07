@@ -1,0 +1,125 @@
+@Logic
+script GreatVoyageOnboarding extends Logic
+
+	property Entity modal = "106bbf30-4503-45f1-a893-d8edb58cd037"
+	property boolean active = true
+	property boolean releasing = false
+	property any keyHandler = nil
+	property any touchHandler = nil
+	property any touchReleaseHandler = nil
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		-- 每次世界連線顯示一次，切換地圖不重新顯示。
+		self.active = isvalid(self.modal)
+		self.releasing = false
+		self._T.touches = {}
+		self._T.releaseDelay = 0
+		self._T.lockedController = nil
+		if not self.active then
+			log_warning("[Onboarding] missing UI; continue without input lock")
+			return
+		end
+		self.modal.Enable = true
+		self:LockControls()
+		self.keyHandler = _InputService:ConnectEvent(KeyDownEvent, self.OnKeyDown)
+		self.touchHandler = _InputService:ConnectEvent(ScreenTouchEvent, self.OnTouchDown)
+		self.touchReleaseHandler = _InputService:ConnectEvent(ScreenTouchReleaseEvent, self.OnTouchRelease)
+		log("[Onboarding] shown; waiting for any key or touch")
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsInputBlocked()
+		-- 關閉教學的那次輸入也保持封鎖，直到放開為止。
+		return self.active or self.releasing
+	end
+
+	@ExecSpace("ClientOnly")
+	method void LockControls()
+		-- 玩家可能在教學顯示後才完成生成，因此延後取得控制元件。
+		local player = _UserService.LocalPlayer
+		if not isvalid(player) then return end
+		local controller = player.PlayerControllerComponent
+		if not isvalid(controller) then return end
+		if self._T.lockedController ~= controller then
+			self:RestoreControls()
+			self._T.lockedController = controller
+			self._T.previousControlEnabled = controller.Enable
+			log("[Onboarding] player controls locked")
+		end
+		controller.Enable = false
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RestoreControls()
+		-- 保留原本的 Enable 狀態，避免解除其他系統原有的鎖定。
+		if isvalid(self._T.lockedController) then
+			self._T.lockedController.Enable = self._T.previousControlEnabled == true
+		end
+		self._T.lockedController = nil
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RequestStart(string inputKind)
+		-- 等開始輸入放開後才隱藏遮罩，避免同一點擊穿透到後方 UI。
+		if not self.active then return end
+		self.active = false
+		self.releasing = true
+		self._T.releaseDelay = 0.15
+		log("[Onboarding] start requested: " .. inputKind)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnKeyDown(KeyDownEvent event)
+		-- 不限制特定快捷鍵；滑鼠鍵也可走鍵盤輸入路徑。
+		self:RequestStart("key")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnTouchDown(ScreenTouchEvent event)
+		-- 記住所有手指，避免多點觸碰尚未放開時恢復遊戲操作。
+		if not self:IsInputBlocked() then return end
+		self._T.touches[event.TouchId] = true
+		self:RequestStart("touch")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnTouchRelease(ScreenTouchReleaseEvent event)
+		-- 移除已放開的手指或滑鼠點擊。
+		self._T.touches[event.TouchId] = nil
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnUpdate(number delta)
+		-- 教學期間鎖定玩家；所有輸入放開後留一小段緩衝再進遊戲。
+		if not self:IsInputBlocked() then return end
+		self:LockControls()
+		if not self.releasing then return end
+		if _InputService:IsAnyKeyPressed() or next(self._T.touches) ~= nil then
+			self._T.releaseDelay = 0.15
+			return
+		end
+		self._T.releaseDelay = self._T.releaseDelay - delta
+		if self._T.releaseDelay > 0 then return end
+		if isvalid(self.modal) then self.modal.Enable = false end
+		self:RestoreControls()
+		self.releasing = false
+		log("[Onboarding] started; overlay hidden and controls restored")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnEndPlay()
+		-- 世界結束時配對移除事件並歸還控制權，不留下跨場次資源。
+		if self.keyHandler ~= nil then _InputService:DisconnectEvent(KeyDownEvent, self.keyHandler) end
+		if self.touchHandler ~= nil then _InputService:DisconnectEvent(ScreenTouchEvent, self.touchHandler) end
+		if self.touchReleaseHandler ~= nil then _InputService:DisconnectEvent(ScreenTouchReleaseEvent, self.touchReleaseHandler) end
+		self.keyHandler = nil
+		self.touchHandler = nil
+		self.touchReleaseHandler = nil
+		self:RestoreControls()
+		if isvalid(self.modal) then self.modal.Enable = false end
+		self.active = false
+		self.releasing = false
+		self._T.touches = {}
+	end
+end

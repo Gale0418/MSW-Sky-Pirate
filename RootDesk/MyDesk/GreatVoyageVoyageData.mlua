@@ -40,7 +40,7 @@ script GreatVoyageVoyageData extends Logic
 		local baseArmor = 48
 		local baseCargo = 8
 		return {
-			{ id = "small_sampan", name = "小風帆", tier = 0, price = 0, spriteRuid = "6db8a51bb2024f14b3f22fe5a890a979", description = "新手船；可在四港免費維修。", maxHull = 100, maxShield = 20, maxArmor = 40, cargoCapacity = baseCargo, hullMultiplier = 1, cannonMultiplier = 1, durationMultiplier = 1 },
+			{ id = "small_sampan", name = "小風帆", tier = 0, price = 0, spriteRuid = "6db8a51bb2024f14b3f22fe5a890a979", description = "新手好夥伴，四港皆可免費維修。", maxHull = 100, maxShield = 20, maxArmor = 40, cargoCapacity = baseCargo, hullMultiplier = 1, cannonMultiplier = 1, durationMultiplier = 1 },
 			{ id = "forest", name = "森芽號", tier = 1, price = 50000, spriteRuid = "9d3adbd593454f9dbd0fffa1f5eda00e", description = "T1 基礎船體上限 +20%。", maxHull = math.floor(baseHull * 1.2), maxShield = baseShield, maxArmor = baseArmor, cargoCapacity = baseCargo, hullMultiplier = 1.2, cannonMultiplier = 1, durationMultiplier = 1 },
 			{ id = "red", name = "赤帆號", tier = 1, price = 50000, spriteRuid = "55c74934367840d39687eb4b66ae2310", description = "炮擊傷害 +10%。", maxHull = baseHull, maxShield = baseShield, maxArmor = baseArmor, cargoCapacity = baseCargo, hullMultiplier = 1, cannonMultiplier = 1.1, durationMultiplier = 1 },
 			{ id = "gear", name = "齒輪號", tier = 1, price = 50000, spriteRuid = "2e64df1c16764058b235658a8f379b71", description = "航程時間縮短 10%。", maxHull = baseHull, maxShield = baseShield, maxArmor = baseArmor, cargoCapacity = baseCargo, hullMultiplier = 1, cannonMultiplier = 1, durationMultiplier = 0.9 },
@@ -208,12 +208,12 @@ script GreatVoyageVoyageData extends Logic
 	end
 
 	method integer GetSalePrice(string portId, string goodId)
-		-- 本港折價回收；外港依草案需求計價，行情基準固定為 1。
-		local destination = self:GetPort(portId)
+		-- 全港固定報價包含尚未開放港；是否能交易仍由港口與商人驗證決定。
 		local good = self:GetGoodById(goodId)
-		if destination == nil or good == nil then return 0 end
-		if destination.id == good.originId then return math.floor(good.price * 0.8) end
-		local demand = (good.demands or {})[destination.id] or 1
+		if good == nil then return 0 end
+		if portId == good.originId then return math.floor(good.price * 0.8) end
+		local demand = (good.demands or {})[portId]
+		if demand == nil then return 0 end
 		return math.floor(good.price * demand + 0.5)
 	end
 
@@ -221,37 +221,37 @@ script GreatVoyageVoyageData extends Logic
 		-- 七個命名空域刻意保留少量重疊與凹邊，測試 priority、凹多邊形及 open_sea fallback。
 		return {
 			{ id = "forest_wind", displayName = "森林風廊", shortName = "森林", priority = 10, risk = 0.08, airBattleEnemyId = "stirge", encounterCards = {
-				{ id = "forest_wind_gust", title = "森林側風", text = "側風把帆面吹偏；到舵輪校正航向後續航。", outcome = "stabilized" }
+				{ id = "forest_wind_gust", title = "森林側風", text = "側風把帆面吹偏啦！快到舵輪校正航向。", outcome = "stabilized" }
 			}, polygon = {
 				{ x = 0.00, y = 0.99 }, { x = 0.25, y = 0.99 }, { x = 0.27, y = 0.91 }, { x = 0.12, y = 0.86 }, { x = 0.00, y = 0.88 }
 			} },
 			{ id = "victoria", displayName = "維多利亞航道", shortName = "維多利亞", priority = 30, risk = 0.16, airBattleEnemyId = "stirge", encounterCards = {
-				{ id = "victoria_mushroom_raid", title = "菇菇襲擊", text = "熟悉的菇菇群從雲層竄出，撞向甲板護欄。", outcome = "defended" }
+				{ id = "victoria_mushroom_raid", title = "菇菇襲擊", text = "熟悉的菇菇群跳出雲層，朝甲板護欄撞來啦！", outcome = "defended" }
 			}, polygon = {
 			{ x = 0.07, y = 0.76 }, { x = 0.25, y = 0.76 }, { x = 0.29, y = 0.50 }, { x = 0.19, y = 0.47 }, { x = 0.07, y = 0.55 }
 			} },
 			{ id = "aqua", displayName = "水世界氣流", shortName = "水世界", priority = 35, risk = 0.24, airBattleEnemyId = "bubble_fish", encounterCards = {
-				{ id = "aqua_mist", title = "水霧航道", text = "水世界的濃霧遮住浮標；到舵輪確認航標後續航。", outcome = "charted" }
+				{ id = "aqua_mist", title = "水霧航道", text = "濃濃水霧遮住浮標了，快到舵輪確認航標！", outcome = "charted" }
 			}, polygon = {
 			{ x = 0.22, y = 0.61 }, { x = 0.40, y = 0.61 }, { x = 0.41, y = 0.36 }, { x = 0.35, y = 0.33 }, { x = 0.22, y = 0.44 }
 			} },
 			{ id = "ludus", displayName = "玩具鐘塔航線", shortName = "路德斯湖", priority = 45, risk = 0.31, airBattleEnemyId = "yellow_plane", encounterCards = {
-				{ id = "ludus_drifting_cargo", title = "漂流貨箱", text = "鐘塔航線飄來無主貨箱；本次不回收，到舵輪確認航線後續航。", outcome = "passed" }
+				{ id = "ludus_drifting_cargo", title = "漂流貨箱", text = "鐘塔飄來無主貨箱；這次不回收，到舵輪確認航線再走！", outcome = "passed" }
 			}, polygon = {
 			{ x = 0.34, y = 0.49 }, { x = 0.53, y = 0.49 }, { x = 0.56, y = 0.26 }, { x = 0.48, y = 0.22 }, { x = 0.38, y = 0.27 }, { x = 0.40, y = 0.37 }
 			} },
 			{ id = "nihal", displayName = "納希沙漠熱風", shortName = "納希", priority = 50, risk = 0.36, airBattleEnemyId = "kiyo", encounterCards = {
-				{ id = "nihal_heat_haze", title = "沙海熱浪", text = "沙漠熱浪讓船體升溫；到舵輪調整航向避開熱流。", outcome = "cooled" }
+				{ id = "nihal_heat_haze", title = "沙海熱浪", text = "熱浪讓船身直冒汗，快到舵輪微調避開熱流！", outcome = "cooled" }
 			}, polygon = {
 			{ x = 0.48, y = 0.32 }, { x = 0.79, y = 0.32 }, { x = 0.79, y = 0.04 }, { x = 0.47, y = 0.04 }, { x = 0.45, y = 0.19 }
 			} },
 			{ id = "orbis_highwind", displayName = "天空高風", shortName = "天空", priority = 20, risk = 0.12, airBattleEnemyId = "star_pixie", encounterCards = {
-				{ id = "orbis_highwind_crosswind", title = "天空高風", text = "高空風切突然增強；到舵輪收束航向後續航。", outcome = "trimmed" }
+				{ id = "orbis_highwind_crosswind", title = "天空高風", text = "高空強風呼呼吹！快到舵輪穩住航向再出發。", outcome = "trimmed" }
 			}, polygon = {
 			{ x = 0.22, y = 0.87 }, { x = 0.39, y = 0.87 }, { x = 0.38, y = 0.69 }, { x = 0.23, y = 0.69 }
 			} },
 			{ id = "ellinia_cloud", displayName = "艾利涅雲海", shortName = "艾利涅", priority = 25, risk = 0.20, airBattleEnemyId = "stirge", encounterCards = {
-				{ id = "ellinia_cloud_drift", title = "艾利涅漂雲", text = "柔軟雲團形成漂移帶；到舵輪微調航向後續航。", outcome = "steered" }
+				{ id = "ellinia_cloud_drift", title = "艾利涅漂雲", text = "軟綿綿的雲團飄過來了，到舵輪微調一下航向！", outcome = "steered" }
 			}, polygon = {
 				{ x = 0.06, y = 0.35 }, { x = 0.22, y = 0.46 }, { x = 0.38, y = 0.35 }, { x = 0.30, y = 0.14 }, { x = 0.12, y = 0.16 }
 			} }
@@ -411,7 +411,7 @@ script GreatVoyageVoyageData extends Logic
 			return preview
 		end
 		if origin.id == destination.id then
-			preview.reason = "目的港不可與目前港口相同"
+			preview.reason = "目的地不能跟目前港口一樣喔！"
 			return preview
 		end
 		preview.routeId = route.routeId
@@ -447,7 +447,7 @@ script GreatVoyageVoyageData extends Logic
 				return zone.encounterCards[cardIndex]
 			end
 		end
-		return { id = "open_sea_cloudbank", title = "雲海靜流", text = "雲海氣流暫時平穩；到舵輪確認航線後續航。", outcome = "charted" }
+		return { id = "open_sea_cloudbank", title = "雲海靜流", text = "雲海氣流正舒服，到舵輪確認航線後繼續前進！", outcome = "charted" }
 	end
 
 	@ExecSpace("ClientOnly")

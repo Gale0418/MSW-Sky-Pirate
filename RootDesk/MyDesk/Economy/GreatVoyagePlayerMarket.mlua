@@ -1,0 +1,224 @@
+@Logic
+script GreatVoyagePlayerMarket extends Logic
+
+	property string storagePrefix = "GVMarketV1"
+	property table accounts = {}
+	property table profileByUser = {}
+	property integer saveTimerId = 0
+	property table clientMarkets = {}
+	property number clientServerTime = 0
+	property number clientReceivedAt = 0
+	property string clientProfileCode = ""
+
+	method number GetNow()
+		-- 採 UTC Unix 秒數，離線與世界重開都能補算恢復。
+		return (DateTime.UtcNow.Elapsed - DateTime(1970, 1, 1).Elapsed) / 1000
+	end
+
+	method void OnBeginPlay()
+		-- 市場在交易時才載入；背景只批次儲存有變更的玩家。
+		self.accounts = {}
+		self.profileByUser = {}
+		self.clientMarkets = {}
+		if self:IsServer() then
+			self.saveTimerId = _TimerService:SetTimerRepeat(function()
+				for profileCode, account in pairs(self.accounts) do
+					self:SaveAccount(profileCode, false)
+					if account.released == true and not account.saving and next(account.dirty) == nil then
+						self.accounts[profileCode] = nil
+					end
+				end
+			end, 30, 30)
+			log("[PlayerMarket] ready private markets, UTC recovery, 30s dirty flush")
+		end
+	end
+
+	method void OnEndPlay()
+		-- 世界關閉前確認最後一筆存檔，並回收背景計時器。
+		if self:IsServer() then
+			if self.saveTimerId ~= 0 then _TimerService:ClearTimer(self.saveTimerId) end
+			for profileCode, account in pairs(self.accounts) do self:SaveAccount(profileCode, true) end
+		end
+		self.clientMarkets = {}
+	end
+
+	method string GetShard(string portId, string goodId)
+		-- 每片最多 24 商品，限制 JSON 值大小並讓新增商品沿用原鍵。
+		local good = _GreatVoyageVoyageData:GetGoodById(goodId)
+		if good == nil then return "" end
+		return self.storagePrefix .. "_" .. portId .. "_" .. tostring(math.floor(good.sourceRow / 24))
+	end
+
+	@ExecSpace("ServerOnly")
+	method any GetMarket(string playerId, string portId)
+		-- 僅從伺服器玩家身分找帳號；同帳號重登共用尚待存檔的記憶體資料。
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		if player == nil or player.PlayerComponent == nil then return nil end
+		local profileCode = player.PlayerComponent.ProfileCode
+		if profileCode == nil or profileCode == "" then return nil end
+		self.profileByUser[playerId] = profileCode
+		local account = self.accounts[profileCode]
+		if account == nil then
+			account = { storage = _DataStorageService:GetUserDataStorage(profileCode), markets = {}, dirty = {}, generations = {}, saving = false }
+			self.accounts[profileCode] = account
+		end
+		account.released = false
+		local market = account.markets[portId]
+		if market ~= nil then
+			if market.ready then return market end
+			if market.loading or self:GetNow() < (market.retryAt or 0) then return nil end
+		end
+		market = { entries = {}, ready = false, loading = true, retryAt = self:GetNow() + 30, profileCode = profileCode }
+		account.markets[portId] = market
+		local keys = {}
+		local seen = {}
+		for _, good in ipairs(_GreatVoyageVoyageData:GetCommodityCatalog()) do
+			if good.verified == true and (portId == good.originId or (good.demands or {})[portId] ~= nil) then
+				local key = self:GetShard(portId, good.id)
+				if not seen[key] then seen[key] = true table.insert(keys, key) end
+			end
+		end
+		if #keys == 0 then market.loading = false return nil end
+		local code, pages = account.storage:BatchGetAndWait(keys)
+		if code ~= 0 or pages == nil then
+			market.loading = false
+			log_warning("[PlayerMarket] load failed code=" .. tostring(code))
+			return nil
+		end
+		while true do
+			for _, item in ipairs(pages:GetCurrentPageDatas() or {}) do
+				-- Maker 的未寫入鍵仍可能回傳 nil 值資料列，視為首次使用。
+				if item.Value == nil or item.Value == "" then continue end
+				local ok, decoded = pcall(function() return _HttpService:JSONDecode(item.Value) end)
+				if not ok or type(decoded) ~= "table" or decoded.version ~= 1 or type(decoded.entries) ~= "table" then
+					log_warning("[PlayerMarket] invalid saved market; trading blocked")
+					market.loading = false
+					return nil
+				end
+				for goodId, record in pairs(decoded.entries) do
+					if self:GetShard(portId, goodId) == item.KeyInfo.Key and type(record) == "table" then
+						market.entries[goodId] = { pressure = math.max(0, math.min(1, tonumber(record.pressure) or 0)), at = tonumber(record.at) or 0, cycle = tonumber(record.cycle) or -1, bought = math.max(0, math.min(10, tonumber(record.bought) or 0)) }
+					end
+				end
+			end
+			if pages.IsLastPage then break end
+			local nextCode = pages:LoadNextPageAndWait()
+			if nextCode ~= 0 then market.loading = false log_warning("[PlayerMarket] load page failed=" .. tostring(nextCode)) return nil end
+			pages:MoveToNextPageAndWait()
+		end
+		market.ready = true
+		market.loading = false
+		log("[PlayerMarket] loaded port=" .. portId)
+		return market
+	end
+
+	@ExecSpace("ServerOnly")
+	method void MarkDirty(string playerId, string portId, string goodId)
+		-- 每個儲存片帶版本；晚到的非同步回覆不能清掉更新後的 dirty。
+		local account = self.accounts[self.profileByUser[playerId] or ""]
+		if account == nil then return end
+		local key = self:GetShard(portId, goodId)
+		if key == "" then return end
+		account.dirty[key] = portId
+		account.generations[key] = (account.generations[key] or 0) + 1
+	end
+
+	@ExecSpace("ServerOnly")
+	method void SaveAccount(string profileCode, boolean isLeaving)
+		-- 一次批次寫入 dirty 片；同帳號存檔序列化，離線等待已送出的寫入。
+		local account = self.accounts[profileCode]
+		if account == nil then return end
+		if isLeaving then
+			local deadline = _UtilLogic.ServerElapsedSeconds + 5
+			while account.saving and _UtilLogic.ServerElapsedSeconds < deadline do wait(0.05) end
+		end
+		if account.saving then account.flushAfterSave = isLeaving or account.flushAfterSave return end
+		local payload = {}
+		local generations = {}
+		for key, portId in pairs(account.dirty) do
+			local market = account.markets[portId]
+			if market ~= nil and market.ready then
+				local records = {}
+				for goodId, record in pairs(market.entries) do
+					if self:GetShard(portId, goodId) == key then records[goodId] = record end
+				end
+				payload[key] = next(records) == nil and '{"version":1,"entries":{}}' or _HttpService:JSONEncode({ version = 1, entries = records })
+				generations[key] = account.generations[key]
+			end
+		end
+		if next(payload) == nil then return end
+		account.saving = true
+		local finish = function(code, successKeys)
+			for _, key in ipairs(successKeys or {}) do
+				if account.generations[key] == generations[key] then account.dirty[key] = nil end
+			end
+			account.saving = false
+			if code ~= 0 then log_warning("[PlayerMarket] save failed code=" .. tostring(code)) end
+			if code == 0 then log("[PlayerMarket] saved dirty shards=" .. tostring(#(successKeys or {})) .. " leaving=" .. tostring(isLeaving)) end
+			if account.flushAfterSave then
+				account.flushAfterSave = false
+				self:SaveAccount(profileCode, true)
+			end
+		end
+		if isLeaving then
+			local code, successKeys = account.storage:BatchSetAndWait(payload)
+			finish(code, successKeys)
+		else
+			account.storage:BatchSetAsync(payload, finish)
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	@EventSender("Service", "UserService")
+	handler HandleUserLeaveEvent(UserLeaveEvent event)
+		-- 正常離線立即保存需求和已購庫存；不依賴航程暫存回收順序。
+		local profileCode = self.profileByUser[event.UserId] or event.ProfileCode
+		if profileCode ~= nil and profileCode ~= "" then self:SaveAccount(profileCode, true) end
+		self.profileByUser[event.UserId] = nil
+		local account = self.accounts[profileCode or ""]
+		if account ~= nil then account.released = true end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void PublishMarket(string playerId, string portId)
+		-- 只把當前港口的市場送給本人，拒絕載入失敗時的假高價。
+		local market = self:GetMarket(playerId, portId)
+		if market == nil then self:ReceiveMarket(portId, "", "", self:GetNow(), playerId) return end
+		local payload = next(market.entries) == nil and "{}" or _HttpService:JSONEncode(market.entries)
+		self:ReceiveMarket(portId, payload, market.profileCode, self:GetNow(), playerId)
+	end
+
+	@ExecSpace("Client")
+	method void ReceiveMarket(string portId, string payload, string profileCode, number serverTime)
+		-- 定向 RPC 投影市場，客戶端時鐘只負責顯示，不決定成交價。
+		if payload == "" then self.clientMarkets[portId] = nil return end
+		self.clientMarkets[portId] = _HttpService:JSONDecode(payload) or {}
+		self.clientProfileCode = profileCode
+		self.clientServerTime = serverTime
+		self.clientReceivedAt = _UtilLogic.ElapsedSeconds
+	end
+
+	@ExecSpace("ClientOnly")
+	method number GetClientNow()
+		-- 以伺服器 UTC 加本地單調經過時間，避免改電腦日期影響預覽。
+		return self.clientServerTime + math.max(0, _UtilLogic.ElapsedSeconds - self.clientReceivedAt)
+	end
+
+	@ExecSpace("ClientOnly")
+	method table GetClientQuote(string portId, string goodId, integer quantity)
+		-- 尚未收到市場時關閉交易預覽，不回退到未受需求影響的固定價。
+		local entries = self.clientMarkets[portId]
+		if entries == nil then return { valid = false, total = 0, unitPrice = 0, nextPrice = 0 } end
+		return _GreatVoyageMarketPricing:GetSaleQuote(entries, portId, goodId, quantity, self:GetClientNow())
+	end
+
+	@ExecSpace("ClientOnly")
+	method table GetClientStock(string portId, string goodId)
+		-- BOSS 庫存尚未同步時視為不可購買，普通商品維持原本無限供應。
+		local entries = self.clientMarkets[portId]
+		if entries == nil then return { remaining = 0, restockSeconds = 0, ready = false } end
+		local stock = _GreatVoyageMarketPricing:GetBossStock(entries, self.clientProfileCode, goodId, self:GetClientNow())
+		stock.ready = true
+		return stock
+	end
+end

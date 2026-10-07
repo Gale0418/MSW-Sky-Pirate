@@ -71,20 +71,20 @@ script GreatVoyageRouteDeskController extends Logic
 	@ExecSpace("ClientOnly")
 	method void OnForestClick(ButtonClickEvent event)
 		if _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype:SelectDestination("forest") end
-		self.selectedText.Text = "選擇港口：魔法森林"
+		self.selectedText.Text = "已選擇目的港：魔法森林"
 	end
 
 	@ExecSpace("ClientOnly")
 	method void OnSkyClick(ButtonClickEvent event)
 		if _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype:SelectDestination("sky") end
-		self.selectedText.Text = "選擇港口：天空之城"
+		self.selectedText.Text = "已選擇目的港：天空之城"
 	end
 
 	@ExecSpace("ClientOnly")
 	method void OnSailClick(ButtonClickEvent event)
 		if _Phase0VoyagePrototype == nil then return end
 		_Phase0VoyagePrototype:StartVoyage()
-		self.selectedText.Text = "船棋沿航線前進"
+		self.selectedText.Text = "飛船順著航線前進中！"
 	end
 
 	@ExecSpace("ClientOnly")

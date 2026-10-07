@@ -20,6 +20,12 @@ script GVShipVisualClient extends Component
 	property number enemyHitFlashRemaining = 0
 	property number lastEnemyHp = -1
 	property number enemyShotElapsed = 1
+	-- 兩種官方炮彈素材原生朝左，視覺旋轉需補 180 度對準飛行方向。
+	property number cannonSpriteFacingOffset = 180
+	property number enemyShotSpriteFacingOffset = 180
+
+	property string impactAnimationRuid = "326fbe9630c34a0ab85b3b026ba92726"
+	property string cannonAnimationRuid = "971a992dfd0a446bb4f0efb69fa591d7"
 
 	property string overlayModelId = "gvshipvisualoverlay"
 	property string engineAnimationRuid = "0b374aeaf9284ab0ae0b6e6ea1be57c8"
@@ -165,7 +171,15 @@ script GVShipVisualClient extends Component
 			local foregroundTransform = self.localForegroundView.TransformComponent
 			local foregroundRenderer = self.localForegroundView.SpriteRendererComponent
 			if foregroundTransform ~= nil then
-				foregroundTransform.Position = mapPosition
+				-- 甲板前舷不能沿用背景船圖的 Z=999.9，否則仍可能落在人物深度之後。
+				local foregroundPosition = hullWorldPosition
+				-- 小風帆前景內容比底圖低約 25 px，沿船身局部座標校正，縮放／旋轉時也能對齊。
+				if shipId == "small_sampan" and isvalid(self.localHullView) then
+					foregroundPosition = self.localHullView.TransformComponent:ToWorldPoint(Vector3(0, 0.25, 0))
+				end
+				if map.Name == "map_airship_deck" then foregroundPosition = Vector3(foregroundPosition.x, foregroundPosition.y, -0.1) end
+				if mapTransform ~= nil then foregroundPosition = mapTransform:ToLocalPoint(foregroundPosition) end
+				foregroundTransform.Position = foregroundPosition
 				local foregroundScale = scale
 				if shipId == "small_sampan" or shipId == "forest" then
 					foregroundScale = Vector3(scale.x * 1448 / 1447, scale.y * 1086 / 1087, scale.z)
@@ -174,6 +188,7 @@ script GVShipVisualClient extends Component
 				foregroundTransform.Rotation = sourceRotation
 			else return false end
 			if foregroundRenderer ~= nil then
+				-- 前舷與人物使用同一地圖圖層，以 OrderInLayer 明確排在人物前方。
 				foregroundRenderer.SortingLayer = sortingLayer
 				foregroundRenderer.OrderInLayer = self:GetMapFrontOrder()
 				foregroundRenderer.FlipX = flipped
@@ -251,9 +266,8 @@ script GVShipVisualClient extends Component
 
 	@ExecSpace("ClientOnly")
 	method Vector2 GetHullVisualOffset(string shipId)
-		-- Align each PNG's measured front-rail Y to a shared point 0.2 units above deck foothold Y=-1.462.
-		if shipId == "forest" then return Vector2(0, 0.106) end
-		if shipId == "gear" then return Vector2(0, 0.106) end
+		-- 對齊甲板站立高度；前景資產誤差由前舷自身校正，不移動整艘船補償。
+		if shipId == "forest" or shipId == "gear" then return Vector2(0, 0.106) end
 		if shipId == "red" then return Vector2(0, 0.266) end
 		if shipId == "merchant" then return Vector2(0, -0.134) end
 		return Vector2(0, 0.366)
@@ -309,23 +323,137 @@ script GVShipVisualClient extends Component
 	end
 
 	@ExecSpace("ClientOnly")
+	method Vector3 GetBattleEnemyPosition()
+		-- Keep the encounter in the left open sky across viewport sizes and camera zooms.
+		local anchor = _UILogic:ScreenToWorldPosition(Vector2(_UILogic.ScreenWidth * 0.094, _UILogic.ScreenHeight * 0.561))
+		return Vector3(anchor.x + math.sin(self.battleVisualElapsed * 1.5) * 0.2, anchor.y + math.sin(self.battleVisualElapsed * 3) * 0.12, 0)
+	end
+
+	@ExecSpace("ClientOnly")
+	method Vector3 GetBattleMuzzlePosition()
+		-- 依各船 PNG 的砲口座標換算世界位置；跟隨船身縮放、旋轉及翻面。
+		local point = Vector3(-6.19, 0.43, 0)
+		if self.appliedShipId == "forest" then point = Vector3(-6.19, 1.13, 0)
+		elseif self.appliedShipId == "gear" then point = Vector3(-5.94, 0.75, 0)
+		elseif self.appliedShipId == "red" then point = Vector3(-5.94, 0.53, 0)
+		elseif self.appliedShipId == "merchant" then point = Vector3(-6.44, 1.43, 0) end
+		if self:GetMapFlipX() then point.x = -point.x end
+		if isvalid(self.localHullView) and self.localHullView.TransformComponent ~= nil then
+			local world = self.localHullView.TransformComponent:ToWorldPoint(point)
+			return Vector3(world.x, world.y, 0)
+		end
+		return self:GetBattleShipPosition()
+	end
+
+	@ExecSpace("ClientOnly")
+	method Vector3 BattleWorldToLocal(Vector3 worldPosition)
+		-- 特效掛在地圖下，寫 Position 前先由世界座標轉成父層座標。
+		local map = self.Entity.CurrentMap
+		if map ~= nil and map.TransformComponent ~= nil then return map.TransformComponent:ToLocalPoint(worldPosition) end
+		return worldPosition
+	end
+
+	@ExecSpace("ClientOnly")
+	method void LoadBattleEnemyCenter(string animationRuid)
+		-- 素材預載完成後只算一次平均身體中心，避免每幀載入或瞄準腳底錨點。
+		if self._T.enemyCenterCache == nil then self._T.enemyCenterCache = {} end
+		if self._T.enemyCenterCache[animationRuid] ~= nil then return end
+		self._T.enemyCenterCache[animationRuid] = Vector2(0, 0)
+		_ResourceService:PreloadAsync({animationRuid}, function(results)
+			if not isvalid(self.Entity) then return end
+			local clip = _ResourceService:LoadAnimationClipAndWait(animationRuid)
+			if clip == nil or not clip.IsLoadComplete then return end
+			local x, y, count = 0, 0, 0
+			for _, frame in ipairs(clip.Frames:ToTable()) do
+				local sprite = frame.FrameSprite
+				if sprite ~= nil and sprite.IsLoadComplete and sprite.PixelPerUnit > 0 then
+					x = x + (sprite.Width * 0.5 - sprite.PivotPixel.x) / sprite.PixelPerUnit
+					y = y + (sprite.Height * 0.5 - sprite.PivotPixel.y) / sprite.PixelPerUnit
+					count = count + 1
+				end
+			end
+			if count > 0 then self._T.enemyCenterCache[animationRuid] = Vector2(x / count, y / count) end
+			log("[AirBattleVisual] enemy center loaded ruid=" .. animationRuid .. " offset=" .. tostring(self._T.enemyCenterCache[animationRuid]))
+		end)
+	end
+
+	@ExecSpace("ClientOnly")
+	method Vector3 GetBattleEnemyCenter(Vector3 enemyPosition, string animationRuid)
+		-- 官方敵人朝右翻面，中心 X 偏移也跟著翻面；縮放與實際敵人一致。
+		local offset = Vector2(0, 0)
+		if self._T.enemyCenterCache ~= nil then offset = self._T.enemyCenterCache[animationRuid] or offset end
+		return Vector3(enemyPosition.x - offset.x * 1.5, enemyPosition.y + offset.y * 1.5, 0)
+	end
+
+	@ExecSpace("ClientOnly")
+	method Vector3 GetBattleShipPosition()
+		-- 敵彈瞄準本地船身視覺錨點，不瞄準玩家 Avatar。
+		if isvalid(self.localHullView) and self.localHullView.TransformComponent ~= nil then
+			return self.localHullView.TransformComponent.WorldPosition
+		end
+		local transform = self.Entity.TransformComponent
+		if transform ~= nil then return transform.WorldPosition end
+		return Vector3(-3.5, -0.8, 0)
+	end
+
+	@ExecSpace("ClientOnly")
+	method number GetProjectileRotation(Vector3 startPosition, Vector3 targetPosition, number spriteFacingOffset)
+		-- TransformComponent.Rotation 使用 Euler 度數；資產校正值可在 Maker 依圖檔軸向調整。
+		local dx = targetPosition.x - startPosition.x
+		local dy = targetPosition.y - startPosition.y
+		local angle = 0
+		if math.abs(dx) <= 0.0001 then
+			angle = dy >= 0 and 90 or -90
+		elseif dx < 0 then
+			angle = math.atan(dy / dx) * 180 / math.pi + 180
+		else
+			angle = math.atan(dy / dx) * 180 / math.pi
+		end
+		return angle + spriteFacingOffset
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ShowBattleImpact(Vector3 worldPosition)
+		-- 官方投射物 endEff 爆炸只播一次；序列命中時觸發，不隨 HP 更新重播。
+		local options = {SortingLayer = "MapLayer7", OrderInLayer = 30}
+		local serial = _EffectService:PlayEffect(self.impactAnimationRuid, self.Entity.CurrentMap, worldPosition, 0, Vector3(0.8, 0.8, 1), false, options)
+		if serial ~= 0 then
+			if self._T.impactSerials == nil then self._T.impactSerials = {} end
+			table.insert(self._T.impactSerials, serial)
+			if #self._T.impactSerials > 8 then table.remove(self._T.impactSerials, 1) end
+		end
+		log("[AirBattleVisual] impact started seq=" .. tostring(self.lastPlayerShotSequence) .. " serial=" .. tostring(serial) .. " center=" .. tostring(worldPosition))
+	end
+
+	@ExecSpace("ClientOnly")
 	method void UpdateBattleVisuals(number delta)
+		-- Render server-authorized battle snapshots without changing combat resolution.
 		local player = _UserService.LocalPlayer
 		local map = self.Entity.CurrentMap
 		local controller = _GreatVoyageAdventureController
 		local battle = nil
 		if controller ~= nil then battle = controller.clientAirBattle end
 		if not isvalid(player) or not isvalid(map) or player.CurrentMap ~= map or map.Name ~= "map_airship_deck" or battle == nil or battle.phase ~= "active" then
-			if self.appliedBattleId ~= "" then self:ReleaseBattleVisuals() end
+			if self.appliedBattleId ~= "" then
+				-- 勝利快照可能早於最後一發的視覺收尾，仍補上一次擊殺爆炸。
+				local finalImpact = nil
+				if isvalid(player) and player.CurrentMap == map and battle ~= nil and battle.phase == "won" and battle.id == self.appliedBattleId and (battle.playerShotSequence or 0) > (self._T.lastImpactSequence or 0) then
+					finalImpact = self:GetBattleEnemyCenter(self:GetBattleEnemyPosition(), self:GetBattleAnimationRuid(battle.enemyId))
+				end
+				self:ReleaseBattleVisuals()
+				if finalImpact ~= nil then self:ShowBattleImpact(finalImpact) end
+			end
 			return
 		end
 		local animationRuid = self:GetBattleAnimationRuid(battle.enemyId)
 		if animationRuid == "" then return end
 		if self.appliedBattleId ~= battle.id then
 			self:ReleaseBattleVisuals()
-			local enemy = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalAirEnemy", Vector3(-5.2, 0.1, 0), map)
-			local shot = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalCannonShot", Vector3(-4.35, -0.8, 0), map)
-			local enemyShot = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalEnemyShot", Vector3(-5.2, 0.1, 0), map)
+			self:LoadBattleEnemyCenter(animationRuid)
+			_ResourceService:PreloadAsync({self.impactAnimationRuid}, function(results) end)
+			local enemy = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalAirEnemy", self:GetBattleEnemyPosition(), map)
+			local shot = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalCannonShot", self:GetBattleMuzzlePosition(), map)
+			local enemyShot = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalEnemyShot", self:GetBattleEnemyPosition(), map)
 			self.localBattleEnemy = enemy
 			self.localBattleShot = shot
 			self.localEnemyShot = enemyShot
@@ -339,13 +467,13 @@ script GVShipVisualClient extends Component
 			enemy.SpriteRendererComponent.FlipX = true
 			enemy.SpriteRendererComponent.Enable = true
 			enemy.TransformComponent.Scale = Vector3(1.5, 1.5, 1)
-			-- A verified Star Pixie projectile sprite, tinted gold for the cannon tracer.
-			shot.SpriteRendererComponent.SpriteRUID = "7543d83767874b968f6871068931bd2e"
+			-- Official MapleStory cannonball animation: black shell with a flame trail.
+			shot.SpriteRendererComponent.SpriteRUID = self.cannonAnimationRuid
 			shot.SpriteRendererComponent.SortingLayer = self:GetMapSortingLayer()
 			shot.SpriteRendererComponent.OrderInLayer = 21
-			shot.SpriteRendererComponent.Color = Color(1, 0.75, 0.2, 1)
+			shot.SpriteRendererComponent.Color = Color(1, 1, 1, 1)
 			shot.SpriteRendererComponent.Enable = false
-			shot.TransformComponent.Scale = Vector3(2.0, 2.0, 1)
+			shot.TransformComponent.Scale = Vector3(1.4, 1.4, 1)
 			enemyShot.SpriteRendererComponent.SpriteRUID = "7543d83767874b968f6871068931bd2e"
 			enemyShot.SpriteRendererComponent.SortingLayer = self:GetMapSortingLayer()
 			enemyShot.SpriteRendererComponent.OrderInLayer = 21
@@ -354,7 +482,7 @@ script GVShipVisualClient extends Component
 			enemyShot.TransformComponent.Scale = Vector3(2.0, 2.0, 1)
 			self.appliedBattleId = battle.id
 			self.lastEnemyHp = battle.enemyHp
-			log("[AirBattleVisual] created id=" .. battle.id .. " enemy=" .. battle.enemyId)
+			log("[AirBattleVisual] created id=" .. battle.id .. " enemy=" .. battle.enemyId .. " anchor=" .. tostring(self:GetBattleEnemyPosition()) .. " cannon=" .. self.cannonAnimationRuid)
 		end
 		if not isvalid(self.localBattleEnemy) or not isvalid(self.localBattleShot) or not isvalid(self.localEnemyShot) then
 			self:ReleaseBattleVisuals()
@@ -369,34 +497,47 @@ script GVShipVisualClient extends Component
 			self.lastPlayerShotSequence = battle.playerShotSequence
 			self.shotElapsed = math.max(0, battle.playerShotElapsed or 0)
 			if self.shotElapsed < self.shotFlightSeconds then
-				log("[AirBattleVisual] player shot started seq=" .. tostring(self.lastPlayerShotSequence))
+				local targetPosition = self:GetBattleEnemyCenter(self:GetBattleEnemyPosition(), animationRuid)
+				local rotation = self:GetProjectileRotation(self:GetBattleMuzzlePosition(), targetPosition, self.cannonSpriteFacingOffset)
+				log("[AirBattleVisual] player shot started seq=" .. tostring(self.lastPlayerShotSequence) .. " rotation=" .. tostring(rotation) .. " muzzle=" .. tostring(self:GetBattleMuzzlePosition()) .. " target=" .. tostring(targetPosition))
 			end
 		end
 		if (battle.enemyShotSequence or 0) > self.lastEnemyShotSequence then
 			self.lastEnemyShotSequence = battle.enemyShotSequence
 			self.enemyShotElapsed = math.max(0, battle.enemyShotElapsed or 0)
 			if self.enemyShotElapsed < self.shotFlightSeconds then
-				log("[AirBattleVisual] enemy shot started seq=" .. tostring(self.lastEnemyShotSequence))
+				local rotation = self:GetProjectileRotation(self:GetBattleEnemyCenter(self:GetBattleEnemyPosition(), animationRuid), self:GetBattleShipPosition(), self.enemyShotSpriteFacingOffset)
+				log("[AirBattleVisual] enemy shot started seq=" .. tostring(self.lastEnemyShotSequence) .. " rotation=" .. tostring(rotation))
 			end
 		end
 		if battle.enemyHp < self.lastEnemyHp then self.enemyHitFlashRemaining = 0.2 end
 		self.lastEnemyHp = battle.enemyHp
-		local enemyPosition = Vector3(-5.2 + math.sin(self.battleVisualElapsed * 1.5) * 0.2, 0.1 + math.sin(self.battleVisualElapsed * 3) * 0.12, 0)
-		self.localBattleEnemy.TransformComponent.Position = enemyPosition
+		local enemyPosition = self:GetBattleEnemyPosition()
+		self.localBattleEnemy.TransformComponent.Position = self:BattleWorldToLocal(enemyPosition)
+		local enemyCenter = self:GetBattleEnemyCenter(enemyPosition, animationRuid)
+		local playerShotStart = self:GetBattleMuzzlePosition()
 		local shotProgress = math.min(1, self.shotElapsed / self.shotFlightSeconds)
-		self.localBattleShot.TransformComponent.Position = Vector3(-4.35 + (enemyPosition.x + 4.35) * shotProgress, -0.8 + (enemyPosition.y + 0.8) * shotProgress, 0)
+		local playerShotPosition = Vector3(playerShotStart.x + (enemyCenter.x - playerShotStart.x) * shotProgress, playerShotStart.y + (enemyCenter.y - playerShotStart.y) * shotProgress, 0)
+		self.localBattleShot.TransformComponent.Position = self:BattleWorldToLocal(playerShotPosition)
+		self.localBattleShot.TransformComponent.Rotation = Vector3(0, 0, self:GetProjectileRotation(playerShotStart, enemyCenter, self.cannonSpriteFacingOffset))
 		local playerShotVisible = self.shotElapsed < self.shotFlightSeconds
 		local wasPlayerShotVisible = self.localBattleShot.SpriteRendererComponent.Enable
 		self.localBattleShot.SpriteRendererComponent.Enable = playerShotVisible
 		if wasPlayerShotVisible and not playerShotVisible then
-			log("[AirBattleVisual] player shot hidden seq=" .. tostring(self.lastPlayerShotSequence))
+			self._T.lastImpactSequence = self.lastPlayerShotSequence
+			self:ShowBattleImpact(enemyCenter)
+			log("[AirBattleVisual] player shot hidden seq=" .. tostring(self.lastPlayerShotSequence) .. " endpoint=" .. tostring(playerShotPosition) .. " target=" .. tostring(enemyCenter))
 		end
 		local enemyShotProgress = math.min(1, self.enemyShotElapsed / self.shotFlightSeconds)
-		self.localEnemyShot.TransformComponent.Position = Vector3(enemyPosition.x + (-3.5 - enemyPosition.x) * enemyShotProgress, enemyPosition.y + (-0.8 - enemyPosition.y) * enemyShotProgress, 0)
+		local shipPosition = self:GetBattleShipPosition()
+		local enemyShotPosition = Vector3(enemyCenter.x + (shipPosition.x - enemyCenter.x) * enemyShotProgress, enemyCenter.y + (shipPosition.y - enemyCenter.y) * enemyShotProgress, 0)
+		self.localEnemyShot.TransformComponent.Position = self:BattleWorldToLocal(enemyShotPosition)
+		self.localEnemyShot.TransformComponent.Rotation = Vector3(0, 0, self:GetProjectileRotation(enemyCenter, shipPosition, self.enemyShotSpriteFacingOffset))
 		local enemyShotVisible = self.enemyShotElapsed < self.shotFlightSeconds
 		local wasEnemyShotVisible = self.localEnemyShot.SpriteRendererComponent.Enable
 		self.localEnemyShot.SpriteRendererComponent.Enable = enemyShotVisible
 		if wasEnemyShotVisible and not enemyShotVisible then
+			self:ShowBattleImpact(Vector3(shipPosition.x, shipPosition.y, 0))
 			log("[AirBattleVisual] enemy shot hidden seq=" .. tostring(self.lastEnemyShotSequence))
 		end
 		if self.enemyHitFlashRemaining > 0 then
@@ -408,6 +549,11 @@ script GVShipVisualClient extends Component
 
 	@ExecSpace("ClientOnly")
 	method void ReleaseBattleVisuals()
+		-- 離開戰鬥時清理仍在播的單次命中特效。
+		if self._T.impactSerials ~= nil then
+			for _, serial in ipairs(self._T.impactSerials) do _EffectService:RemoveEffect(serial) end
+			self._T.impactSerials = nil
+		end
 		if isvalid(self.localBattleEnemy) then self.localBattleEnemy:Destroy() end
 		if isvalid(self.localBattleShot) then self.localBattleShot:Destroy() end
 		if isvalid(self.localEnemyShot) then self.localEnemyShot:Destroy() end
@@ -416,6 +562,7 @@ script GVShipVisualClient extends Component
 		self.localBattleShot = nil
 		self.localEnemyShot = nil
 		self.appliedBattleId = ""
+		self._T.lastImpactSequence = 0
 		self.battleVisualElapsed = 0
 		self.shotElapsed = 1
 		self.lastPlayerShotSequence = 0

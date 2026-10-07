@@ -297,10 +297,10 @@
                     }
                   },
                   {
-                    "Length": 3.46,
-                    "NextFootholdId": 0,
+                    "Length": 3.28,
+                    "NextFootholdId": 10,
                     "PreviousFootholdId": 0,
-                    "groupID": 8,
+                    "groupID": 9,
                     "layer": 2,
                     "sortingLayerName": "MapLayer5",
                     "attribute": {
@@ -319,7 +319,7 @@
                       "y": -0.83
                     },
                     "EndPoint": {
-                      "x": 12.17,
+                      "x": 11.99,
                       "y": -0.83
                     },
                     "Variance": {
@@ -328,9 +328,9 @@
                     }
                   },
                   {
-                    "Length": 4.88999939,
-                    "NextFootholdId": 11,
-                    "PreviousFootholdId": 0,
+                    "Length": 0.01,
+                    "NextFootholdId": 13,
+                    "PreviousFootholdId": 9,
                     "groupID": 9,
                     "layer": 2,
                     "sortingLayerName": "MapLayer5",
@@ -350,7 +350,7 @@
                       "y": -0.83
                     },
                     "EndPoint": {
-                      "x": 16.88,
+                      "x": 12,
                       "y": -0.83
                     },
                     "Variance": {
@@ -361,7 +361,7 @@
                   {
                     "Length": 6.65,
                     "NextFootholdId": 0,
-                    "PreviousFootholdId": 10,
+                    "PreviousFootholdId": 14,
                     "groupID": 9,
                     "layer": 2,
                     "sortingLayerName": "MapLayer5",
@@ -387,6 +387,68 @@
                     "Variance": {
                       "x": 0,
                       "y": 1
+                    }
+                  },
+                  {
+                    "Length": 3.0631519714176765,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 10,
+                    "groupID": 9,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "39b73be2-34a6-4c03-9a57-74876b90accf",
+                    "Id": 13,
+                    "StartPoint": {
+                      "x": 12,
+                      "y": -0.83
+                    },
+                    "EndPoint": {
+                      "x": 14.1,
+                      "y": 1.4
+                    },
+                    "Variance": {
+                      "x": 0.6855683360130792,
+                      "y": 0.7280082806234128
+                    }
+                  },
+                  {
+                    "Length": 4.88,
+                    "NextFootholdId": 11,
+                    "PreviousFootholdId": 0,
+                    "groupID": 9,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "e671e6fe-27ab-40a8-90d8-d3fe865974b1",
+                    "Id": 14,
+                    "StartPoint": {
+                      "x": 12,
+                      "y": -0.83
+                    },
+                    "EndPoint": {
+                      "x": 16.88,
+                      "y": -0.83
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
                     }
                   }
                 ],
@@ -428,12 +490,12 @@
             },
             {
               "@type": "MOD.Core.SoundComponent",
-              "AudioClipRUID": "ade75165d86c409aa50a1115722ceb54",
+              "AudioClipRUID": "b87b1307cb584a57941a1aeac41644c1",
               "Bgm": true,
+              "Loop": true,
               "PlayOnEnable": true,
               "Volume": 0.4,
-              "Enable": true,
-              "Loop": true
+              "Enable": true
             }
           ],
           "@version": 1
@@ -2775,7 +2837,7 @@
       {
         "id": "39b73be2-34a6-4c03-9a57-74876b90accf",
         "path": "/maps/map_forest_port/MapObject_30",
-        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.CustomFootholdComponent",
         "jsonString": {
           "name": "MapObject_30",
           "path": "/maps/map_forest_port/MapObject_30",
@@ -2825,6 +2887,22 @@
               "SortingLayer": "MapLayer1",
               "SpriteRUID": "5c45506051ca42828807301d210d5f88",
               "StartFrameIndex": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.CustomFootholdComponent",
+              "edgeLists": [
+                [
+                  {
+                    "x": -1.22,
+                    "y": -0.59
+                  },
+                  {
+                    "x": 0.88,
+                    "y": 1.64
+                  }
+                ]
+              ],
               "Enable": true
             }
           ],
@@ -3579,7 +3657,7 @@
                     "y": 0.74
                   },
                   {
-                    "x": 1.55,
+                    "x": 1.37,
                     "y": 0.74
                   }
                 ]
@@ -3656,6 +3734,16 @@
                 [
                   {
                     "x": -2.48,
+                    "y": 0.54
+                  },
+                  {
+                    "x": -2.47,
+                    "y": 0.54
+                  }
+                ],
+                [
+                  {
+                    "x": -2.47,
                     "y": 0.54
                   },
                   {
@@ -4075,8 +4163,8 @@
                 "z": 0
               },
               "Position": {
-                "x": 4.536507,
-                "y": -0.315,
+                "x": 3.5,
+                "y": -0.755,
                 "z": 999.968
               },
               "QuaternionRotation": {
@@ -4106,6 +4194,7 @@
             },
             {
               "@type": "MOD.Core.RigidbodyComponent",
+              "Gravity": 1,
               "MoveVelocity": {
                 "x": 0,
                 "y": 0
@@ -4340,8 +4429,8 @@
                 "z": 0
               },
               "Position": {
-                "x": 14,
-                "y": -0.83,
+                "x": 14.1,
+                "y": 1.4,
                 "z": 999.9
               },
               "QuaternionRotation": {
