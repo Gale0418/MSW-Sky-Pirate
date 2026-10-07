@@ -1,4 +1,6 @@
 # Tasks
+> 2026-10-07 17:33：40 檔 Git checkpoint `7e1f806` 已直接推送 origin/main；git ls-remote 與 GitHub connector 回查一致，沒有建立專案分支／PR。本輪 Git 交付完成，CodeRabbit 0 issues 與離線通過不替代 Maker／完整 M1 驗收；既有任務狀態保留。
+
 > 2026-10-07 17:29：本輪 Git checkpoint 已獲主人授權直接 main 提交／推送。CodeRabbit 1 次審查全部 16 個有效腳本，回報 0 issues；358 methods 語法與 624 商品／港口行為案例通過。Maker initialize 成功但 tools/list=[]，實機未驗；UI lint 0 errors、Adventure 83 warnings（HEAD 81）／Onboarding 3，未冒充畫面通過。README 更新四港及市場保存範圍，.builder-work 排除。完整紀錄見 [審查與驗證](../docs/CodeRabbit-Review-20261007.md)；既有任務狀態保留。
 
 > 2026-10-04 06:21：主人已核定 critic_full 40k／每席8k／150工具／90分鐘。四席已派送；批次底層呼叫與封裝計數不一致，工具額度停止線已達，審查中斷。視覺提出天空城兩項裁切候選待驗證；其餘席位有未覆蓋路徑。Maker已實際stop，沒有獨立仲裁或最終closure，所有相關任務維持原狀，不Done。較早的「預算未核定／未派送」均為歷史紀錄；本輪現況以[council-interrupted.md](evidence/2026-10-04/council-interrupted.md)為準。
