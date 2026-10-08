@@ -34,6 +34,7 @@ script GreatVoyagePlayerAttack extends AttackComponent
 		local player = self.Entity.PlayerComponent
 		if player == nil or player.UserId ~= senderUserId or self.Entity.CurrentMapName ~= "map_airship_deck" then return end
 		local state = _GreatVoyageVoyageState:GetOrCreateState(senderUserId)
+		if state == nil then return end
 		if state.pendingEncounter == nil or state.pendingEncounter.card == nil or state.pendingEncounter.card.id ~= "victoria_mushroom_raid" or state.raidRemaining <= 0 then return end
 		local now = _UtilLogic.ServerElapsedSeconds
 		if self.lastAttackAt >= 0 and now - self.lastAttackAt < 0.35 then return end

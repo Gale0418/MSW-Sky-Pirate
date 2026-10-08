@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "directory://61e2c8f50e62410683b5f24454eb3547",
+  "ContentType": "x-mod/directory",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.10.0.0",
+  "StudioVersion": "",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "entry_id": "directory://61e2c8f50e62410683b5f24454eb3547",
+      "name": "Persistence",
+      "lock": false,
+      "folding": false,
+      "nameEditable": true
+    }
+  }
+}

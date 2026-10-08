@@ -87,6 +87,13 @@ script GreatVoyageVoyageState extends Logic
 			if state.status == "sailing" and state.airBattle ~= nil and state.airBattle.phase == "active" then
 				self:AdvanceAirBattle(playerId, state, now)
 			end
+			if state.status == "sunk" and state.settlementRetryAt ~= nil and now >= state.settlementRetryAt then
+				if self:PersistSettledVoyage(playerId, state, state.originId) then
+					local player = _UserService:GetUserEntityByUserId(playerId)
+					if player ~= nil and player.PlayerComponent ~= nil and player.PlayerComponent.ProfileCode == state.profileCode and player.CurrentMapName == "map_airship_deck" and self.voyageByPlayer[playerId] == state then self:MovePlayerToPort(playerId, state.originId) end
+					self:PublishSnapshot(playerId, state)
+				end
+			end
 		end
 	end
 
@@ -114,42 +121,107 @@ script GreatVoyageVoyageState extends Logic
 			self.voyageByPlayer[playerId] = nil
 			if self._T.cardMarketByPlayer ~= nil then self._T.cardMarketByPlayer[playerId] = nil end
 		else
-			self:PublishSnapshot(playerId, state)
+			-- 取消航程時丟棄 transient damage/cargo progress，回到出發前 durable profile。
+			local previousShipRevision = state.shipRevision or 0
+			local previousEconomyRevision = state.economyRevision or 0
+			local previousCardInventoryRevision = state.cardInventoryRevision or 0
+			self.voyageByPlayer[playerId] = nil
+			local restored = self:GetOrCreateState(playerId)
+			if restored ~= nil then
+				-- Rehydration starts revisions at zero; retain the highest published revision so client feedback stays monotonic.
+				restored.shipRevision = math.max(restored.shipRevision or 0, previousShipRevision)
+				restored.economyRevision = math.max(restored.economyRevision or 0, previousEconomyRevision)
+				restored.cardInventoryRevision = math.max(restored.cardInventoryRevision or 0, previousCardInventoryRevision)
+				restored.lastReason = state.lastReason
+				self:MovePlayerToPort(playerId, restored.safePortId or restored.originId)
+				self:PublishSnapshot(playerId, restored)
+			end
 		end
 	end
 
 	@ExecSpace("ServerOnly")
 	method any GetOrCreateState(string playerId)
-		-- 建立新航程狀態時採用資料層起始金，資料尚未就緒時回退到契約預設值。
-		if self.voyageByPlayer[playerId] == nil then
-			local startingMoney = 12000
-			if _GreatVoyageVoyageData ~= nil then
-				local dataStartingMoney = _GreatVoyageVoyageData:GetStartingMoney()
-				if dataStartingMoney ~= nil then startingMoney = dataStartingMoney end
-			end
-			self.voyageByPlayer[playerId] = { playerId = playerId, status = "idle", originId = "", destinationId = "", route = nil, segments = {}, distanceTravelled = 0, budgetRemaining = 0, pausedDistance = 0, pendingEncounter = nil, encounterCount = 0, cargo = { id = "", quantity = 0, buyPrice = 0 }, money = startingMoney, economyRevision = 0, economyMessage = "", hullDamage = 0, elapsedSailingSeconds = 0, voyageDurationSeconds = self.voyageDurationSeconds, startedAt = -1, raidRemaining = 0, raidEnemies = {}, lastRaidDamageAt = -1, lastAdvanceAt = -1, lastReason = "", cardInventory = {}, cardInventoryRevision = 0 }
-		end
+		-- 存檔未載入或同 ProfileCode 正由另一登入者使用時回傳 nil，絕不補初始資產。
+		if _GreatVoyageProfileStore == nil then return nil end
+		local profile = _GreatVoyageProfileStore:LoadForPlayer(playerId)
+		if profile == nil then return nil end
+		local profileCode = _GreatVoyageProfileStore.profileByUser[playerId]
 		local state = self.voyageByPlayer[playerId]
-		if state.ship == nil then
-			state.ship = { id = "small_sampan", name = "小風帆", hull = 100, maxHull = 100, baseHull = 100, shield = 20, maxShield = 20, armor = 40, maxArmor = 40, baseCargoCapacity = 8, baseCannonMultiplier = 1, baseDurationMultiplier = 1, cargoCapacity = 8, cannonMultiplier = 1, durationMultiplier = 1, slots = { "", "", "" } }
+		if state ~= nil and state.persistencePending == true then return nil end
+		if state == nil or state.profileCode ~= profileCode then
+			state = { playerId = playerId, profileCode = profileCode, status = "idle", originId = profile.safePortId, destinationId = "", route = nil, segments = {}, distanceTravelled = 0, budgetRemaining = 0, pausedDistance = 0, pendingEncounter = nil, encounterCount = 0, cargo = { id = "", quantity = 0, buyPrice = 0 }, money = profile.core.money, economyRevision = 0, economyMessage = "", hullDamage = 0, elapsedSailingSeconds = 0, voyageDurationSeconds = self.voyageDurationSeconds, startedAt = -1, raidRemaining = 0, raidEnemies = {}, lastRaidDamageAt = -1, lastAdvanceAt = -1, lastReason = "", cardInventory = {}, cardInventoryRevision = 0, ownedShips = {}, safePortId = profile.safePortId }
+			state.cargo = { id = profile.core.cargo.id, quantity = profile.core.cargo.quantity, buyPrice = profile.core.cargo.buyPrice }
+			for cardId, quantity in pairs(profile.core.cardInventory) do state.cardInventory[cardId] = quantity end
+			for shipId, savedShip in pairs(profile.core.ships) do
+				local definition = _GreatVoyageVoyageData:GetShipById(shipId)
+				if definition == nil then return nil end
+				local ship = self:CreateOwnedShip(definition)
+				ship.hull = savedShip.hull
+				ship.shield = savedShip.shield
+				ship.armor = savedShip.armor
+				ship.slots = { savedShip.slots[1], savedShip.slots[2], savedShip.slots[3] }
+				local upgrades = self:CalculateShipUpgrades(shipId, ship.slots)
+				if upgrades == nil then return nil end
+				self:ApplyShipUpgrades(ship, upgrades)
+				state.ownedShips[shipId] = ship
+			end
+			state.activeShipId = profile.core.activeShipId
+			state.ship = state.ownedShips[state.activeShipId]
+			if state.ship == nil then return nil end
 			state.shipRevision = 0
-			state.shipMessage = "新手的小風帆在四港都能免費維修喔！"
-		end
-		if state.ship.slots == nil then state.ship.slots = { "", "", "" } end
-		if state.ship.baseCargoCapacity == nil then state.ship.baseCargoCapacity = state.ship.cargoCapacity end
-		if state.ship.baseCannonMultiplier == nil then state.ship.baseCannonMultiplier = state.ship.cannonMultiplier or 1 end
-		if state.ship.baseDurationMultiplier == nil then state.ship.baseDurationMultiplier = state.ship.durationMultiplier or 1 end
-		if state.ownedShips == nil then state.ownedShips = {} end
-		if state.cardInventory == nil then state.cardInventory = {} end
-		if state.cardInventoryRevision == nil then state.cardInventoryRevision = 0 end
-		state.ownedShips[state.ship.id] = state.ship
-		state.activeShipId = state.ship.id
-		if state.voyageDurationSeconds == nil then state.voyageDurationSeconds = self.voyageDurationSeconds end
-		if state.ship.stats == nil and _GreatVoyageVoyageData ~= nil then
-			local upgrades = self:CalculateShipUpgrades(state.ship.id, state.ship.slots)
-			if upgrades ~= nil then self:ApplyShipUpgrades(state.ship, upgrades) end
+			state.shipMessage = "船況已從港口存檔恢復。"
+			state.hullDamage = math.max(0, state.ship.maxHull - state.ship.hull)
+			state.cardInventoryRevision = 0
+			state.lastPublishedShipRevision = -1
+			state.lastPublishedInventoryRevision = -1
+			self.voyageByPlayer[playerId] = state
+			local player = _UserService:GetUserEntityByUserId(playerId)
+			if player ~= nil and player.PlayerComponent ~= nil and player.PlayerComponent.ProfileCode == profileCode and self:GetPortIdFromMap(player.CurrentMapName) ~= profile.safePortId then self:MovePlayerToPort(playerId, profile.safePortId) end
 		end
 		return state
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean PersistSettledVoyage(string playerId, any state, string safePortId)
+		-- 抵港或沉船先封鎖其他交易，再把安全資產用同步 CAS 寫穩。
+		if state == nil or state.profileCode == nil or _GreatVoyageProfileStore == nil then return false end
+		state.persistencePending = true
+		state.safePortId = safePortId
+		local marked = _GreatVoyageProfileStore:MarkStateDirty(playerId, state)
+		local saved = marked and _GreatVoyageProfileStore:FlushAndWait(state.profileCode)
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		local stillBound = player ~= nil and player.PlayerComponent ~= nil and player.PlayerComponent.UserId == playerId and player.PlayerComponent.ProfileCode == state.profileCode
+		local stillCurrent = self.voyageByPlayer[playerId] == state
+		state.persistencePending = false
+		if stillBound == false or stillCurrent == false then
+			state.settlementRetryAt = nil
+			return false
+		end
+		if saved ~= true then
+			state.settlementRetryAt = _UtilLogic.ServerElapsedSeconds + 5
+			return false
+		end
+		state.settlementRetryAt = nil
+		return true
+	end
+
+	@ExecSpace("ServerOnly")
+	method void CaptureProfileForLeave(string playerId)
+		-- 離線時只捕獲安全港資產；航行中保留出航前已確認的 snapshot。
+		local state = self.voyageByPlayer[playerId]
+		if state ~= nil and state.status ~= "sailing" and _GreatVoyageProfileStore ~= nil then _GreatVoyageProfileStore:MarkStateDirty(playerId, state) end
+		-- 清掉舊 UserId 的瞬態航程後才 yield；快速重登會從 durable profile 重建 idle 狀態。
+		self.voyageByPlayer[playerId] = nil
+		if self._T.cardMarketByPlayer ~= nil then self._T.cardMarketByPlayer[playerId] = nil end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void CaptureSafeProfilesForShutdown()
+		-- 關閉前逐一捕獲非航行玩家的安全狀態。
+		if _GreatVoyageProfileStore == nil then return end
+		for playerId, state in pairs(self.voyageByPlayer) do
+			if state.status ~= "sailing" then _GreatVoyageProfileStore:MarkStateDirty(playerId, state) end
+		end
 	end
 
 	@ExecSpace("ServerOnly")
@@ -354,6 +426,12 @@ script GreatVoyageVoyageState extends Logic
 	end
 
 	@ExecSpace("Client")
+	method void ReceiveTransactionFeedback(string kind, string subjectId, integer revision)
+		-- 只顯示伺服器確認成功的交易回饋，音效與特效交由 UI controller 管理。
+		if _GreatVoyageAdventureController ~= nil then _GreatVoyageAdventureController:HandleTransactionFeedback(kind, subjectId, revision) end
+	end
+
+	@ExecSpace("Client")
 	method void ReceiveShipSnapshot(string shipId, string shipName, number hull, number maxHull, number shield, number maxShield, number armor, number maxArmor, integer capacity, number cannonMultiplier, number durationMultiplier, number baseCannonMultiplier, number baseDurationMultiplier, integer baseCargoCapacity, string slot1, string slot2, string slot3, integer revision, string message)
 		-- 接收目前啟用船的伺服器投影，名稱與數值都由伺服器指定。
 		self.clientShip = { id = shipId, name = shipName, hull = hull, maxHull = maxHull, shield = shield, maxShield = maxShield, armor = armor, maxArmor = maxArmor, cargoCapacity = capacity, cannonMultiplier = cannonMultiplier, durationMultiplier = durationMultiplier, baseCannonMultiplier = baseCannonMultiplier, baseDurationMultiplier = baseDurationMultiplier, baseCargoCapacity = baseCargoCapacity, slots = { slot1 = slot1, slot2 = slot2, slot3 = slot3 }, revision = revision, message = message }
@@ -429,6 +507,7 @@ script GreatVoyageVoyageState extends Logic
 		local playerId = senderUserId
 		if playerId == nil or playerId == "" or _UserService:GetUserEntityByUserId(playerId) == nil then return end
 		local state = self:GetOrCreateState(playerId)
+		if state == nil then return end
 		state.lastPublishedShipRevision = -1
 		state.lastPublishedInventoryRevision = -1
 		self:PublishSnapshot(playerId, state)
@@ -440,6 +519,12 @@ script GreatVoyageVoyageState extends Logic
 		state.shipRevision = state.shipRevision + 1
 		state.shipMessage = message
 		state.shipRequestInProgress = false
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		if state.status ~= "sailing" and player ~= nil then
+			local portId = self:GetPortIdFromMap(player.CurrentMapName)
+			if portId ~= "" then state.safePortId = portId end
+		end
+		if _GreatVoyageProfileStore ~= nil then _GreatVoyageProfileStore:MarkStateDirty(playerId, state) end
 		self:PublishSnapshot(playerId, state)
 	end
 
@@ -451,6 +536,7 @@ script GreatVoyageVoyageState extends Logic
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		if player == nil then return end
 		local state = self:GetOrCreateState(playerId)
+		if state == nil then return end
 		if state.shipRequestInProgress == true then return end
 		state.shipRequestInProgress = true
 		if state.status == "sailing" then self:CompleteShipRequest(playerId, state, "航行中不能買新船喔！") return end
@@ -467,6 +553,7 @@ script GreatVoyageVoyageState extends Logic
 		state.economyRevision = state.economyRevision + 1
 		state.economyMessage = "購買「" .. definition.name .. "」，花費 " .. tostring(definition.price) .. " G。"
 		self:CompleteShipRequest(playerId, state, state.economyMessage)
+		self:ReceiveTransactionFeedback("ship_buy", shipId, state.shipRevision, playerId)
 		log("[Ship] purchased player=" .. playerId .. " ship=" .. shipId .. " cost=" .. tostring(definition.price))
 	end
 
@@ -478,6 +565,7 @@ script GreatVoyageVoyageState extends Logic
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		if player == nil then return end
 		local state = self:GetOrCreateState(playerId)
+		if state == nil then return end
 		if state.shipRequestInProgress == true then return end
 		state.shipRequestInProgress = true
 		if state.status == "sailing" then self:CompleteShipRequest(playerId, state, "正在航行中，不能換船開喔！") return end
@@ -508,6 +596,7 @@ script GreatVoyageVoyageState extends Logic
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		if player == nil then return end
 		local state = self:GetOrCreateState(playerId)
+		if state == nil then return end
 		if state.shipRequestInProgress == true then return end
 		state.shipRequestInProgress = true
 		if state.status == "sailing" then self:CompleteShipRequest(playerId, state, "航行中不能調整改裝卡喔！") return end
@@ -564,6 +653,7 @@ script GreatVoyageVoyageState extends Logic
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		if player == nil then return end
 		local state = self:GetOrCreateState(playerId)
+		if state == nil then return end
 		if state.shipRequestInProgress == true then return end
 		state.shipRequestInProgress = true
 		if quantity < 1 or quantity > 99 or quantity ~= math.floor(quantity) then self:CompleteShipRequest(playerId, state, "改裝卡購買數量必須是 1 到 99。") return end
@@ -595,6 +685,7 @@ script GreatVoyageVoyageState extends Logic
 		state.economyRevision = state.economyRevision + 1
 		state.economyMessage = "買入 " .. card.name .. " ×" .. tostring(quantity) .. "，花費 " .. tostring(total) .. " G。"
 		self:CompleteShipRequest(playerId, state, state.economyMessage)
+		self:ReceiveTransactionFeedback("card_buy", cardId, state.shipRevision, playerId)
 		log("[ShipUpgrade] bought player=" .. playerId .. " card=" .. cardId .. " qty=" .. tostring(quantity) .. " total=" .. tostring(total))
 	end
 
@@ -646,7 +737,8 @@ script GreatVoyageVoyageState extends Logic
 		local portId = self:GetPortIdFromMap(player.CurrentMapName)
 		if portId == "" or self:IsAtShop(player, portId) == false then return end
 		if _GreatVoyageVoyageData == nil then return end
-		self:GetOrCreateState(playerId)
+		local state = self:GetOrCreateState(playerId)
+		if state == nil then return end
 		local cardIds = self:GetOrCreateCardMarket(playerId, portId)
 		self:ReceiveCardMarket(portId, cardIds, playerId)
 	end
@@ -659,6 +751,7 @@ script GreatVoyageVoyageState extends Logic
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		if player == nil then return end
 		local state = self:GetOrCreateState(playerId)
+		if state == nil then return end
 		if state.shipRequestInProgress == true then return end
 		state.shipRequestInProgress = true
 		if quantity < 1 or quantity > 99 or quantity ~= math.floor(quantity) then self:CompleteShipRequest(playerId, state, "改裝卡出售數量必須是 1 到 99。") return end
@@ -677,6 +770,7 @@ script GreatVoyageVoyageState extends Logic
 		state.economyRevision = state.economyRevision + 1
 		state.economyMessage = "賣出 " .. card.name .. " ×" .. tostring(quantity) .. "，收入 " .. tostring(total) .. " G。"
 		self:CompleteShipRequest(playerId, state, state.economyMessage)
+		self:ReceiveTransactionFeedback("card_sell", cardId, state.shipRevision, playerId)
 		log("[ShipUpgrade] sold player=" .. playerId .. " card=" .. cardId .. " qty=" .. tostring(quantity) .. " total=" .. tostring(total))
 	end
 
@@ -687,6 +781,7 @@ script GreatVoyageVoyageState extends Logic
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		if player == nil then return end
 		local state = self:GetOrCreateState(playerId)
+		if state == nil then return end
 		if state.shipRequestInProgress == true then return end
 		state.shipRequestInProgress = true
 		if state.status == "sailing" then self:CompleteShipRequest(playerId, state, "在天上不能修船，先回港吧！") return end
@@ -717,6 +812,7 @@ script GreatVoyageVoyageState extends Logic
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		if player == nil then return end
 		local state = self:GetOrCreateState(playerId)
+		if state == nil then return end
 		local ship = state.ship
 		state.shipRevision = state.shipRevision + 1
 		if state.status == "sailing" or self:GetPortIdFromMap(player.CurrentMapName) == "" then
@@ -731,6 +827,9 @@ script GreatVoyageVoyageState extends Logic
 			state.shipMessage = "小風帆修好囉，免費 0 G！"
 			log("[Ship] repaired player=" .. playerId .. " cost=0")
 		end
+		local portId = self:GetPortIdFromMap(player.CurrentMapName)
+		if portId ~= "" then state.safePortId = portId end
+		if _GreatVoyageProfileStore ~= nil then _GreatVoyageProfileStore:MarkStateDirty(playerId, state) end
 		self:PublishSnapshot(playerId, state)
 	end
 
@@ -877,12 +976,78 @@ script GreatVoyageVoyageState extends Logic
 
 	@ExecSpace("Server")
 	method void StartVoyage(string destinationId)
+		-- 舊舵輪/Phase0 呼叫仍沿用原 RPC 契約。
 		local playerId = senderUserId
 		if playerId == nil or playerId == "" then
 			log_warning("[VoyageState] start rejected: missing player id")
 			return
 		end
+		self:StartVoyageInternal(playerId, destinationId)
+	end
+
+	@ExecSpace("Server")
+	method void StartVoyageWithReceipt(string destinationId, integer requestSequence)
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then
+			log_warning("[VoyageState] start receipt rejected: missing player id")
+			return
+		end
+		if requestSequence <= 0 then
+			self:ReceiveDepartureResult(requestSequence, false, "出航請求編號無效，請再試一次。", playerId)
+			return
+		end
+		self._T.departureReceiptPending = self._T.departureReceiptPending or {}
+		if self._T.departureReceiptPending[playerId] == true then
+			self:ReceiveDepartureResult(requestSequence, false, "上一筆出航請求仍在確認中，請稍候。", playerId)
+			return
+		end
+
+		local beforeState = self.voyageByPlayer[playerId]
+		local beforeSequence = 0
+		local beforeStatus = ""
+		if beforeState ~= nil then
+			beforeSequence = beforeState.voyageSequence or 0
+			beforeStatus = beforeState.status or ""
+		end
+		self._T.departureReceiptPending[playerId] = true
+		local callOk = pcall(function() self:StartVoyageInternal(playerId, destinationId) end)
+		self._T.departureReceiptPending[playerId] = nil
+
+		-- 重新讀取同一位玩家的伺服器狀態；只有本次 sequence 前進且航線符合才算接受。
+		local state = self.voyageByPlayer[playerId]
+		local accepted = false
+		local reason = "出航未完成，請確認船隻狀態後再試一次。"
+		if callOk and state ~= nil then
+			local route = state.route
+			local sequence = state.voyageSequence or 0
+			accepted = beforeStatus ~= "sailing"
+				and state.status == "sailing"
+				and sequence > beforeSequence
+				and state.originId ~= ""
+				and state.destinationId == destinationId
+				and route ~= nil
+				and route.accepted == true
+				and route.originId == state.originId
+				and route.destinationId == destinationId
+			if state.lastReason ~= nil and state.lastReason ~= "" then reason = state.lastReason end
+		elseif callOk == false then
+			reason = "出航處理發生錯誤，沒有完成本次出航。"
+		end
+		self:ReceiveDepartureResult(requestSequence, accepted, reason, playerId)
+	end
+
+	@ExecSpace("Client")
+	method void ReceiveDepartureResult(integer requestSequence, boolean accepted, string reason)
+		-- Server 的最後一個呼叫參數負責指定目標玩家，不屬於方法參數。
+		local controller = _GreatVoyageAdventureController
+		if controller ~= nil then controller:HandleDepartureResult(requestSequence, accepted, reason) end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void StartVoyageInternal(string playerId, string destinationId)
+		-- Persist departure snapshot, then verify the same profile and prior settled state before sailing.
 		local state = self:GetOrCreateState(playerId)
+		if state == nil then return end
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		local originId = ""
 		if player ~= nil then originId = self:GetPortIdFromMap(player.CurrentMapName) end
@@ -904,6 +1069,7 @@ script GreatVoyageVoyageState extends Logic
 			self:PublishSnapshot(playerId, state)
 			return
 		end
+		if state.departurePending == true then return end
 		if state.ship.hull <= 0 then
 			if state.ship.id == "small_sampan" then
 				state.lastReason = "小風帆壞掉啦，快回港口免費維修！"
@@ -913,6 +1079,30 @@ script GreatVoyageVoyageState extends Logic
 			self:PublishSnapshot(playerId, state)
 			return
 		end
+		-- 出航前先寫穩包含市場的安全港 snapshot；AndWait 後重新驗證本人與登船位置。
+		if _GreatVoyageProfileStore == nil then return end
+		local departureStatus = state.status
+		state.departurePending = true
+		state.persistencePending = true
+		state.safePortId = originId
+		if _GreatVoyageProfileStore:MarkStateDirty(playerId, state) == false or _GreatVoyageProfileStore:FlushAndWait(state.profileCode) == false then
+			state.departurePending = false
+			state.persistencePending = false
+			state.lastReason = "存檔尚未確認，這趟先不能出航。"
+			self:PublishSnapshot(playerId, state)
+			return
+		end
+		player = _UserService:GetUserEntityByUserId(playerId)
+		local currentRoute = self:PreviewDirectRoute(originId, destinationId)
+		if self.voyageByPlayer[playerId] ~= state or player == nil or player.PlayerComponent == nil or player.PlayerComponent.ProfileCode ~= state.profileCode or self:GetPortIdFromMap(player.CurrentMapName) ~= originId or self:IsNearOwnShip(player, originId) == false or currentRoute.accepted ~= true or state.status ~= departureStatus then
+			state.departurePending = false
+			state.persistencePending = false
+			state.lastReason = "存檔期間位置或航線已變更，請重新登船。"
+			self:PublishSnapshot(playerId, state)
+			return
+		end
+		state.departurePending = false
+		state.persistencePending = false
 		state.status = "sailing"
 		self:ClearLegacyEncounter(state)
 		state.voyageSequence = (state.voyageSequence or 0) + 1
@@ -1029,7 +1219,11 @@ script GreatVoyageVoyageState extends Logic
 				state.economyRevision = state.economyRevision + 1
 				state.economyMessage = "飛船沉沒了，船上的貨物都掉光啦…"
 				state.lastReason = "鍋爐過熱燒壞船體，貨物都清空了…"
-				self:MovePlayerToPort(playerId, state.originId)
+				state.safePortId = state.originId
+				local saved = self:PersistSettledVoyage(playerId, state, state.originId)
+				if saved == false then log_warning("[SaveV1] boiler sink settle pending player=" .. playerId) end
+				local player = _UserService:GetUserEntityByUserId(playerId)
+				if saved and player ~= nil and player.PlayerComponent ~= nil and player.PlayerComponent.ProfileCode == state.profileCode and player.CurrentMapName == "map_airship_deck" and state.status == "sunk" and self.voyageByPlayer[playerId] == state then self:MovePlayerToPort(playerId, state.originId) end
 				self:PublishSnapshot(playerId, state)
 				return false
 			end
@@ -1098,7 +1292,11 @@ script GreatVoyageVoyageState extends Logic
 			state.economyRevision = state.economyRevision + 1
 			state.economyMessage = "沉船，船貨已全數遺失。"
 			state.lastReason = "遭遇沉船！貨物遺失並返回出發港，小風帆可免費維修。"
-			self:MovePlayerToPort(playerId, state.originId)
+			state.safePortId = state.originId
+			local saved = self:PersistSettledVoyage(playerId, state, state.originId)
+			if saved == false then log_warning("[SaveV1] battle sink settle pending player=" .. playerId) end
+			local player = _UserService:GetUserEntityByUserId(playerId)
+			if saved and player ~= nil and player.PlayerComponent ~= nil and player.PlayerComponent.ProfileCode == state.profileCode and player.CurrentMapName == "map_airship_deck" and state.status == "sunk" and self.voyageByPlayer[playerId] == state then self:MovePlayerToPort(playerId, state.originId) end
 		else
 			state.lastAdvanceAt = now
 			state.lastReason = "空戰大獲全勝，繼續朝目的地航行！"
@@ -1201,8 +1399,13 @@ script GreatVoyageVoyageState extends Logic
 		-- 成交與拒絕都同步本人快照及目前港口市場。
 		state.economyRevision = state.economyRevision + 1
 		state.economyMessage = message
-		self:PublishSnapshot(playerId, state)
 		local player = _UserService:GetUserEntityByUserId(playerId)
+		if state.status ~= "sailing" and player ~= nil then
+			local portId = self:GetPortIdFromMap(player.CurrentMapName)
+			if portId ~= "" then state.safePortId = portId end
+		end
+		if _GreatVoyageProfileStore ~= nil then _GreatVoyageProfileStore:MarkStateDirty(playerId, state) end
+		self:PublishSnapshot(playerId, state)
 		if player ~= nil then
 			local portId = self:GetPortIdFromMap(player.CurrentMapName)
 			if portId ~= "" then _GreatVoyagePlayerMarket:PublishMarket(playerId, portId) end
@@ -1215,6 +1418,7 @@ script GreatVoyageVoyageState extends Logic
 		local playerId = senderUserId
 		if playerId == nil or playerId == "" then return end
 		local state = self:GetOrCreateState(playerId)
+		if state == nil then return end
 		self:CompleteEconomyRequest(playerId, state, "港口商店貨架更新好囉！")
 	end
 
@@ -1224,6 +1428,7 @@ script GreatVoyageVoyageState extends Logic
 		local playerId = senderUserId
 		if playerId == nil or playerId == "" then return end
 		local state = self:GetOrCreateState(playerId)
+		if state == nil then return end
 		local cargoCapacity = math.max(0, state.ship.cargoCapacity or 0)
 		if quantity < 1 or quantity > cargoCapacity then self:CompleteEconomyRequest(playerId, state, "交易數量太多，超出貨艙容量啦！") return end
 		if state.status == "sailing" then self:CompleteEconomyRequest(playerId, state, "航行中專心開船，不能做生意喔！") return end
@@ -1261,6 +1466,7 @@ script GreatVoyageVoyageState extends Logic
 			_GreatVoyagePlayerMarket:MarkDirty(playerId, portId, good.id)
 		end
 		self:CompleteEconomyRequest(playerId, state, "買入 " .. good.displayName .. " ×" .. tostring(quantity) .. "，花費 " .. tostring(total) .. " G。")
+		self:ReceiveTransactionFeedback("goods_buy", goodId, state.economyRevision, playerId)
 		log("[VoyageState] server buy player=" .. playerId .. " port=" .. portId .. " good=" .. good.id .. " qty=" .. tostring(quantity) .. " total=" .. tostring(total))
 	end
 
@@ -1284,6 +1490,7 @@ script GreatVoyageVoyageState extends Logic
 	method void SellCargoInternal(string playerId, integer requestedQuantity, boolean sellAll)
 		-- 部分出售只扣本次數量，並保留原貨物成本供後續損益計算。
 		local state = self:GetOrCreateState(playerId)
+		if state == nil then return end
 		if state.status == "sailing" then self:CompleteEconomyRequest(playerId, state, "航行中專心開船，不能做生意喔！") return end
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		local portId = ""
@@ -1316,6 +1523,7 @@ script GreatVoyageVoyageState extends Logic
 			state.cargo = { id = cargo.id, quantity = cargo.quantity - quantity, buyPrice = cargo.buyPrice }
 		end
 		self:CompleteEconomyRequest(playerId, state, "賣出 " .. good.displayName .. " ×" .. tostring(quantity) .. "，收入 " .. tostring(total) .. " G。")
+		self:ReceiveTransactionFeedback("goods_sell", cargo.id, state.economyRevision, playerId)
 		log("[VoyageState] server sell player=" .. playerId .. " port=" .. portId .. " good=" .. good.id .. " qty=" .. tostring(quantity) .. " remaining=" .. tostring(state.cargo.quantity) .. " revenue=" .. tostring(total) .. " profit=" .. tostring(profit))
 	end
 
@@ -1353,6 +1561,9 @@ script GreatVoyageVoyageState extends Logic
 		local playerId = senderUserId
 		if playerId == nil or playerId == "" then return end
 		local state = self:GetOrCreateState(playerId)
+		if state == nil or state.persistencePending == true then return end
+		local now = _UtilLogic.ServerElapsedSeconds
+		if state.settlementRetryAt ~= nil and now < state.settlementRetryAt then return end
 		if state.status ~= "sailing" or state.route == nil then
 			state.lastReason = "目前沒有進行中的航程"
 			self:PublishSnapshot(playerId, state)
@@ -1366,7 +1577,6 @@ script GreatVoyageVoyageState extends Logic
 			self:PublishSnapshot(playerId, state)
 			return
 		end
-		local now = _UtilLogic.ServerElapsedSeconds
 		if state.airBattle ~= nil and state.airBattle.phase == "active" then
 			state.lastAdvanceAt = now
 			return
@@ -1429,6 +1639,15 @@ script GreatVoyageVoyageState extends Logic
 			state.status = "arrived"
 			self:ClearLegacyEncounter(state)
 			state.lastReason = "順利抵達目的港囉！"
+			state.safePortId = state.destinationId
+			if self:PersistSettledVoyage(playerId, state, state.destinationId) == false then
+				-- 未 durable 不結算抵港；保留航行狀態，下一次更新重試，不發放抵港結果。
+				state.status = "sailing"
+				state.safePortId = state.originId
+				state.lastReason = "抵港存檔尚未確認，正在安全重試。"
+				log_warning("[SaveV1] arrival settle pending player=" .. playerId)
+				return
+			end
 			log("[VoyageState] arrived player=" .. playerId .. " destination=" .. state.destinationId .. " legacyEvents=disabled")
 			local targetMap = "map_orbis_port"
 			local targetPosition = Vector2(0, 0)
@@ -1443,7 +1662,7 @@ script GreatVoyageVoyageState extends Logic
 				targetPosition = Vector2(0.7, -0.45)
 			end
 			local player = _UserService:GetUserEntityByUserId(playerId)
-			if player ~= nil and player.PlayerComponent ~= nil then player.PlayerComponent:MoveToMapPosition(targetMap, targetPosition) end
+			if self.voyageByPlayer[playerId] == state and player ~= nil and player.PlayerComponent ~= nil and player.PlayerComponent.ProfileCode == state.profileCode and player.CurrentMapName == "map_airship_deck" and state.status == "arrived" then player.PlayerComponent:MoveToMapPosition(targetMap, targetPosition) end
 		else
 			state.lastReason = "飛船穩定前進中！"
 		end

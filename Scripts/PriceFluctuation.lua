@@ -12,10 +12,10 @@ function PriceFluctuation:CalculatePrice(basePrice, amount)
         priceModifier = 1.5
     elseif amount < 500 then
         priceModifier = 1.2
-    elseif amount > 2000 then
-        priceModifier = 0.8
     elseif amount > 4000 then
         priceModifier = 0.5
+    elseif amount > 2000 then
+        priceModifier = 0.8
     end
     
     -- 加入隨機波動 (-5% ~ 5%) 讓市場看起來更活

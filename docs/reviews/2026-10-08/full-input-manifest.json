@@ -1,0 +1,200 @@
+[
+  {
+    "source": "RootDesk/MyDesk/Economy/GreatVoyageCommodityCatalog.mlua",
+    "export": "RootDesk/MyDesk/Economy/GreatVoyageCommodityCatalog.lua",
+    "sourceSha256": "ff153b37f6c5b150b673679132c0d839247dbf15f2f625b92df41c7c739f91da",
+    "reviewSha256": "8de55f0ad9ea9f15a561d39e393b7c7368076fb1f3480135e05d770acdda72ac",
+    "bytes": 218159,
+    "reviewBytes": 2748,
+    "removedLiteralBytes": 215411
+  },
+  {
+    "source": "RootDesk/MyDesk/Economy/GreatVoyageMarketPricing.mlua",
+    "export": "RootDesk/MyDesk/Economy/GreatVoyageMarketPricing.lua",
+    "sourceSha256": "8807b7e046044f90d67051d3ec86bdda8af4bad837ce8e48daee75a1475d780d",
+    "reviewSha256": "8807b7e046044f90d67051d3ec86bdda8af4bad837ce8e48daee75a1475d780d",
+    "bytes": 6003,
+    "reviewBytes": 6003,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/Economy/GreatVoyagePlayerMarket.mlua",
+    "export": "RootDesk/MyDesk/Economy/GreatVoyagePlayerMarket.lua",
+    "sourceSha256": "054ef7ebbc6009dadc80b8a3e35ac90468e323557b2d7cab5bce9d283fc35bf8",
+    "reviewSha256": "054ef7ebbc6009dadc80b8a3e35ac90468e323557b2d7cab5bce9d283fc35bf8",
+    "bytes": 4990,
+    "reviewBytes": 4990,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/GreatVoyageBackdropController.mlua",
+    "export": "RootDesk/MyDesk/GreatVoyageBackdropController.lua",
+    "sourceSha256": "232c58f8d7d80262357298f47abe0690a5e405ee19b585aed5a7c50edcfff5b7",
+    "reviewSha256": "232c58f8d7d80262357298f47abe0690a5e405ee19b585aed5a7c50edcfff5b7",
+    "bytes": 7293,
+    "reviewBytes": 7293,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/GreatVoyageDeckMushroom.mlua",
+    "export": "RootDesk/MyDesk/GreatVoyageDeckMushroom.lua",
+    "sourceSha256": "78f30165bcc0bee6bfbb00ede6d7a114b6ff7f9df012b2c1347851ba68b00eca",
+    "reviewSha256": "78f30165bcc0bee6bfbb00ede6d7a114b6ff7f9df012b2c1347851ba68b00eca",
+    "bytes": 1317,
+    "reviewBytes": 1317,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/GreatVoyageDeckRaid.mlua",
+    "export": "RootDesk/MyDesk/GreatVoyageDeckRaid.lua",
+    "sourceSha256": "7d9c7558342582a2ff1faea780134ea53e9e23a81c34797d831a1bad85e17ed1",
+    "reviewSha256": "7d9c7558342582a2ff1faea780134ea53e9e23a81c34797d831a1bad85e17ed1",
+    "bytes": 6493,
+    "reviewBytes": 6493,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/GreatVoyagePlayerAttack.mlua",
+    "export": "RootDesk/MyDesk/GreatVoyagePlayerAttack.lua",
+    "sourceSha256": "41b12fa0323cefaf396d36460b9815aaafdf4b18ec3a88805e835612bc697702",
+    "reviewSha256": "41b12fa0323cefaf396d36460b9815aaafdf4b18ec3a88805e835612bc697702",
+    "bytes": 1808,
+    "reviewBytes": 1808,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/GreatVoyageVoyageData.mlua",
+    "export": "RootDesk/MyDesk/GreatVoyageVoyageData.lua",
+    "sourceSha256": "0b9057a812f9e44c000d63ec1363e5c2dcb1484ac0cf59820b374689b7f2e56b",
+    "reviewSha256": "0b9057a812f9e44c000d63ec1363e5c2dcb1484ac0cf59820b374689b7f2e56b",
+    "bytes": 30160,
+    "reviewBytes": 30160,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/GreatVoyageVoyageState.mlua",
+    "export": "RootDesk/MyDesk/GreatVoyageVoyageState.lua",
+    "sourceSha256": "9ebbd5d3778d3d5186f457e715936cc67425237f19dac338972910b4549f484e",
+    "reviewSha256": "9ebbd5d3778d3d5186f457e715936cc67425237f19dac338972910b4549f484e",
+    "bytes": 93656,
+    "reviewBytes": 93656,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.mlua",
+    "export": "RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.lua",
+    "sourceSha256": "5ee66096b1df401a8b4a31c079310b335af6ef7f412cf2f912fcfba9c63cfd69",
+    "reviewSha256": "5ee66096b1df401a8b4a31c079310b335af6ef7f412cf2f912fcfba9c63cfd69",
+    "bytes": 50629,
+    "reviewBytes": 50629,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/Phase0VoyagePrototype.mlua",
+    "export": "RootDesk/MyDesk/Phase0VoyagePrototype.lua",
+    "sourceSha256": "61347815f250a24f9f37c49b4f7c32dc4ce3f2ade98a13a80254b64fbdec3692",
+    "reviewSha256": "61347815f250a24f9f37c49b4f7c32dc4ce3f2ade98a13a80254b64fbdec3692",
+    "bytes": 11823,
+    "reviewBytes": 11823,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/ShipVisual/GVShipDeckBounds.mlua",
+    "export": "RootDesk/MyDesk/ShipVisual/GVShipDeckBounds.lua",
+    "sourceSha256": "466ecb670ac6fb92b044dcfbafd71580cdc38f3ae7d8d326e2fc16dc395f69e9",
+    "reviewSha256": "466ecb670ac6fb92b044dcfbafd71580cdc38f3ae7d8d326e2fc16dc395f69e9",
+    "bytes": 7561,
+    "reviewBytes": 7561,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/ShipVisual/GVShipVisualClient.mlua",
+    "export": "RootDesk/MyDesk/ShipVisual/GVShipVisualClient.lua",
+    "sourceSha256": "7ee3c1dc201eb200c993bfabf46dc6cec8c4df1bebf08acdc291a47946f90413",
+    "reviewSha256": "7ee3c1dc201eb200c993bfabf46dc6cec8c4df1bebf08acdc291a47946f90413",
+    "bytes": 28644,
+    "reviewBytes": 28644,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/UI/GreatVoyageAdventureController.mlua",
+    "export": "RootDesk/MyDesk/UI/GreatVoyageAdventureController.lua",
+    "sourceSha256": "35d785a899c96c3e943e930a6b33ca82c856849976c6ac16cde4c209db9ba801",
+    "reviewSha256": "35d785a899c96c3e943e930a6b33ca82c856849976c6ac16cde4c209db9ba801",
+    "bytes": 187528,
+    "reviewBytes": 187528,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/UI/GreatVoyageHUDController.mlua",
+    "export": "RootDesk/MyDesk/UI/GreatVoyageHUDController.lua",
+    "sourceSha256": "c32975cc3f2243234ae7c88a3865fc65b83f1d980dc6cb1a503f2304345a7b44",
+    "reviewSha256": "c32975cc3f2243234ae7c88a3865fc65b83f1d980dc6cb1a503f2304345a7b44",
+    "bytes": 5796,
+    "reviewBytes": 5796,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/UI/GreatVoyageOnboarding.mlua",
+    "export": "RootDesk/MyDesk/UI/GreatVoyageOnboarding.lua",
+    "sourceSha256": "624dc20905e40f4cc49d405c3233704af1865f3ff769de1b874659724333f321",
+    "reviewSha256": "624dc20905e40f4cc49d405c3233704af1865f3ff769de1b874659724333f321",
+    "bytes": 4439,
+    "reviewBytes": 4439,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "RootDesk/MyDesk/UI/GreatVoyageRouteDeskController.mlua",
+    "export": "RootDesk/MyDesk/UI/GreatVoyageRouteDeskController.lua",
+    "sourceSha256": "86864672256c07411bf3c2c8cb34b8893123233d0320a7e41e1dfdc9bc9281b6",
+    "reviewSha256": "86864672256c07411bf3c2c8cb34b8893123233d0320a7e41e1dfdc9bc9281b6",
+    "bytes": 7470,
+    "reviewBytes": 7470,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "Scripts/CityTradeManager.lua",
+    "export": "Scripts/CityTradeManager.lua",
+    "sourceSha256": "b2a289436cd14ffc59eb918038fdc8c2dd572a97b0d3788a2572d0480107282d",
+    "reviewSha256": "b2a289436cd14ffc59eb918038fdc8c2dd572a97b0d3788a2572d0480107282d",
+    "bytes": 2709,
+    "reviewBytes": 2709,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "Scripts/PlayerInventory.lua",
+    "export": "Scripts/PlayerInventory.lua",
+    "sourceSha256": "cd7bd5c467ceaddf18433886777adab2cdd594e847616f40172d6e389b930605",
+    "reviewSha256": "cd7bd5c467ceaddf18433886777adab2cdd594e847616f40172d6e389b930605",
+    "bytes": 1422,
+    "reviewBytes": 1422,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "Scripts/PriceFluctuation.lua",
+    "export": "Scripts/PriceFluctuation.lua",
+    "sourceSha256": "67007fd29149e9a19030b82daf35034fe315f1c36f2e61ce2c819c2ea4ca6ae5",
+    "reviewSha256": "67007fd29149e9a19030b82daf35034fe315f1c36f2e61ce2c819c2ea4ca6ae5",
+    "bytes": 1154,
+    "reviewBytes": 1154,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "Tests/test_save_v1_lua.py",
+    "export": "Tests/test_save_v1_lua.py",
+    "sourceSha256": "b12373a31755d18c51cc05c738c6d0465ffb6d234005c230e2d0585251f39d96",
+    "reviewSha256": "b12373a31755d18c51cc05c738c6d0465ffb6d234005c230e2d0585251f39d96",
+    "bytes": 54431,
+    "reviewBytes": 54431,
+    "removedLiteralBytes": 0
+  },
+  {
+    "source": "Tests/test_transaction_feedback.py",
+    "export": "Tests/test_transaction_feedback.py",
+    "sourceSha256": "ed988df5356444a8d6687537e283513b5704044255dec37391f3bf6eeb83cf00",
+    "reviewSha256": "ed988df5356444a8d6687537e283513b5704044255dec37391f3bf6eeb83cf00",
+    "bytes": 23702,
+    "reviewBytes": 23702,
+    "removedLiteralBytes": 0
+  }
+]

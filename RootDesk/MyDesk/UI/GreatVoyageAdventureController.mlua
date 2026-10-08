@@ -1,6 +1,14 @@
 @Logic
 script GreatVoyageAdventureController extends Logic
 
+	property Entity acquiredGroup = "53e566be-0a2e-4fdd-844d-cbecbdb6a05f"
+	property UITransformComponent acquiredPresentation = "30cebee9-633f-4c35-bb48-f3e92e5c61c3"
+	property TextGUIRendererComponent acquiredShipName = "36101dc4-75a2-4895-b7a1-c80f97ef1755"
+	property SpriteGUIRendererComponent acquiredShipImage = "66c4a4bb-c5cf-4a85-993e-8cf35f0e0fdd"
+	property number acquiredElapsed = -1
+	property string coinSoundRuid = "19f45ea4d8eb46b1ba4aed7c006c0b69"
+	property string acquiredSoundRuid = "85009f4dcc7d4536b732aa54b76d05c9"
+
 	property Entity promptButtonEntity = "82fe4e25-a3ef-4b44-bacf-a5331f3c4579"
 	property ButtonComponent promptButton = "82fe4e25-a3ef-4b44-bacf-a5331f3c4579"
 	property TextGUIRendererComponent promptLabel = "82fe4e25-a3ef-4b44-bacf-a5331f3c4579"
@@ -483,6 +491,12 @@ script GreatVoyageAdventureController extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
+		-- 每次登入建立獨立的成交回饋狀態，不從存檔重播慶祝。
+		self._T.feedbackRevisions = {}
+		self._T.acquiredQueue = {}
+		self._T.loadRetryElapsed = 0
+		self.acquiredElapsed = -1
+		if isvalid(self.acquiredGroup) then self.acquiredGroup.Enable = false end
 		-- 綁定共用商店六格貨架與分頁，事件在結束時回收。
 		self:CacheReskinVisuals()
 		log("[GV-UI-RESKIN] OnBeginPlay entered; cached child renderer components=" .. tostring(self._T.reskinComponentCount or 0))
@@ -564,6 +578,18 @@ script GreatVoyageAdventureController extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void OnUpdate(number delta)
+		-- 以實際幀時間推進特效，不受原本每 0.1 秒 UI 更新節流影響。
+		self:UpdateShipAcquired(delta)
+		-- 暫時連線失敗時低頻要求重新載入；伺服器仍保有自己的 backoff。
+		if _GreatVoyageProfileStore ~= nil and _GreatVoyageProfileStore.clientLoadStatus == "retry" then
+			self._T.loadRetryElapsed = (self._T.loadRetryElapsed or 0) + delta
+			if self._T.loadRetryElapsed >= 30 then
+				self._T.loadRetryElapsed = 0
+				_GreatVoyageVoyageState:RequestEconomySnapshot()
+			end
+		else
+			self._T.loadRetryElapsed = 0
+		end
 		self.refreshElapsed = self.refreshElapsed + delta
 		if self.refreshElapsed < 0.1 then return end
 		local elapsedInterval = self.refreshElapsed
@@ -1447,8 +1473,12 @@ script GreatVoyageAdventureController extends Logic
 			if isFitting then self.cardMarketTitleText.Text = "船舶改裝" end
 		end
 		if self.cardMarketWalletText ~= nil then
-			self.cardMarketWalletText.Text = "持有 " .. tostring(snapshot.money or 0) .. " G"
+			self.cardMarketWalletText.Text = "持有 " .. self:FormatMoney(snapshot.money or 0)
 			self.cardMarketWalletText.Entity.Enable = not isFitting
+			local walletBag = _EntityService:GetEntityByPath("/ui/GreatVoyageAdventure/CardMarket/Window/Wallet/CoinBag")
+			local walletCoin = _EntityService:GetEntityByPath("/ui/GreatVoyageAdventure/CardMarket/Window/Wallet/CurrencyCoin")
+			if isvalid(walletBag) then walletBag.Enable = not isFitting end
+			if isvalid(walletCoin) then walletCoin.Enable = not isFitting end
 		end
 		if self.cardMarketPageText ~= nil then self.cardMarketPageText.Text = tostring(self.cardMarketPage) .. " / " .. tostring(pageCount) end
 		if self.cardMarketQuantityText ~= nil then self.cardMarketQuantityText.Text = "數量 ×" .. tostring(self.cardMarketQuantity) end
@@ -1796,18 +1826,26 @@ script GreatVoyageAdventureController extends Logic
 			local shipInfo = catalog[i]
 			local icon = cardIcons[i]
 			local label = cardTexts[i]
+			local priceLabel = _EntityService:GetEntityByPath("/ui/GreatVoyageAdventure/ShipModal/Window/ShipShop/Card" .. tostring(i) .. "/Price")
+			local priceIcon = _EntityService:GetEntityByPath("/ui/GreatVoyageAdventure/ShipModal/Window/ShipShop/Card" .. tostring(i) .. "/Price/CoinBag")
 			if isvalid(button) then
 				button.Entity.Enable = shipInfo ~= nil
+				if isvalid(priceLabel) then priceLabel.Enable = shipInfo ~= nil end
+				if isvalid(priceIcon) then priceIcon.Enable = shipInfo ~= nil and (shipInfo.price or 0) > 0 end
+				local priceCoin = _EntityService:GetEntityByPath("/ui/GreatVoyageAdventure/ShipModal/Window/ShipShop/Card" .. tostring(i) .. "/Price/CurrencyCoin")
+				if isvalid(priceCoin) then priceCoin.Enable = shipInfo ~= nil and (shipInfo.price or 0) > 0 end
 				if shipInfo ~= nil then
 					local ownedShip = snapshot.ownedShips[shipInfo.id]
 					local marker = "未擁有"
 					if shipInfo.id == activeShip.id then marker = "目前使用"
 					elseif ownedShip ~= nil then marker = "已擁有" end
-					local price = "免費"
-					if shipInfo.price > 0 then price = tostring(shipInfo.price) .. " G" end
 					local selection = ""
 					if i == self.selectedShipCatalogIndex then selection = "◆ " end
-					if isvalid(label) then label.Text = selection .. shipInfo.name .. "\n" .. marker .. "\n" .. price end
+					if isvalid(label) then label.Text = selection .. shipInfo.name .. "\n" .. marker end
+					if isvalid(priceLabel) then
+						local price = shipInfo.price or 0
+						priceLabel.TextGUIRendererComponent.Text = price > 0 and self:FormatMoney(price) or "免費"
+					end
 					button.Entity.SpriteGUIRendererComponent.Outline = i == self.selectedShipCatalogIndex
 					button.Entity.SpriteGUIRendererComponent.OutlineColor = Color(1, 0.82, 0.2, 1)
 					button.Entity.SpriteGUIRendererComponent.OutlineWidth = 3
@@ -1864,7 +1902,7 @@ script GreatVoyageAdventureController extends Logic
 		if isTierOne then slotGuidance = "\nT1：到「船舶改裝」可裝配三個通用槽！" end
 		self.shipShopDetailText.Text = "<size=40>" .. selected.name .. "</size>\n<size=22>" .. status .. "</size>\n<size=24>" .. selected.description .. "</size>\n船體 " .. tostring(maxHull) .. "　護盾 " .. tostring(maxShield) .. "\n裝甲 " .. tostring(maxArmor) .. "　貨艙 " .. tostring(cargoCapacity) .. " 格\n<size=24>" .. (isTierOne and "三個通用改裝槽" or "T0 無改裝槽") .. "</size>\n<size=20>" .. effectText .. "</size>"
 		if isvalid(self.shipWalletText) then
-			self.shipWalletText.Text = "持有 " .. tostring(snapshot.money or 0) .. " G"
+			self.shipWalletText.Text = self:FormatMoney(snapshot.money or 0)
 			self.shipWalletText.Entity.Enable = true
 		end
 		if isvalid(self.shipShopGoldText) then self.shipShopGoldText.Text = "" end
@@ -1897,9 +1935,8 @@ script GreatVoyageAdventureController extends Logic
 		elseif owned ~= nil then
 			self.shipShopActionButton.Entity.TextGUIRendererComponent.Text = "切換為這艘船"
 		else
-			local price = "免費"
-			if selected.price > 0 then price = tostring(selected.price) .. " G" end
-			self.shipShopActionButton.Entity.TextGUIRendererComponent.Text = "購買　" .. price
+			-- 價格已在所選船卡獨立顯示，操作鈕只保留動作文字。
+			self.shipShopActionButton.Entity.TextGUIRendererComponent.Text = "購買"
 		end
 		if not canTrade then
 			if not self:IsNearPortMerchant() then
@@ -1957,6 +1994,102 @@ script GreatVoyageAdventureController extends Logic
 	end
 
 	@ExecSpace("ClientOnly")
+	method string FormatMoney(integer amount)
+		-- 用固定千分位顯示整數金額，與作業系統語系無關。
+		local digits = tostring(math.max(0, amount))
+		local groups = {}
+		while #digits > 3 do
+			table.insert(groups, 1, string.sub(digits, -3))
+			digits = string.sub(digits, 1, -4)
+		end
+		table.insert(groups, 1, digits)
+		return table.concat(groups, ",")
+	end
+
+	@ExecSpace("ClientOnly")
+	method string GetSaveLoadMessage()
+		-- 載入失敗時顯示可理解的狀態，不用初始金額假裝已讀到存檔。
+		local status = "loading"
+		if _GreatVoyageProfileStore ~= nil then status = _GreatVoyageProfileStore.clientLoadStatus end
+		if status == "blocked" then return "存檔暫時無法讀取，資產已保護；請聯絡管理員。" end
+		if status == "retry" then return "存檔連線暫時忙碌，稍後自動重試…" end
+		return "正在讀取飛船與資產存檔…"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void HandleTransactionFeedback(string kind, string subjectId, integer revision)
+		-- 只接收伺服器成功成交的回執，拒絕同一種類的重複或過期版本。
+		local moneyTrade = kind == "goods_buy" or kind == "goods_sell" or kind == "card_buy" or kind == "card_sell"
+		if not moneyTrade and kind ~= "ship_buy" then return end
+		if revision < 0 then return end
+		self._T.feedbackRevisions = self._T.feedbackRevisions or {}
+		if revision <= (self._T.feedbackRevisions[kind] or -1) then return end
+		if kind == "ship_buy" then
+			if _GreatVoyageVoyageData == nil or _GreatVoyageVoyageData:GetShipById(subjectId) == nil then return end
+		end
+		self._T.feedbackRevisions[kind] = revision
+		if moneyTrade then
+			_SoundService:PlaySound(self.coinSoundRuid, 0.65)
+			log("[VRF] trade feedback kind=" .. kind .. " revision=" .. tostring(revision))
+			return
+		end
+		self._T.acquiredQueue = self._T.acquiredQueue or {}
+		-- 新船數量受船隻目錄限制，佇列避免連續購船的長音效互相蓋過。
+		table.insert(self._T.acquiredQueue, subjectId)
+		if self.acquiredElapsed < 0 then self:ShowNextShipAcquired() end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ShowNextShipAcquired()
+		-- 用目錄中的實際船圖與名稱呈現登場，不把文字烤進透明素材。
+		local queue = self._T.acquiredQueue or {}
+		if #queue == 0 then return end
+		local shipId = table.remove(queue, 1)
+		local definition = _GreatVoyageVoyageData:GetShipById(shipId)
+		if definition == nil then return end
+		_SoundService:PlaySound(self.acquiredSoundRuid, 0.7)
+		if not isvalid(self.acquiredGroup) or not isvalid(self.acquiredPresentation) then return end
+		if isvalid(self.acquiredShipName) then self.acquiredShipName.Text = definition.name end
+		if isvalid(self.acquiredShipImage) then
+			self.acquiredShipImage.ImageRUID = DataRef(definition.spriteRuid or "")
+			self.acquiredShipImage.Type = ImageType.Simple
+			self.acquiredShipImage.PreserveSprite = PreserveSpriteType.AspectOnly
+			self.acquiredShipImage.Color = Color(1, 1, 1, 1)
+		end
+		self.acquiredElapsed = 0
+		self.acquiredPresentation.UIScale = Vector3(0.72, 0.72, 1)
+		self.acquiredGroup.CanvasGroupComponent.GroupAlpha = 0
+		self.acquiredGroup.Enable = true
+		log("[VRF] ship acquired show id=" .. shipId)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void UpdateShipAcquired(number delta)
+		-- 0.28 秒彈出、停留、最後 0.45 秒淡出，整段不攔截操作。
+		if self.acquiredElapsed < 0 then return end
+		if not isvalid(self.acquiredGroup) or not isvalid(self.acquiredPresentation) then
+			self.acquiredElapsed = -1
+			self._T.acquiredQueue = {}
+			return
+		end
+		self.acquiredElapsed = self.acquiredElapsed + math.max(0, delta)
+		local elapsed = self.acquiredElapsed
+		if elapsed >= 3.4 then
+			self.acquiredGroup.Enable = false
+			self.acquiredElapsed = -1
+			log("[VRF] ship acquired hide")
+			self:ShowNextShipAcquired()
+			return
+		end
+		local pop = math.min(1, elapsed / 0.28)
+		local scale = 0.72 + 0.28 * (1 - (1 - pop) ^ 3)
+		self.acquiredPresentation.UIScale = Vector3(scale, scale, 1)
+		local alpha = math.min(1, elapsed / 0.12)
+		if elapsed > 2.95 then alpha = math.max(0, (3.4 - elapsed) / 0.45) end
+		self.acquiredGroup.CanvasGroupComponent.GroupAlpha = alpha
+	end
+
+	@ExecSpace("ClientOnly")
 	method void RefreshShipPanel()
 		-- 依伺服器船況更新船圖、貨艙格與已裝卡。
 		if _GreatVoyageVoyageState == nil or not isvalid(self.shipConditionText) then return end
@@ -1982,14 +2115,14 @@ script GreatVoyageAdventureController extends Logic
 			if isvalid(self.shipBadgeText) then self.shipBadgeText.Text = "正在取得船型資料" end
 			if isvalid(self.shipModsText) then self.shipModsText.Text = "" end
 			self.shipConditionText.Text = "船況同步中…"
-			self.shipWalletText.Text = "持有 — G"
+			self.shipWalletText.Text = "—"
 			self.shipCapacityText.Text = "貨艙同步中…"
 			self.shipCargoText.Text = "等待港口資料"
 			self.shipCargoIcon.Entity.Enable = false
 			local cargoCells = { self.shipCargoGridCell1, self.shipCargoGridCell2, self.shipCargoGridCell3, self.shipCargoGridCell4, self.shipCargoGridCell5, self.shipCargoGridCell6, self.shipCargoGridCell7, self.shipCargoGridCell8, self.shipCargoGridCell9, self.shipCargoGridCell10, self.shipCargoGridCell11, self.shipCargoGridCell12, self.shipCargoGridCell13, self.shipCargoGridCell14, self.shipCargoGridCell15, self.shipCargoGridCell16, self.shipCargoGridCell17, self.shipCargoGridCell18 }
 			for i = 1, 18 do if isvalid(cargoCells[i]) then cargoCells[i].Enable = false end end
 			self.shipRepairButton.Enable = false
-			self.shipStatusText.Text = "正在讀取飛船狀態…"
+			self.shipStatusText.Text = self:GetSaveLoadMessage()
 			return
 		end
 		if self.pendingShipRepairRevision >= 0 and ship.revision > self.pendingShipRepairRevision then self.pendingShipRepairRevision = -1 end
@@ -2055,13 +2188,13 @@ script GreatVoyageAdventureController extends Logic
 		local repairQuote = _GreatVoyageVoyageData:GetRepairQuote(ship)
 		if isvalid(self.shipRepairButton) then
 			self.shipRepairButton.Entity.TextGUIRendererComponent.Text = "免費維修 · 0 G"
-			if isT1 then self.shipRepairButton.Entity.TextGUIRendererComponent.Text = "T1 維修 · " .. tostring(repairQuote) .. " G" end
+			if isT1 then self.shipRepairButton.Entity.TextGUIRendererComponent.Text = "T1 維修 · " .. self:FormatMoney(repairQuote) .. " G" end
 		end
-		self.shipConditionText.Text = "船體\n護盾\n裝甲"
-		local currentConditions = { ship.hull or 0, ship.shield or 0, ship.armor or 0 }
-		local maximumConditions = { ship.maxHull or 0, ship.maxShield or 0, ship.maxArmor or 0 }
-		local conditionFills = { self.shipHullBarFillTransform, self.shipShieldBarFillTransform, self.shipArmorBarFillTransform }
-		local conditionValues = { self.shipHullValueText, self.shipShieldValueText, self.shipArmorValueText }
+		self.shipConditionText.Text = "護盾\n裝甲\n船體"
+		local currentConditions = { ship.shield or 0, ship.armor or 0, ship.hull or 0 }
+		local maximumConditions = { ship.maxShield or 0, ship.maxArmor or 0, ship.maxHull or 0 }
+		local conditionFills = { self.shipShieldBarFillTransform, self.shipArmorBarFillTransform, self.shipHullBarFillTransform }
+		local conditionValues = { self.shipShieldValueText, self.shipArmorValueText, self.shipHullValueText }
 		for i = 1, 3 do
 			local maximum = maximumConditions[i]
 			local current = currentConditions[i]
@@ -2077,7 +2210,7 @@ script GreatVoyageAdventureController extends Logic
 				conditionValues[i].FontColor = Color(0.29, 0.19, 0.13, 1)
 			end
 		end
-		self.shipWalletText.Text = "持有 " .. tostring(snapshot.money) .. " G"
+		self.shipWalletText.Text = self:FormatMoney(snapshot.money or 0)
 		local quantity = snapshot.cargo.quantity or 0
 		local capacity = math.max(0, ship.cargoCapacity or 0)
 		self.shipCapacityText.Text = tostring(quantity) .. " / " .. tostring(ship.cargoCapacity) .. "　·　空位 " .. tostring(math.max(0, ship.cargoCapacity - quantity))
@@ -2105,20 +2238,20 @@ script GreatVoyageAdventureController extends Logic
 			if isvalid(gridIcons[i]) then
 				gridIcons[i].Entity.Enable = isOccupied and good ~= nil
 				gridIcons[i].Color = Color(1, 1, 1, 1)
-				gridIcons[i].Type = 1
+				gridIcons[i].Type = ImageType.Simple
 				if isOccupied and good ~= nil then
 					gridIcons[i].ImageRUID = DataRef("thumbnail://" .. good.iconRuid)
-					gridIcons[i].PreserveSprite = PreserveSpriteType.CastFrom(0)
+					gridIcons[i].PreserveSprite = PreserveSpriteType.AspectOnly
 				end
 			end
 			if isvalid(gridLabels[i]) then
 				gridLabels[i].Entity.Enable = isCapacityCell
 				gridLabels[i].Text = "空位"
 				gridLabels[i].FontSize = 20
-				gridLabels[i].FontColor = Color(0.29, 0.19, 0.13, 1)
+				gridLabels[i].FontColor = Color(1, 0.94, 0.78, 1)
 				if isOccupied then
 					gridLabels[i].Text = "×1"
-					gridLabels[i].FontColor = Color(0.29, 0.19, 0.13, 1)
+					gridLabels[i].FontColor = Color(1, 0.94, 0.78, 1)
 					if good == nil then gridLabels[i].Text = "同步中" end
 				end
 			end
@@ -2386,21 +2519,54 @@ script GreatVoyageAdventureController extends Logic
 	end
 
 	@ExecSpace("ClientOnly")
+	method void StartVoyageWithReceipt(string destinationId, integer requestSequence)
+		if _GreatVoyageVoyageState ~= nil then
+			_GreatVoyageVoyageState:StartVoyageWithReceipt(destinationId, requestSequence)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
 	method void BeginVoyage()
+		if self._T.pendingVoyageStart == true then
+			self.messageText.Text = "出航請求確認中，請稍等船長回覆喔！"
+			return
+		end
 		if self.selectedDestinationId == self.currentPortId then
 			self.messageText.Text = "目的地不能選現在這座港口喔！"
 			return
 		end
 		self.pendingDestinationId = self.selectedDestinationId
 		if _GreatVoyageVoyageState ~= nil then
-			self:StartVoyage(self.pendingDestinationId)
+			-- 以本地遞增序號配對伺服器回執，避免舊快照或重複點擊誤判。
+			self._T.departureRequestSequence = (self._T.departureRequestSequence or 0) + 1
+			self._T.pendingVoyageStart = true
+			self._T.pendingVoyageStartSequence = self._T.departureRequestSequence
+			self:StartVoyageWithReceipt(self.pendingDestinationId, self._T.pendingVoyageStartSequence)
+			self.messageText.Text = "出航請求已送出，等船長確認中…"
 			log("[Adventure] state voyage requested destination=" .. self.pendingDestinationId)
+			return
 		elseif _Phase0VoyagePrototype ~= nil then
 			_Phase0VoyagePrototype:SelectDestination(self.pendingDestinationId)
 			_Phase0VoyagePrototype:StartVoyage()
+		else
+			return
 		end
 		self:CloseWorldMap()
 		self.messageText.Text = "離港啟程！開始航行！"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void HandleDepartureResult(integer requestSequence, boolean accepted, string reason)
+		if self._T.pendingVoyageStart ~= true or requestSequence ~= self._T.pendingVoyageStartSequence then return end
+		self._T.pendingVoyageStart = false
+		self._T.pendingVoyageStartSequence = nil
+		if accepted == true then
+			self:CloseWorldMap()
+			self.messageText.Text = "離港啟程！開始航行！"
+		else
+			self.messageText.Text = reason
+			if self.messageText.Text == nil or self.messageText.Text == "" then self.messageText.Text = "出航未完成，請確認船隻狀態後再試一次。" end
+		end
 	end
 
 	@ExecSpace("ClientOnly")
@@ -2443,7 +2609,8 @@ script GreatVoyageAdventureController extends Logic
 		local pagedCards = fullCards and pageCount > 1
 		local shelf = _EntityService:GetEntityByPath(root .. "Goods")
 		local shelfTitle = _EntityService:GetEntityByPath(root .. "Goods/Title")
-		if isvalid(shelf) then shelf.UITransformComponent.RectSize = Vector2(660, fullCards and 590 or 537) end
+		-- 羊皮紙素材上下有透明邊，584 才與右側木框的可見邊緣同高。
+		if isvalid(shelf) then shelf.UITransformComponent.RectSize = Vector2(660, 584) end
 		if isvalid(shelfTitle) then shelfTitle.UITransformComponent.anchoredPosition = Vector2(0, fullCards and 226 or 199) end
 		local portName = self:GetPortName(self.currentPortId)
 		local merchantName = portName .. "商人"
@@ -2466,7 +2633,7 @@ script GreatVoyageAdventureController extends Logic
 		self.shopDialogText.Text = "航線由你決定！挑好特產、整頓愛船，出發尋找各港好行情！"
 		if self.shopTab == "cards" then self.shopDialogText.Text = "這裡有六張特色改裝卡，挑選最適合你飛船的強化吧！" end
 		if self.shopTab == "sell" then self.shopDialogText.Text = "賣得越多，本港需求越低；報價已包含逐件降價，離線也會恢復喔！" end
-		self.shopGoldText.Text = "持有 " .. tostring(snapshot.money or 0) .. " G"
+		self.shopGoldText.Text = "持有 " .. self:FormatMoney(snapshot.money or 0)
 		if snapshot.playerId == "" then self.shopGoldText.Text = "持有 -- G（同步中）" end
 		if snapshot.economyRevision ~= self.lastShopEconomyRevision then
 			self.lastShopEconomyRevision = snapshot.economyRevision
@@ -2493,13 +2660,28 @@ script GreatVoyageAdventureController extends Logic
 					entity.SpriteGUIRendererComponent.Type = ImageType.Simple
 					entity.SpriteGUIRendererComponent.PreserveSprite = fullCards and PreserveSpriteType.AspectOnly or PreserveSpriteType.None
 					self:SetMerchantText(entity.Path .. "/Name", item.displayName or item.name or "商品")
-					self:SetMerchantText(entity.Path .. "/Price", tostring(item.price or 0) .. " G")
+					local itemPrice = item.price or 0
+					self:SetMerchantText(entity.Path .. "/Price", itemPrice > 0 and self:FormatMoney(itemPrice) or "免費")
+					local showCurrency = (self.shopTab == "goods" or self.shopTab == "cards") and itemPrice > 0
+					local currencyIcon = _EntityService:GetEntityByPath(entity.Path .. "/Price/CoinBag")
+					local currencyUnitIcon = _EntityService:GetEntityByPath(entity.Path .. "/Price/CurrencyCoin")
+					if isvalid(currencyIcon) then currencyIcon.Enable = showCurrency end
+					if isvalid(currencyUnitIcon) then currencyUnitIcon.Enable = showCurrency end
+					-- 改裝卡的實際畫面比商品底框窄，幣飾同步收進卡面內。
+					if isvalid(currencyIcon) then
+						currencyIcon.UITransformComponent.anchoredPosition = Vector2(fullCards and -55 or -76, 0)
+						currencyIcon.UITransformComponent.RectSize = fullCards and Vector2(28, 28) or Vector2(38, 38)
+					end
+					if isvalid(currencyUnitIcon) then
+						currencyUnitIcon.UITransformComponent.anchoredPosition = Vector2(fullCards and 55 or 76, 0)
+						currencyUnitIcon.UITransformComponent.RectSize = fullCards and Vector2(20, 20) or Vector2(28, 28)
+					end
 					if self.shopTab == "inventory" then self:SetMerchantText(entity.Path .. "/Price", "持有 " .. tostring((snapshot.cardInventory or {})[item.id] or 0) .. " 張") end
 					if self.shopTab == "sell" then
 						local cargoQuantity = (snapshot.cargo or {}).quantity or 0
 						local saleUnitPrice = _GreatVoyagePlayerMarket:GetClientQuote(self.currentPortId, item.id, 1).unitPrice
 						local unit = item.unit or "箱"
-						self:SetMerchantText(entity.Path .. "/Price", tostring(cargoQuantity) .. unit .. " · " .. tostring(saleUnitPrice) .. "G/" .. unit)
+						self:SetMerchantText(entity.Path .. "/Price", tostring(cargoQuantity) .. unit .. " · " .. self:FormatMoney(saleUnitPrice) .. "G/" .. unit)
 					end
 					local nameLabel = _EntityService:GetEntityByPath(entity.Path .. "/Name")
 					local priceLabel = _EntityService:GetEntityByPath(entity.Path .. "/Price")
@@ -2514,15 +2696,39 @@ script GreatVoyageAdventureController extends Logic
 						nameLabel.TextGUIRendererComponent.MaxSize = fullCards and 18 or 21
 					end
 					if isvalid(priceLabel) then
+						local moneyPrice = self.shopTab == "goods" or self.shopTab == "cards"
 						priceLabel.UITransformComponent.anchoredPosition = Vector2(0, fullCards and -78 or -55)
 						if pagedCards then priceLabel.UITransformComponent.anchoredPosition = Vector2(0, -78) end
-						priceLabel.UITransformComponent.RectSize = Vector2(fullCards and 154 or 176, self.shopTab == "sell" and 38 or (fullCards and 22 or 24))
-						if self.shopTab == "sell" then
+						priceLabel.UITransformComponent.RectSize = Vector2(moneyPrice and (fullCards and 78 or 112) or (fullCards and 154 or 176), self.shopTab == "sell" and 38 or (fullCards and 22 or 24))
+						if moneyPrice then
+							priceLabel.TextGUIRendererComponent.HorizontalAlignment = TextHorizontalAlignmentOption.Right
+							priceLabel.TextGUIRendererComponent.FontColor = Color(1, 0.91, 0.63, 1)
+							priceLabel.TextGUIRendererComponent.ColorGradient = true
+							priceLabel.TextGUIRendererComponent.GradientMode = GradientModes.Vertical
+							priceLabel.TextGUIRendererComponent.TopLeftColor = Color(1, 0.98, 0.82, 1)
+							priceLabel.TextGUIRendererComponent.TopRightColor = Color(1, 0.98, 0.82, 1)
+							priceLabel.TextGUIRendererComponent.BottomLeftColor = Color(0.82, 0.45, 0.08, 1)
+							priceLabel.TextGUIRendererComponent.BottomRightColor = Color(0.82, 0.45, 0.08, 1)
+							priceLabel.TextGUIRendererComponent.Underlay = true
+							priceLabel.TextGUIRendererComponent.UnderlayColor = Color(0.14, 0.06, 0.015, 0.95)
+							priceLabel.TextGUIRendererComponent.FontSize = fullCards and 18 or 21
+							priceLabel.TextGUIRendererComponent.MinSize = fullCards and 15 or 16
+							priceLabel.TextGUIRendererComponent.MaxSize = fullCards and 18 or 21
+							priceLabel.TextGUIRendererComponent.BestFit = true
+						elseif self.shopTab == "sell" then
+							priceLabel.TextGUIRendererComponent.HorizontalAlignment = TextHorizontalAlignmentOption.Center
+							priceLabel.TextGUIRendererComponent.FontColor = Color(0.29, 0.16, 0.08, 1)
+							priceLabel.TextGUIRendererComponent.ColorGradient = false
+							priceLabel.TextGUIRendererComponent.Underlay = false
 							priceLabel.TextGUIRendererComponent.FontSize = 18
 							priceLabel.TextGUIRendererComponent.MinSize = 15
 							priceLabel.TextGUIRendererComponent.MaxSize = 18
 							priceLabel.TextGUIRendererComponent.BestFit = true
 						else
+							priceLabel.TextGUIRendererComponent.HorizontalAlignment = TextHorizontalAlignmentOption.Center
+							priceLabel.TextGUIRendererComponent.FontColor = Color(0.29, 0.16, 0.08, 1)
+							priceLabel.TextGUIRendererComponent.ColorGradient = false
+							priceLabel.TextGUIRendererComponent.Underlay = false
 							priceLabel.TextGUIRendererComponent.FontSize = fullCards and 18 or 21
 							priceLabel.TextGUIRendererComponent.MaxSize = fullCards and 18 or 21
 						end
@@ -2531,9 +2737,9 @@ script GreatVoyageAdventureController extends Logic
 					local ruid = item.iconRuid or item.artRuid or ""
 					if isvalid(icon) then
 						icon.Enable = ruid ~= "" and not fullCards
-						if ruid ~= "" then icon.SpriteGUIRendererComponent.ImageRUID = DataRef(ruid) end
-						-- 原生 ETC 圖示的資源 pivot 會使 AspectOnly 偏移；None 保持在格位內。
-						icon.SpriteGUIRendererComponent.PreserveSprite = item.artRuid ~= nil and PreserveSpriteType.AspectOnly or PreserveSpriteType.None
+						-- 原生掉落物 pivot 可能在左下或畫格外；縮圖以中心定位且保留完整圖示。
+						if ruid ~= "" then icon.SpriteGUIRendererComponent.ImageRUID = DataRef("thumbnail://" .. ruid) end
+						icon.SpriteGUIRendererComponent.PreserveSprite = PreserveSpriteType.AspectOnly
 					end
 					entity.SpriteGUIRendererComponent.Outline = index == self.shopSelectedIndex
 					entity.SpriteGUIRendererComponent.OutlineColor = Color(1, 0.82, 0.2, 1)
@@ -2605,8 +2811,8 @@ script GreatVoyageAdventureController extends Logic
 		if selected ~= nil then ruid = selected.iconRuid or selected.artRuid or "" end
 		if isvalid(icon) then
 			icon.Enable = ruid ~= ""
-			if ruid ~= "" then icon.SpriteGUIRendererComponent.ImageRUID = DataRef(ruid) end
-			icon.SpriteGUIRendererComponent.PreserveSprite = selected ~= nil and selected.artRuid ~= nil and PreserveSpriteType.AspectOnly or PreserveSpriteType.None
+			if ruid ~= "" then icon.SpriteGUIRendererComponent.ImageRUID = DataRef("thumbnail://" .. ruid) end
+			icon.SpriteGUIRendererComponent.PreserveSprite = PreserveSpriteType.AspectOnly
 		end
 		local quantity = 1
 		if _Phase0VoyagePrototype ~= nil then quantity = _Phase0VoyagePrototype.tradeQuantity end
@@ -2815,7 +3021,9 @@ script GreatVoyageAdventureController extends Logic
 		if self.shopTab ~= "goods" then
 			local selected = self:GetShopEntries()[self.shopSelectedIndex]
 			if self.shopTab ~= "catalog" and selected ~= nil and _GreatVoyageVoyageState ~= nil then
-				_GreatVoyageVoyageState:SellUpgradeCard(selected.id, _Phase0VoyagePrototype.tradeQuantity)
+				local quantity = 1
+				if _Phase0VoyagePrototype ~= nil then quantity = _Phase0VoyagePrototype.tradeQuantity end
+				_GreatVoyageVoyageState:SellUpgradeCard(selected.id, quantity)
 				self.shopStatusMessage = "改裝卡賣出請求已送出！"
 			end
 			return
@@ -2887,6 +3095,13 @@ script GreatVoyageAdventureController extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void OnEndPlay()
+		-- 清空未播放的登場回饋；不留下 timer 或跨登入佇列。
+		self._T.pendingVoyageStart = false
+		self._T.pendingVoyageStartSequence = nil
+		self._T.feedbackRevisions = {}
+		self._T.acquiredQueue = {}
+		self.acquiredElapsed = -1
+		if isvalid(self.acquiredGroup) then self.acquiredGroup.Enable = false end
 		-- 成對回收本次加到可見 child 按鈕的狀態事件。
 		for _, subscription in ipairs(self._T.reskinStateHandlers or {}) do
 			if isvalid(subscription.entity) and subscription.eventHandler ~= nil then

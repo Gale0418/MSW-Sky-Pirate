@@ -1,0 +1,9 @@
+Use case: stylized-concept
+Asset type: square game UI cargo-hold background
+Input images: Image 1: current cargo hold artwork; use it as visual style, materials, lighting, and nautical detail reference.
+Primary request: Recompose this warm pirate-ship cargo hold as a true square 1:1 image for a 560x570 UI panel, preserving the polished hand-painted 3D-cartoon look and rich golden wood / brass aesthetic.
+Scene/backdrop: cozy ship cargo hold interior viewed straight-on. Retain the recognizable warm timber wall, brass corner fittings, rope lashings, and paired golden lanterns from Image 1.
+Composition/framing: square canvas. Recompose vertically instead of cropping or stretching. Keep decorative details at the outer sides and top perimeter. Leave the central wall unobstructed from near the top down through at least 78% of image height for a 4-column by 3-row cargo grid. The lowest 18% may show a shallow floor, but keep it visually quiet behind UI; no raised rail or bright detail that competes with the last cargo row or footer. Leave the upper band suitable for small title text. Straight-on view, even side margins, no perspective skew.
+Style/medium: polished hand-painted pirate-adventure game UI background; dimensional warm oak boards, subtle amber highlights, aged brass, cream rope; crisp and coherent at small display size, matching Image 1.
+Lighting/mood: warm golden lantern light, balanced across the wall, moderate contrast for legible dark UI overlays.
+Constraints: true 1:1 square image; no text, numbers, icons, cargo, crates, barrels, shelves, slots, UI panels, logos, watermark, or gold outer UI frame. Keep center clear and uncluttered.

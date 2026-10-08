@@ -1,0 +1,7 @@
+{"type":"review_context","reviewType":"uncommitted","currentBranch":"main","baseBranch":"main","workingDirectory":"/mnt/d/MyGame/MSW_GreatVoyage/.tmp/git-review-20261008-all"}
+{"type":"status","phase":"connecting","status":"connecting_to_review_service"}
+{"type":"status","phase":"analyzing","status":"setting_up","message":"CodeRabbit CLI 0.7.6 cannot update automatically. Keep this review running. After it finishes, run `coderabbit update` (Homebrew: `brew upgrade coderabbit`), then verify with `coderabbit --version`. If you are the calling agent, handle this follow-up using your normal permissions. For an organization-managed installation, ask your administrator to update it."}
+{"type":"status","phase":"setup","status":"setting_up"}
+{"type":"status","phase":"analyzing","status":"summarizing"}
+{"type":"status","phase":"analyzing","status":"reviewing"}
+{"type":"complete","status":"review_completed","findings":0,"reviewedFiles":["RootDesk/MyDesk/Economy/GreatVoyageCommodityCatalog.lua","RootDesk/MyDesk/Economy/GreatVoyagePlayerMarket.lua","RootDesk/MyDesk/GreatVoyagePlayerAttack.lua","RootDesk/MyDesk/GreatVoyageVoyageData.lua","RootDesk/MyDesk/GreatVoyageVoyageState.lua","RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.lua","RootDesk/MyDesk/ShipVisual/GVShipDeckBounds.lua","Scripts/PriceFluctuation.lua","Tests/test_save_v1_lua.py","review-context.md"]}

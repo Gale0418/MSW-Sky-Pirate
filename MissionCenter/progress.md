@@ -3,15 +3,15 @@
 
 - Project: MSW Great Voyage
 - Objective: 楓之谷風格的空中航海冒險；以既有三場景原型為基線，完成 Great Voyage M1 四港、直航多空域航圖、地方商品貿易、甲板遭遇與整合 QA。
-- Current status: 22/43 tasks
+- Current status: 22/50 tasks
 - Milestone: Next slice
-- Progress bar: [#####-----] 51%
+- Progress bar: [####------] 44%
 - Active tasks:
-  - GV-FEEDBACK-20261004 截圖回饋：頂部對齊、空戰視覺與隨機商品風味描述 (Review)
-  - GV-AUDIT-20261004 全程抓蟲、修復與局部效能最佳化 (Review)
-  - AC-T7 更多港口／貨物／路線怪、角色升級與技能書商店 (Backlog)
-  - B-T1 高難航線玩家離船空戰 (Backlog)
-  - GV-M1-P1 Phase 1：Data & Geometry (Review)
+  - GV-SAVE-DATA 版本化帳號快照與市場遷移 (Review)
+  - GV-SAVE-LIFE 單一寫入者與登入離線保存 (Review)
+  - GV-SAVE-FLOW 交易、出航與沉船整合 (Review)
+  - GV-SAVE-QA 存檔全流程與故障回歸 (Review)
+  - GV-CABIN-MONEY 船艙透明金額框與金屬數字 (Review)
 - Blocked by:
   - GV-COMMODITY-CATALOG 全港 184 項商品圖鑑與缺圖素材補齊
 - Next update: Re-run sync after any task or smoke-test change.

@@ -1,0 +1,32 @@
+[
+  {
+    "source": "RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.mlua",
+    "export": "RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.lua",
+    "bytes": 50796,
+    "sha256": "0f0a1a70e7cceeb31bd26982a7c3fb65c1e61caeda3802c2716eab9460833845"
+  },
+  {
+    "source": "RootDesk/MyDesk/GreatVoyageVoyageState.mlua",
+    "export": "RootDesk/MyDesk/GreatVoyageVoyageState.lua",
+    "bytes": 93844,
+    "sha256": "c859d06bb21a49b47e22cf69c5f894bbaeacf11f7d8acd26493aff7669d03d7e"
+  },
+  {
+    "source": "Scripts/PriceFluctuation.lua",
+    "export": "Scripts/PriceFluctuation.lua",
+    "bytes": 1154,
+    "sha256": "2da9446acb586ecd69e8f65ac7c47ff486cf27f16ca30e88ac7b3086bf20e82a"
+  },
+  {
+    "source": "Tests/test_save_v1_lua.py",
+    "export": "Tests/test_save_v1_lua.py",
+    "bytes": 58806,
+    "sha256": "ab906cbdcb5e5509baf891d237bd585dd51ce9852b9929305de2bb25721a7e8e"
+  },
+  {
+    "source": "Tests/test_git_review_regressions.py",
+    "export": "Tests/test_git_review_regressions.py",
+    "bytes": 3494,
+    "sha256": "83caaa891219f2aa764b5925df1fd6261bd36aababaed09fb26b649bfb4d8333"
+  }
+]

@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-08",
+  "map": {
+    "name": "map01",
+    "id": "1b69a61a-eaad-4cc8-8ca4-f2099e119ec4",
+    "workspaceRootIdMatched": true,
+    "finalMode": "edit"
+  },
+  "cycle": {
+    "stopBeforeRefresh": "already_stopped",
+    "clearedNormalLogs": 48,
+    "refresh": "ok",
+    "buildBeforePlay": {
+      "logCount": 72,
+      "errorCount": 0,
+      "infoCount": 72,
+      "warningCount": 0
+    },
+    "play": "ok",
+    "contexts": [
+      "server_main",
+      "client"
+    ],
+    "serverProbeDispatch": "ok",
+    "normalLogs": {
+      "count": 39,
+      "errorCount": 0,
+      "positiveMarkers": [
+        "[VRF][GitReview] SyncMarket optional-only PASS pressure=0 at=0 cycle=3 bought=2",
+        "[VRF][GitReview] HandleUserLeaveEvent isolated PASS statusCleared=true dirty=false storage=nil",
+        "[VRF][GitReview] StoreProbe PASS isolated=true noDataStorage=true"
+      ],
+      "warningCount": 0
+    },
+    "buildAfterPlay": {
+      "logCount": 72,
+      "errorCount": 0,
+      "infoCount": 72,
+      "warningCount": 0
+    },
+    "stopAfterProbe": "play_to_edit"
+  },
+  "probe": {
+    "account": "fake isolated ProfileCode",
+    "user": "fake isolated UserId",
+    "profile": "CreateInitialProfile with four empty markets",
+    "commodity": "canonical valid forest commodity",
+    "storage": "nil; dirty reset false before Leave; FlushAndWait returned early before DataStorage",
+    "productionChanges": "none"
+  },
+  "abandonVoyage": {
+    "result": "not run; retained unknown",
+    "reason": "production path rehydrates, may MovePlayerToPort and PublishSnapshot for a real player; restoring voyageByPlayer would not undo those side effects"
+  },
+  "limitations": [
+    "play dispatch status was confirmed by positive runtime markers in maker-store-probe-logs.raw.json",
+    "no real disconnect/relogin scenario run",
+    "legacy pricing fix covered by local unit tests, not Native"
+  ],
+  "evidence": "MissionCenter/evidence/2026-10-08/git-review",
+  "buildCompiledAt": "2026-10-08T10:36:29+08:00"
+}

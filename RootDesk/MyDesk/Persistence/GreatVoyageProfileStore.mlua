@@ -1,0 +1,982 @@
+@Logic
+script GreatVoyageProfileStore extends Logic
+
+	property table accounts = {}
+	property table profileByUser = {}
+	property table loadStatusByUser = {}
+	property table openPorts = { "forest", "sky", "ludus", "nihal" }
+	property string storagePrefix = "GVSaveV1"
+	property string legacyMarketPrefix = "GVMarketV1"
+	property string bootstrapGateKey = "gate"
+	property integer schemaVersion = 1
+	property integer notFoundCode = 1000002
+	property integer compareFailedCode = 2000000
+	property integer maxPayloadBytes = 48000
+	property number flushIntervalSeconds = 30
+	property integer flushTimerId = 0
+	property boolean firstCreateSetVerified = true
+	property string clientLoadStatus = "loading"
+
+	@ExecSpace("ServerOnly")
+	method void OnBeginPlay()
+		-- 每個 world session 建立唯一的 ProfileCode writer 與背景 flush。
+		self.accounts = {}
+		self.profileByUser = {}
+		self.loadStatusByUser = {}
+		self.flushTimerId = _TimerService:SetTimerRepeat(function()
+			local now = _UtilLogic.ServerElapsedSeconds
+			for profileCode, account in pairs(self.accounts) do
+				if account.ready == true and account.dirty == true and account.saving ~= true and account.conflicted ~= true then
+					self:FlushAsync(profileCode)
+				elseif account.saving == true and now - (account.savingStartedAt or now) >= 8 then
+					self:ResolveTimedOutWrite(profileCode)
+				end
+			end
+		end, self.flushIntervalSeconds, self.flushIntervalSeconds)
+		log("[SaveV1] ready single ProfileCode writer interval=" .. tostring(self.flushIntervalSeconds))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnEndPlay()
+		-- 世界結束時同步排空 dirty 帳號並回收計時器。
+		if self.flushTimerId ~= 0 then _TimerService:ClearTimer(self.flushTimerId) self.flushTimerId = 0 end
+		if _GreatVoyageVoyageState ~= nil then _GreatVoyageVoyageState:CaptureSafeProfilesForShutdown() end
+		for profileCode, account in pairs(self.accounts) do
+			if account.ready == true and account.dirty == true then self:FlushAndWait(profileCode) end
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean IsIntegerInRange(any value, integer minimum, integer maximum)
+		-- 驗證有限整數及上下界，避免 Lua NaN/小數通過持久化 schema。
+		return type(value) == "number" and value == value and value >= minimum and value <= maximum and value == math.floor(value)
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean IsFiniteNumber(any value)
+		-- 市場壓力與時間可為小數，但不得含 NaN 或無限值。
+		return type(value) == "number" and value == value and value > -math.huge and value < math.huge
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean IsKnownId(string id, table catalog)
+		-- 只接受本機 canonical catalog 中的識別碼。
+		if type(id) ~= "string" or id == "" or type(catalog) ~= "table" then return false end
+		for _, definition in ipairs(catalog) do
+			if definition ~= nil and definition.id == id then return true end
+		end
+		return false
+	end
+
+	@ExecSpace("ServerOnly")
+	method any FindById(string id, table catalog)
+		-- 依 canonical catalog 取回定義，不信任存檔內的衍生數值。
+		if type(catalog) ~= "table" then return nil end
+		for _, definition in ipairs(catalog) do
+			if definition ~= nil and definition.id == id then return definition end
+		end
+		return nil
+	end
+
+	@ExecSpace("ServerOnly")
+	method any CalculateSavedShipLimits(any definition, table slots, table cardCatalog)
+		-- 以現有 CalculateShipUpgrades 公式重算持久船況上限。
+		if definition == nil or type(slots) ~= "table" or #slots ~= 3 then return nil end
+		local hullMultiplier = 0
+		local armorMultiplier = 0
+		local shieldMultiplier = 0
+		local cargoBonus = 0
+		local cargoMultiplier = 0
+		for slotIndex = 1, 3 do
+			local cardId = slots[slotIndex]
+			if type(cardId) ~= "string" then return nil end
+			if cardId ~= "" then
+				local card = self:FindById(cardId, cardCatalog)
+				if card == nil or card.available ~= true or definition.tier ~= 1 then return nil end
+				hullMultiplier = hullMultiplier + (card.maxHullMultiplier or 0)
+				armorMultiplier = armorMultiplier + (card.maxArmorMultiplier or 0)
+				shieldMultiplier = shieldMultiplier + (card.maxShieldMultiplier or 0)
+				cargoBonus = cargoBonus + (card.cargoBonus or 0)
+				cargoMultiplier = cargoMultiplier + (card.cargoMultiplier or 0)
+			end
+		end
+		return {
+			maxHull = math.max(1, math.floor(definition.maxHull * math.max(0.25, 1 + hullMultiplier) + 0.5)),
+			maxArmor = math.max(0, math.floor(definition.maxArmor * math.max(0.25, 1 + armorMultiplier) + 0.5)),
+			maxShield = math.max(0, math.floor(definition.maxShield * math.max(0.25, 1 + shieldMultiplier) + 0.5)),
+			cargoCapacity = math.max(1, math.floor(definition.cargoCapacity * (1 + cargoMultiplier) + 0.5) + cargoBonus)
+		}
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean ValidateMarketEntries(table entries, string portId, table goodsCatalog)
+		-- 驗證每港緊湊列格式 { goodId, pressure, at, cycle, bought }。
+		if type(entries) ~= "table" then return false end
+		local rowCount = 0
+		local seenGood = {}
+		for index, row in pairs(entries) do
+			if type(index) ~= "number" or index < 1 or index ~= math.floor(index) or type(row) ~= "table" or #row ~= 5 then return false end
+			local goodId = row[1]
+			local good = self:FindById(goodId, goodsCatalog)
+			if good == nil or seenGood[goodId] == true or good.verified ~= true or (good.originId ~= portId and (good.demands == nil or good.demands[portId] == nil)) then return false end
+			if not self:IsFiniteNumber(row[2]) or row[2] < 0 or row[2] > 1 then return false end
+			if not self:IsFiniteNumber(row[3]) or row[3] < 0 then return false end
+			if not self:IsIntegerInRange(row[4], -1, 2147483647) or not self:IsIntegerInRange(row[5], 0, 10) then return false end
+			seenGood[goodId] = true
+			rowCount = rowCount + 1
+		end
+		if #entries ~= rowCount then return false end
+		return true
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean ValidateProfile(any profile, table shipCatalog, table cardCatalog, table goodsCatalog)
+		-- 嚴格驗證完整核心與四港市場；任何欄位錯誤都拒絕整份帳號。
+		if type(profile) ~= "table" or profile.schemaVersion ~= self.schemaVersion or not self:IsIntegerInRange(profile.revision, 1, 2147483647) then return false end
+		if type(profile.safePortId) ~= "string" then return false end
+		local knownPort = false
+		for _, portId in ipairs(self.openPorts) do if profile.safePortId == portId then knownPort = true end end
+		if not knownPort then return false end
+		local core = profile.core
+		if type(core) ~= "table" or not self:IsIntegerInRange(core.money, 0, 2147483647) then return false end
+		if type(core.ships) ~= "table" or type(core.cardInventory) ~= "table" or type(core.cargo) ~= "table" then return false end
+		if not self:IsKnownId(core.activeShipId, shipCatalog) then return false end
+		local installedCounts = {}
+		local ownedCount = 0
+		for shipId, savedShip in pairs(core.ships) do
+			local definition = self:FindById(shipId, shipCatalog)
+			if definition == nil or type(savedShip) ~= "table" then return false end
+			local limits = self:CalculateSavedShipLimits(definition, savedShip.slots, cardCatalog)
+			if limits == nil or not self:IsIntegerInRange(savedShip.hull, 0, limits.maxHull) or not self:IsIntegerInRange(savedShip.shield, 0, limits.maxShield) or not self:IsIntegerInRange(savedShip.armor, 0, limits.maxArmor) then return false end
+			for slotIndex = 1, 3 do
+				local cardId = savedShip.slots[slotIndex]
+				if cardId ~= "" then installedCounts[cardId] = (installedCounts[cardId] or 0) + 1 end
+			end
+			ownedCount = ownedCount + 1
+		end
+		if ownedCount < 1 or core.ships.small_sampan == nil or core.ships[core.activeShipId] == nil then return false end
+		for cardId, quantity in pairs(core.cardInventory) do
+			local card = self:FindById(cardId, cardCatalog)
+			if card == nil or card.available ~= true or not self:IsIntegerInRange(quantity, 0, 99) then return false end
+			if quantity + (installedCounts[cardId] or 0) > 99 then return false end
+		end
+		for cardId, quantity in pairs(installedCounts) do
+			local card = self:FindById(cardId, cardCatalog)
+			if card == nil or card.available ~= true or quantity + (core.cardInventory[cardId] or 0) > 99 then return false end
+		end
+		local cargo = core.cargo
+		if type(cargo.id) ~= "string" or not self:IsIntegerInRange(cargo.quantity, 0, 2147483647) or not self:IsIntegerInRange(cargo.buyPrice, 0, 2147483647) then return false end
+		if cargo.id == "" then
+			if cargo.quantity ~= 0 or cargo.buyPrice ~= 0 then return false end
+		else
+			local good = self:FindById(cargo.id, goodsCatalog)
+			local activeDefinition = self:FindById(core.activeShipId, shipCatalog)
+			local limits = self:CalculateSavedShipLimits(activeDefinition, core.ships[core.activeShipId].slots, cardCatalog)
+			if good == nil or good.verified ~= true or cargo.quantity < 1 or cargo.buyPrice < 1 or limits == nil or cargo.quantity > limits.cargoCapacity then return false end
+		end
+		if type(profile.markets) ~= "table" then return false end
+		for _, portId in ipairs(self.openPorts) do
+			local market = profile.markets[portId]
+			if type(market) ~= "table" or not self:ValidateMarketEntries(market, portId, goodsCatalog) then return false end
+		end
+		for portId in pairs(profile.markets) do
+			local validPort = false
+			for _, openPort in ipairs(self.openPorts) do if portId == openPort then validPort = true end end
+			if not validPort then return false end
+		end
+		return true
+	end
+
+	@ExecSpace("ServerOnly")
+	method any BuildRuntimeProfile(any state, any profile)
+		-- 將 runtime 狀態收斂為 schema 欄位，不保存航程、戰鬥與衍生 stats。
+		local core = { money = state.money, cargo = { id = "", quantity = 0, buyPrice = 0 }, activeShipId = state.activeShipId, ships = {}, cardInventory = {} }
+		if state.cargo ~= nil then core.cargo = { id = state.cargo.id or "", quantity = state.cargo.quantity or 0, buyPrice = state.cargo.buyPrice or 0 } end
+		for cardId, quantity in pairs(state.cardInventory or {}) do if quantity > 0 then core.cardInventory[cardId] = quantity end end
+		for shipId, ship in pairs(state.ownedShips or {}) do
+			local slots = ship.slots or { "", "", "" }
+			core.ships[shipId] = { hull = ship.hull, shield = ship.shield, armor = ship.armor, slots = { slots[1] or "", slots[2] or "", slots[3] or "" } }
+		end
+		local safePortId = state.safePortId or profile.safePortId or "forest"
+		return { schemaVersion = self.schemaVersion, revision = profile.revision + 1, safePortId = safePortId, core = core, markets = profile.markets }
+	end
+
+	@ExecSpace("ServerOnly")
+	method string GetProfileKey(string profileCode)
+		-- 所有持久資料共用一個 ProfileCode 主鍵與一個 JSON revision。
+		return self.storagePrefix .. "_" .. profileCode
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean IsSameBoundProfile(string playerId, string profileCode)
+		-- DataStorage yield 後重驗 UserId 與 ProfileCode，拒絕過期連線結果。
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		return player ~= nil and player.PlayerComponent ~= nil and player.PlayerComponent.UserId == playerId and player.PlayerComponent.ProfileCode == profileCode
+	end
+
+	@ExecSpace("ServerOnly")
+	method any CreateInitialProfile(table markets)
+		-- 只在原生 Get 確認新 key 為 nil 後建立預設新帳號。
+		local startingMoney = 12000
+		if _GreatVoyageVoyageData ~= nil then
+			local amount = _GreatVoyageVoyageData:GetStartingMoney()
+			if amount ~= nil then startingMoney = amount end
+		end
+		local ship = _GreatVoyageVoyageData:GetShipById("small_sampan")
+		if ship == nil then return nil end
+		return { schemaVersion = self.schemaVersion, revision = 1, safePortId = "forest", core = { money = startingMoney, cargo = { id = "", quantity = 0, buyPrice = 0 }, activeShipId = "small_sampan", ships = { small_sampan = { hull = ship.maxHull, shield = ship.maxShield, armor = ship.maxArmor, slots = { "", "", "" } } }, cardInventory = {} }, markets = markets }
+	end
+
+	@ExecSpace("ServerOnly")
+	method any EmptyMarkets()
+		-- 建立四港空市場結構，未記錄的商品由既有定價邏輯視為預設值。
+		local markets = {}
+		for _, portId in ipairs(self.openPorts) do markets[portId] = {} end
+		return markets
+	end
+
+	@ExecSpace("ServerOnly")
+	method any DecodeProfile(string raw)
+		-- 解碼與 schema 驗證分開處理，毀損或未來版本一律不建立新帳號。
+		local ok, decoded = pcall(function() return _HttpService:JSONDecode(raw) end)
+		if not ok or type(decoded) ~= "table" then return nil end
+		if _GreatVoyageVoyageData == nil or _GreatVoyageCommodityCatalog == nil then return nil end
+		if self:ValidateProfile(decoded, _GreatVoyageVoyageData:GetShipCatalog(), _GreatVoyageVoyageData:GetShipUpgradeCards(), _GreatVoyageCommodityCatalog:GetAll()) == false then return nil end
+		return decoded
+	end
+
+	@ExecSpace("ServerOnly")
+	method any GetLegacyMarketKeys()
+		-- 收集目前四港曾可能使用過的所有已驗證商品 shard，不依賴本次隨機貨架。
+		local keys = {}
+		local seen = {}
+		if _GreatVoyageCommodityCatalog == nil then return keys end
+		for _, good in ipairs(_GreatVoyageCommodityCatalog:GetAll()) do
+			if good.verified == true then
+				for _, portId in ipairs(self.openPorts) do
+					if good.originId == portId or (good.demands or {})[portId] ~= nil then
+						local key = self.legacyMarketPrefix .. "_" .. portId .. "_" .. tostring(math.floor(good.sourceRow / 24))
+						if seen[key] ~= true then seen[key] = true table.insert(keys, key) end
+					end
+				end
+			end
+		end
+		table.sort(keys)
+		return keys
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean ImportLegacyMarketItem(any item, table markets, table seenGood)
+		-- 舊 shard 必須完整解碼且每筆 record/key/catalog 對應正確才能遷移。
+		if item == nil or item.Value == nil or item.Value == "" then return true end
+		local key = item.KeyInfo.Key
+		local portId = ""
+		for _, candidate in ipairs(self.openPorts) do
+			if string.sub(key, 1, string.len(self.legacyMarketPrefix) + string.len(candidate) + 2) == self.legacyMarketPrefix .. "_" .. candidate .. "_" then portId = candidate break end
+		end
+		if portId == "" then return false end
+		local ok, decoded = pcall(function() return _HttpService:JSONDecode(item.Value) end)
+		if not ok or type(decoded) ~= "table" or decoded.version ~= 1 or type(decoded.entries) ~= "table" then return false end
+		for goodId, record in pairs(decoded.entries) do
+			local good = _GreatVoyageCommodityCatalog:GetById(goodId)
+			local expectedKey = ""
+			if good ~= nil then expectedKey = self.legacyMarketPrefix .. "_" .. portId .. "_" .. tostring(math.floor(good.sourceRow / 24)) end
+			if good == nil or good.verified ~= true or expectedKey ~= key or (good.originId ~= portId and (good.demands or {})[portId] == nil) or type(record) ~= "table" or not self:IsFiniteNumber(tonumber(record.pressure)) or not self:IsFiniteNumber(tonumber(record.at)) then return false end
+			local pressure = tonumber(record.pressure)
+			local at = tonumber(record.at)
+			local cycle = -1
+			if record.cycle ~= nil then cycle = tonumber(record.cycle) if not self:IsIntegerInRange(cycle, -1, 2147483647) then return false end end
+			local bought = 0
+			if record.bought ~= nil then bought = tonumber(record.bought) if not self:IsIntegerInRange(bought, 0, 10) then return false end end
+			if pressure < 0 or pressure > 1 or at < 0 or seenGood[portId .. ":" .. goodId] == true then return false end
+			seenGood[portId .. ":" .. goodId] = true
+			table.insert(markets[portId], { goodId, pressure, at, cycle, bought })
+		end
+		return true
+	end
+
+	@ExecSpace("ServerOnly")
+	method any LoadLegacyMarkets(any storage)
+		-- 一次 BatchGet 並逐頁 LoadNext/Move，未全頁通過前不回傳任何可存帳號。
+		local markets = self:EmptyMarkets()
+		local keys = self:GetLegacyMarketKeys()
+		if #keys == 0 then return markets, "ready" end
+		local code, pages = storage:BatchGetAndWait(keys)
+		if code ~= 0 or pages == nil then return nil, "retry" end
+		local seenGood = {}
+		while true do
+			for _, item in ipairs(pages:GetCurrentPageDatas() or {}) do
+				if self:ImportLegacyMarketItem(item, markets, seenGood) == false then return nil, "blocked" end
+			end
+			if pages.IsLastPage then break end
+			local nextCode = pages:LoadNextPageAndWait()
+			if nextCode ~= 0 then return nil, "retry" end
+			pages:MoveToNextPageAndWait()
+		end
+		for _, portId in ipairs(self.openPorts) do
+			table.sort(markets[portId], function(left, right) return left[1] < right[1] end)
+		end
+		return markets, "ready"
+	end
+
+	@ExecSpace("ServerOnly")
+	method void SetPlayerLoadStatus(string playerId, string status)
+		-- Client load indicator receives only status transitions and targets this UserId.
+		if self.loadStatusByUser[playerId] == status then return end
+		self.loadStatusByUser[playerId] = status
+		self:ReceiveLoadStatus(status, playerId)
+	end
+
+	@ExecSpace("Client")
+	method void ReceiveLoadStatus(string status)
+		-- The UI reads this targeted client status while save data is unavailable.
+		self.clientLoadStatus = status
+	end
+
+	@ExecSpace("ServerOnly")
+	method void SetLoadFailure(string playerId, string profileCode, any account, integer loadSequence, string status, boolean terminal)
+		-- Only the active load sequence may release its reservation or publish its failure state.
+		if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return end
+		account.loading = false
+		if self:IsSameBoundProfile(playerId, profileCode) == false then
+			account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30
+			return
+		end
+		if terminal then
+			account.loadBlocked = true
+			account.corrupt = true
+			account.nextRetryAt = nil
+			self:SetPlayerLoadStatus(playerId, "blocked")
+		else
+			account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30
+			self:SetPlayerLoadStatus(playerId, status)
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean ClaimBootstrapGate(any account)
+		-- Claim only the maintainer-preprovisioned global OPEN gate; an unknown claim never writes a profile.
+		if account == nil then return false end
+		if account.bootstrapGateToken == nil then
+			local tokenOk, token = pcall(function() return _UtilLogic:NewGuid() end)
+			if tokenOk ~= true or type(token) ~= "string" or token == "" then return false end
+			account.bootstrapGateToken = token
+			account.bootstrapGateValue = "BUSY:" .. token
+		end
+		if account.bootstrapGateStorage == nil then
+			local storageName = self.storagePrefix == "GVSaveV1" and "GVSaveV1Bootstrap" or self.storagePrefix .. "Bootstrap"
+			local storageOk, gateStorage = pcall(function() return _DataStorageService:GetGlobalDataStorage(storageName) end)
+			if storageOk ~= true or gateStorage == nil then
+				account.bootstrapGateState = "unavailable"
+				return false
+			end
+			account.bootstrapGateStorage = gateStorage
+		end
+		local gateStorage = account.bootstrapGateStorage
+		local readOk, readCode, current = pcall(function() return gateStorage:GetAndWait(self.bootstrapGateKey) end)
+		if readOk ~= true or readCode ~= 0 then
+			account.bootstrapGateState = "uncertain"
+			return false
+		end
+		if current == account.bootstrapGateValue then
+			account.bootstrapGateState = "held"
+			account.bootstrapClaimAttempted = nil
+			return true
+		end
+		if account.bootstrapClaimAttempted == true then
+			account.bootstrapGateState = "uncertain"
+			return false
+		end
+		if current ~= "OPEN" then
+			account.bootstrapGateState = (current == nil or current == "") and "missing" or "busy"
+			return false
+		end
+		account.bootstrapClaimAttempted = true
+		local updateOk, updateCode, updated = pcall(function()
+			return gateStorage:UpdateAndWait(self.bootstrapGateKey, "OPEN", account.bootstrapGateValue)
+		end)
+		if updateOk == true and updateCode == 0 and updated == account.bootstrapGateValue then
+			account.bootstrapGateState = "held"
+			account.bootstrapClaimAttempted = nil
+			return true
+		end
+		if updateOk == true and updateCode == self.compareFailedCode then
+			account.bootstrapClaimAttempted = nil
+			account.bootstrapGateState = "busy"
+			return false
+		end
+		local reconcileOk, reconcileCode, observed = pcall(function() return gateStorage:GetAndWait(self.bootstrapGateKey) end)
+		if reconcileOk == true and reconcileCode == 0 and observed == account.bootstrapGateValue then
+			account.bootstrapGateState = "held"
+			account.bootstrapClaimAttempted = nil
+			return true
+		end
+		account.bootstrapGateState = "uncertain"
+		return false
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean ReleaseBootstrapGate(any account)
+		-- Release by exact owner CAS only; a readback failure keeps the owner token and gate state.
+		if account == nil or type(account.bootstrapGateToken) ~= "string" then return false end
+		if account.bootstrapGateStorage == nil then
+			local storageName = self.storagePrefix == "GVSaveV1" and "GVSaveV1Bootstrap" or self.storagePrefix .. "Bootstrap"
+			local storageOk, gateStorage = pcall(function() return _DataStorageService:GetGlobalDataStorage(storageName) end)
+			if storageOk ~= true or gateStorage == nil then account.bootstrapGateState = "uncertain" return false end
+			account.bootstrapGateStorage = gateStorage
+		end
+		local gateStorage = account.bootstrapGateStorage
+		local ownerValue = "BUSY:" .. account.bootstrapGateToken
+		local updateOk, updateCode, updated = pcall(function()
+			return gateStorage:UpdateAndWait(self.bootstrapGateKey, ownerValue, "OPEN")
+		end)
+		local released = updateOk == true and updateCode == 0 and updated == "OPEN"
+		if released ~= true then
+			local readOk, readCode, current = pcall(function() return gateStorage:GetAndWait(self.bootstrapGateKey) end)
+			released = readOk == true and readCode == 0 and current == "OPEN"
+			if released ~= true then
+				account.bootstrapGateState = readOk == true and readCode == 0 and current == ownerValue and "held" or "uncertain"
+				return false
+			end
+		end
+		account.bootstrapGateStorage = nil
+		account.bootstrapGateToken = nil
+		account.bootstrapGateValue = nil
+		account.bootstrapGateState = nil
+		account.bootstrapClaimAttempted = nil
+		account.bootstrapSetAttempted = nil
+		account.bootstrapPayload = nil
+		return true
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean ReleaseBootstrapGateBeforeWrite(any account)
+		-- A pre-Set abort may release only after an exact profile read; it never clears a possibly written record.
+		if account == nil or account.bootstrapSetAttempted == true or account.bootstrapGateToken == nil then return false end
+		local readOk, readCode, currentRaw = pcall(function() return account.storage:GetAndWait(self:GetProfileKey(account.profileCode)) end)
+		if readOk ~= true or readCode ~= 0 then return false end
+		if currentRaw ~= nil and type(currentRaw) ~= "string" then return false end
+		return self:ReleaseBootstrapGate(account)
+	end
+
+	@ExecSpace("ServerOnly")
+	method any LoadForPlayer(string playerId)
+		-- ProfileCode owns the single account writer; new profiles require the preprovisioned global CAS gate.
+		local player = _UserService:GetUserEntityByUserId(playerId)
+		if player == nil or player.PlayerComponent == nil then return nil end
+		local profileCode = player.PlayerComponent.ProfileCode
+		if profileCode == nil or profileCode == "" then self:SetPlayerLoadStatus(playerId, "retry") return nil end
+		local account = self.accounts[profileCode]
+		if account ~= nil and (account.loadBlocked == true or account.corrupt == true or account.conflicted == true) then
+			self:SetPlayerLoadStatus(playerId, "blocked")
+			return nil
+		end
+		if account ~= nil and account.ready == true then
+			if self:IsSameBoundProfile(playerId, profileCode) == false then self:SetPlayerLoadStatus(playerId, "retry") return nil end
+			if account.activeUserId ~= nil and account.activeUserId ~= playerId and _UserService:GetUserEntityByUserId(account.activeUserId) ~= nil then self:SetPlayerLoadStatus(playerId, "retry") return nil end
+			account.activeUserId = playerId
+			self.profileByUser[playerId] = profileCode
+			self:SetPlayerLoadStatus(playerId, "ready")
+			return account.profile
+		end
+		if account ~= nil and account.loading == true then self:SetPlayerLoadStatus(playerId, "loading") return nil end
+		if account ~= nil and account.nextRetryAt ~= nil and _UtilLogic.ServerElapsedSeconds < account.nextRetryAt then
+			self:SetPlayerLoadStatus(playerId, "retry")
+			return nil
+		end
+		if account == nil then
+			local storageOk, storage = pcall(function() return _DataStorageService:GetUserDataStorage(profileCode) end)
+			if storageOk ~= true or storage == nil then self:SetPlayerLoadStatus(playerId, "retry") return nil end
+			account = { profileCode = profileCode, storage = storage, loading = false, ready = false, dirty = false, generation = 0, acknowledgedGeneration = 0, saving = false, conflicted = false, acknowledgedRaw = nil, profile = nil, activeUserId = playerId }
+			self.accounts[profileCode] = account
+		end
+		account.loadSequence = (account.loadSequence or 0) + 1
+		local loadSequence = account.loadSequence
+		account.loading = true
+		account.loadBlocked = false
+		account.corrupt = false
+		account.nextRetryAt = nil
+		account.activeUserId = playerId
+		self:SetPlayerLoadStatus(playerId, "loading")
+		local getOk, code, raw = pcall(function() return account.storage:GetAndWait(self:GetProfileKey(profileCode)) end)
+		if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return nil end
+		if self:IsSameBoundProfile(playerId, profileCode) == false then account.loading = false account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30 return nil end
+		if getOk ~= true or code ~= 0 then
+			self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
+			log_warning("[SaveV1] profile read failed")
+			return nil
+		end
+		local profile = nil
+		local profileRaw = nil
+		if raw ~= nil then
+			if account.bootstrapSetAttempted == true and (account.bootstrapGateToken == nil or raw ~= account.bootstrapPayload) then
+				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
+				log_warning("[SaveV1] bootstrap payload mismatch blocked")
+				return nil
+			end
+			local decodeOk, decoded = pcall(function() return self:DecodeProfile(raw) end)
+			if decodeOk ~= true or decoded == nil then
+				if account.bootstrapGateToken ~= nil and account.bootstrapSetAttempted ~= true then self:ReleaseBootstrapGate(account) end
+				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
+				log_warning("[SaveV1] invalid profile blocked")
+				return nil
+			end
+			if account.bootstrapGateToken ~= nil and self:ReleaseBootstrapGate(account) ~= true then
+				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
+				log_warning("[SaveV1] bootstrap gate release unresolved")
+				return nil
+			end
+			profile = decoded
+			profileRaw = raw
+		elseif raw == nil then
+			if account.bootstrapSetAttempted == true and (account.bootstrapGateToken == nil or type(account.bootstrapPayload) ~= "string") then
+				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
+				return nil
+			end
+			if self:ClaimBootstrapGate(account) ~= true then
+				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
+				return nil
+			end
+			if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return nil end
+			if self:IsSameBoundProfile(playerId, profileCode) == false then
+				account.loading = false
+				account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30
+				if account.bootstrapSetAttempted ~= true then self:ReleaseBootstrapGateBeforeWrite(account) end
+				return nil
+			end
+			local recheckOk, recheckCode, recheckRaw = pcall(function() return account.storage:GetAndWait(self:GetProfileKey(profileCode)) end)
+			if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return nil end
+			if self:IsSameBoundProfile(playerId, profileCode) == false then
+				account.loading = false
+				account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30
+				if recheckOk == true and recheckCode == 0 and account.bootstrapSetAttempted ~= true then self:ReleaseBootstrapGate(account) end
+				return nil
+			end
+			if recheckOk ~= true or recheckCode ~= 0 then
+				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
+				return nil
+			end
+			if recheckRaw ~= nil then
+				if account.bootstrapSetAttempted == true and recheckRaw ~= account.bootstrapPayload then
+					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
+					log_warning("[SaveV1] bootstrap payload mismatch blocked")
+					return nil
+				end
+				local decodeOk, decoded = pcall(function() return self:DecodeProfile(recheckRaw) end)
+				if decodeOk ~= true or decoded == nil then
+					if account.bootstrapSetAttempted ~= true then self:ReleaseBootstrapGate(account) end
+					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
+					log_warning("[SaveV1] invalid profile blocked")
+					return nil
+				end
+				if self:ReleaseBootstrapGate(account) ~= true then
+					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
+					log_warning("[SaveV1] bootstrap gate release unresolved")
+					return nil
+				end
+				profile = decoded
+				profileRaw = recheckRaw
+			else
+				if account.bootstrapSetAttempted == true then
+					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
+					log_warning("[SaveV1] initial Set remains ambiguous; gate retained without retrying Set")
+					return nil
+				end
+				local createdProfile = nil
+				local migrationOk, markets, migrationStatus = pcall(function() return self:LoadLegacyMarkets(account.storage) end)
+				if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return nil end
+				if self:IsSameBoundProfile(playerId, profileCode) == false then account.loading = false account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30 self:ReleaseBootstrapGateBeforeWrite(account) return nil end
+				if migrationOk ~= true then self:ReleaseBootstrapGateBeforeWrite(account) self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false) log_warning("[SaveV1] legacy read raised; retry scheduled") return nil end
+				if markets == nil then
+					local terminal = migrationStatus == "blocked"
+					self:ReleaseBootstrapGateBeforeWrite(account)
+					self:SetLoadFailure(playerId, profileCode, account, loadSequence, terminal and "blocked" or "retry", terminal)
+					log_warning("[SaveV1] legacy migration failed closed")
+					return nil
+				end
+				createdProfile = self:CreateInitialProfile(markets)
+				if createdProfile == nil or self:ValidateProfile(createdProfile, _GreatVoyageVoyageData:GetShipCatalog(), _GreatVoyageVoyageData:GetShipUpgradeCards(), _GreatVoyageCommodityCatalog:GetAll()) == false then
+					self:ReleaseBootstrapGateBeforeWrite(account)
+					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
+					return nil
+				end
+				local payload = self:EncodeProfile(createdProfile)
+				if payload == nil or string.len(payload) > self.maxPayloadBytes or self.firstCreateSetVerified ~= true then
+					self:ReleaseBootstrapGateBeforeWrite(account)
+					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
+					log_warning("[SaveV1] new profile create path unavailable")
+					return nil
+				end
+				account.bootstrapSetAttempted = true
+				account.bootstrapPayload = payload
+				local setOk, setCode = pcall(function() return account.storage:SetAndWait(self:GetProfileKey(profileCode), payload) end)
+				if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return nil end
+				if self:IsSameBoundProfile(playerId, profileCode) == false then account.loading = false account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30 return nil end
+				local verifyOk, verifyCode, verifyRaw = pcall(function() return account.storage:GetAndWait(self:GetProfileKey(profileCode)) end)
+				if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return nil end
+				if self:IsSameBoundProfile(playerId, profileCode) == false then account.loading = false account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30 return nil end
+				if verifyOk ~= true or verifyCode ~= 0 or verifyRaw ~= payload then
+					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
+					log_warning("[SaveV1] initial Set unresolved; gate retained code=" .. tostring(setOk == true and setCode or "throw"))
+					return nil
+				end
+				if self:ReleaseBootstrapGate(account) ~= true then
+					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
+					log_warning("[SaveV1] bootstrap gate release unresolved after exact Set readback")
+					return nil
+				end
+				profile = createdProfile
+				profileRaw = payload
+			end
+		else
+			self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
+			return nil
+		end
+		if profile == nil or profileRaw == nil then
+			self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
+			return nil
+		end
+		account.profile = profile
+		account.acknowledgedRaw = profileRaw
+		if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return nil end
+		if self:IsSameBoundProfile(playerId, profileCode) == false then
+			account.loading = false
+			account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30
+			return nil
+		end
+		account.lastCoreSignature = self:EncodeCore(account.profile.core)
+		if account.lastCoreSignature == nil then self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true) return nil end
+		account.loading = false
+		account.ready = true
+		account.nextRetryAt = nil
+		self.profileByUser[playerId] = profileCode
+		self:SetPlayerLoadStatus(playerId, "ready")
+		log("[SaveV1] loaded profile=" .. profileCode .. " revision=" .. tostring(account.profile.revision))
+		return account.profile
+	end
+	@ExecSpace("ServerOnly")
+	method any GetProfileForUser(string playerId)
+		-- 供市場相容介面取得已載入帳號，未就緒或衝突時回傳 nil。
+		local profileCode = self.profileByUser[playerId]
+		if profileCode == nil then return nil end
+		local account = self.accounts[profileCode]
+		if account == nil or account.ready ~= true or account.conflicted == true then return nil end
+		return { profile = account.profile, profileCode = profileCode }
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean MarkStateDirty(string playerId, any state)
+		-- 保存 idle/settled 安全狀態；航行中維持出發前 snapshot 不寫 transient progress。
+		if state == nil or state.status == "sailing" then return false end
+		local profileCode = self.profileByUser[playerId]
+		local account = self.accounts[profileCode or ""]
+		if account == nil or account.ready ~= true or account.conflicted == true then return false end
+		local profile = self:BuildRuntimeProfile(state, account.profile)
+		if profile == nil or self:ValidateProfile(profile, _GreatVoyageVoyageData:GetShipCatalog(), _GreatVoyageVoyageData:GetShipUpgradeCards(), _GreatVoyageCommodityCatalog:GetAll()) == false then return false end
+		local signature = self:EncodeCore(profile.core)
+		if signature == nil then return false end
+		if signature == account.lastCoreSignature and profile.safePortId == account.profile.safePortId then return true end
+		account.profile = profile
+		account.lastCoreSignature = signature
+		self:TouchDirty(account)
+		return true
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean SyncMarket(string playerId, string portId, table entries)
+		-- Project optional runtime market fields to schema defaults before validating a copy.
+		local profileCode = self.profileByUser[playerId]
+		local account = self.accounts[profileCode or ""]
+		if account == nil or account.ready ~= true or account.conflicted == true then return false end
+		local isOpenPort = false
+		for _, openPort in ipairs(self.openPorts) do if openPort == portId then isOpenPort = true end end
+		if isOpenPort == false then return false end
+		local nextRows = {}
+		for goodId, record in pairs(entries or {}) do
+			if type(record) ~= "table" then return false end
+			local pressure = record.pressure
+			local at = record.at
+			local cycle = record.cycle
+			local bought = record.bought
+			if pressure == nil then pressure = 0 end
+			if at == nil then at = 0 end
+			if cycle == nil then cycle = -1 end
+			if bought == nil then bought = 0 end
+			table.insert(nextRows, { goodId, pressure, at, cycle, bought })
+		end
+		table.sort(nextRows, function(left, right) return left[1] < right[1] end)
+		local current = account.profile.markets[portId]
+		local oldSignature = self:EncodeMarketRows(current)
+		local nextSignature = self:EncodeMarketRows(nextRows)
+		if oldSignature == nil or nextSignature == nil then return false end
+		if oldSignature == nextSignature then return true end
+		local nextMarkets = {}
+		for _, openPort in ipairs(self.openPorts) do nextMarkets[openPort] = account.profile.markets[openPort] end
+		nextMarkets[portId] = nextRows
+		local nextProfile = { schemaVersion = account.profile.schemaVersion, revision = account.profile.revision + 1, safePortId = account.profile.safePortId, core = account.profile.core, markets = nextMarkets }
+		if self:ValidateProfile(nextProfile, _GreatVoyageVoyageData:GetShipCatalog(), _GreatVoyageVoyageData:GetShipUpgradeCards(), _GreatVoyageCommodityCatalog:GetAll()) == false then return false end
+		account.profile = nextProfile
+		self:TouchDirty(account)
+		return true
+	end
+	@ExecSpace("ServerOnly")
+	method void TouchDirty(any account)
+		-- 每次持久變更增 generation；in-flight ack 只能確認其捕獲的 generation。
+		account.generation = account.generation + 1
+		account.dirty = true
+	end
+
+	@ExecSpace("ServerOnly")
+	method any EncodeCore(any core)
+		-- Encode the non-empty core object, then append cardInventory explicitly as a JSON object.
+		if type(core) ~= "table" or type(core.cardInventory) ~= "table" then return nil end
+		local objectPart = { money = core.money, cargo = core.cargo, activeShipId = core.activeShipId, ships = core.ships }
+		local objectOk, raw = pcall(function() return _HttpService:JSONEncode(objectPart) end)
+		if objectOk ~= true or type(raw) ~= "string" or string.sub(raw, -1) ~= "}" then return nil end
+		local cardInventoryRaw = "{}"
+		if next(core.cardInventory) ~= nil then
+			local cardsOk, cardsRaw = pcall(function() return _HttpService:JSONEncode(core.cardInventory) end)
+			if cardsOk ~= true or type(cardsRaw) ~= "string" or cardsRaw == "" then return nil end
+			cardInventoryRaw = cardsRaw
+		end
+		return string.sub(raw, 1, string.len(raw) - 1) .. ",\"cardInventory\":" .. cardInventoryRaw .. "}"
+	end
+
+	@ExecSpace("ServerOnly")
+	method any EncodeMarketRows(table rows)
+		-- Empty Lua tables are ambiguous in Native JSON; market rows are always JSON arrays.
+		if type(rows) ~= "table" then return nil end
+		if next(rows) == nil then return "[]" end
+		local ok, raw = pcall(function() return _HttpService:JSONEncode(rows) end)
+		if ok ~= true or type(raw) ~= "string" or raw == "" then return nil end
+		return raw
+	end
+
+	@ExecSpace("ServerOnly")
+	method any EncodeProfile(any profile)
+		-- Serialize schema objects and the four canonical market arrays without ambiguous empty tables.
+		if type(profile) ~= "table" or type(profile.markets) ~= "table" then return nil end
+		local header = { schemaVersion = profile.schemaVersion, revision = profile.revision, safePortId = profile.safePortId }
+		local headerOk, headerRaw = pcall(function() return _HttpService:JSONEncode(header) end)
+		if headerOk ~= true or type(headerRaw) ~= "string" or string.sub(headerRaw, -1) ~= "}" then return nil end
+		local coreRaw = self:EncodeCore(profile.core)
+		if coreRaw == nil then return nil end
+		local marketParts = {}
+		for _, portId in ipairs(self.openPorts) do
+			local rowsRaw = self:EncodeMarketRows(profile.markets[portId])
+			if rowsRaw == nil then return nil end
+			table.insert(marketParts, "\"" .. portId .. "\":" .. rowsRaw)
+		end
+		local marketsRaw = "{" .. table.concat(marketParts, ",") .. "}"
+		local raw = string.sub(headerRaw, 1, string.len(headerRaw) - 1) .. ",\"core\":" .. coreRaw .. ",\"markets\":" .. marketsRaw .. "}"
+		if string.len(raw) > self.maxPayloadBytes then return nil end
+		return raw
+	end
+	@ExecSpace("ServerOnly")
+	method boolean IsWriteAcknowledged(integer code, any observedRaw, string expectedRaw, string payload)
+		-- 成功必須由 CAS 回值或 exact Get readback 證實，其他值不會清 dirty。
+		return code == 0 and observedRaw == payload and observedRaw ~= expectedRaw
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean ReconcileWrite(any account, string expectedRaw, string payload, integer writeSequence, integer writeCode, any writeValue)
+		-- Reconcile 的讀回會 yield；序號改變時禁止舊寫入覆蓋新 writer 狀態。
+		if self:IsWriteAcknowledged(writeCode, writeValue, expectedRaw, payload) then return true end
+		if account.reconcileInProgress == true then return false end
+		account.reconcileInProgress = true
+		account.reconcileInProgressSequence = writeSequence
+		local readOk, readCode, observedRaw = pcall(function()
+			return account.storage:GetAndWait(self:GetProfileKey(account.profileCode))
+		end)
+		if account.reconcileInProgressSequence == writeSequence then
+			account.reconcileInProgress = false
+			account.reconcileInProgressSequence = nil
+		end
+		if account.activeWriteSequence ~= writeSequence then return false end
+		if readOk ~= true then
+			account.reconcileReadFailed = true
+			return false
+		end
+		account.reconcileReadFailed = false
+		if readCode == 0 and observedRaw == payload then return true end
+		if readCode == 0 and observedRaw == expectedRaw then return false end
+		account.conflicted = true
+		account.ready = false
+		log_warning("[SaveV1] CAS conflict; profile blocked profile=" .. account.profileCode .. " code=" .. tostring(writeCode))
+		return false
+	end
+	@ExecSpace("ServerOnly")
+	method void FinishAsyncWrite(string profileCode, integer writeSequence, integer capturedGeneration, string expectedRaw, string payload, integer writeCode, any writeValue)
+		-- Callback 僅能完成自己序號的 async 寫入，包含 Reconcile yield 後再確認一次。
+		local account = self.accounts[profileCode]
+		if account == nil or account.activeWriteSequence ~= writeSequence or account.writeKind ~= "async" then return end
+		local acknowledged = self:ReconcileWrite(account, expectedRaw, payload, writeSequence, writeCode, writeValue)
+		if account.activeWriteSequence ~= writeSequence or account.writeKind ~= "async" then return end
+		if account.reconcileReadFailed == true then
+			account.dirty = true
+			account.savingStartedAt = _UtilLogic.ServerElapsedSeconds
+			return
+		end
+		account.saving = false
+		account.writeKind = nil
+		account.savingStartedAt = nil
+		account.syncCallCompleted = nil
+		if acknowledged then
+			account.acknowledgedRaw = payload
+			account.acknowledgedGeneration = capturedGeneration
+			if account.generation == capturedGeneration then account.dirty = false end
+		else
+			account.dirty = true
+		end
+		if account.flushAfterSave == true then
+			account.flushAfterSave = false
+			self:FlushAndWait(profileCode)
+		end
+	end
+	@ExecSpace("ServerOnly")
+	method void ResolveTimedOutWrite(string profileCode)
+		-- 只可接管逾時 async 寫入；先增加 fencing 序號，再 yield 讀回。
+		local account = self.accounts[profileCode]
+		if account == nil or account.saving ~= true or account.reconcileInProgress == true then return end
+		local firstResolve = account.writeKind == "async"
+		if account.writeKind == "sync" and account.syncCallCompleted == true then firstResolve = true end
+		if account.writeKind ~= "reconcile" and firstResolve ~= true then return end
+		local expectedRaw = account.inflightExpectedRaw
+		local payload = account.inflightPayload
+		local generation = account.inflightGeneration
+		if type(expectedRaw) ~= "string" or type(payload) ~= "string" or generation == nil then return end
+		if firstResolve then
+			account.writeSequence = (account.writeSequence or 0) + 1
+			account.activeWriteSequence = account.writeSequence
+			account.writeKind = "reconcile"
+		end
+		local resolverSequence = account.activeWriteSequence
+		account.reconcileInProgress = true
+		account.reconcileInProgressSequence = resolverSequence
+		local readOk, code, observedRaw = pcall(function()
+			return account.storage:GetAndWait(self:GetProfileKey(profileCode))
+		end)
+		if account.reconcileInProgressSequence == resolverSequence then
+			account.reconcileInProgress = false
+			account.reconcileInProgressSequence = nil
+		end
+		if account.activeWriteSequence ~= resolverSequence or account.writeKind ~= "reconcile" then return end
+		if readOk ~= true then
+			account.dirty = true
+			account.reconcileReadFailed = true
+			account.savingStartedAt = _UtilLogic.ServerElapsedSeconds
+			log_warning("[SaveV1] timeout readback unavailable; retained inflight write profile=" .. profileCode)
+			return
+		end
+		account.reconcileReadFailed = false
+		account.saving = false
+		account.writeKind = nil
+		account.savingStartedAt = nil
+		account.syncCallCompleted = nil
+		if code == 0 and observedRaw == payload then
+			account.acknowledgedRaw = payload
+			account.acknowledgedGeneration = generation
+			if account.generation == generation then account.dirty = false end
+		elseif code == 0 and observedRaw == expectedRaw then
+			account.dirty = true
+		else
+			account.conflicted = true
+			account.ready = false
+			account.dirty = true
+			log_warning("[SaveV1] async timeout readback conflict profile=" .. profileCode)
+		end
+	end
+	@ExecSpace("ServerOnly")
+	method boolean FlushAsync(string profileCode)
+		-- 每次 Async CAS 都攜帶 raw、generation、kind 和 fencing 序號。
+		local account = self.accounts[profileCode]
+		if account == nil or account.ready ~= true or account.dirty ~= true or account.saving == true or account.conflicted == true then return false end
+		local payload = self:EncodeProfile(account.profile)
+		if payload == nil then account.dirty = true log_warning("[SaveV1] payload over byte limit") return false end
+		local expectedRaw = account.acknowledgedRaw
+		if expectedRaw == nil then account.conflicted = true account.ready = false return false end
+		local generation = account.generation
+		account.writeSequence = (account.writeSequence or 0) + 1
+		local sequence = account.writeSequence
+		account.activeWriteSequence = sequence
+		account.writeKind = "async"
+		account.inflightExpectedRaw = expectedRaw
+		account.inflightPayload = payload
+		account.inflightGeneration = generation
+		account.saving = true
+		account.savingStartedAt = _UtilLogic.ServerElapsedSeconds
+		local callOk = pcall(function()
+			account.storage:UpdateAsync(self:GetProfileKey(profileCode), expectedRaw, payload, function(code, key, value)
+				self:FinishAsyncWrite(profileCode, sequence, generation, expectedRaw, payload, code, value)
+			end)
+		end)
+		if callOk ~= true then self:FinishAsyncWrite(profileCode, sequence, generation, expectedRaw, payload, -1, nil) end
+		return callOk == true
+	end
+	@ExecSpace("ServerOnly")
+	method boolean FlushAndWait(string profileCode)
+		-- AndWait sync path 有獨立序號；第二呼叫者不得拿 Async timeout resolver 來處理它。
+		local account = self.accounts[profileCode]
+		if account == nil or account.ready ~= true or account.conflicted == true then return false end
+		if account.saving == true then
+			if account.writeKind == "async" then account.flushAfterSave = false end
+			local deadline = _UtilLogic.ServerElapsedSeconds + 5
+			while account.saving == true and _UtilLogic.ServerElapsedSeconds < deadline do wait(0.05) end
+			if account.saving == true then self:ResolveTimedOutWrite(profileCode) end
+			if account.saving == true then return false end
+		end
+		if account.dirty ~= true then return true end
+		local payload = self:EncodeProfile(account.profile)
+		if payload == nil or account.acknowledgedRaw == nil then return false end
+		local expectedRaw = account.acknowledgedRaw
+		local capturedGeneration = account.generation
+		account.writeSequence = (account.writeSequence or 0) + 1
+		local sequence = account.writeSequence
+		account.activeWriteSequence = sequence
+		account.writeKind = "sync"
+		account.inflightExpectedRaw = expectedRaw
+		account.inflightPayload = payload
+		account.inflightGeneration = capturedGeneration
+		account.saving = true
+		account.savingStartedAt = _UtilLogic.ServerElapsedSeconds
+		local callOk, code, value = pcall(function() return account.storage:UpdateAndWait(self:GetProfileKey(profileCode), expectedRaw, payload) end)
+		if account.activeWriteSequence ~= sequence or account.writeKind ~= "sync" then return false end
+		account.syncCallCompleted = true
+		local acknowledged = self:ReconcileWrite(account, expectedRaw, payload, sequence, callOk == true and code or -1, callOk == true and value or nil)
+		if account.activeWriteSequence ~= sequence or account.writeKind ~= "sync" then return false end
+		if account.reconcileReadFailed == true then
+			account.dirty = true
+			account.savingStartedAt = _UtilLogic.ServerElapsedSeconds
+			return false
+		end
+		account.saving = false
+		account.writeKind = nil
+		account.savingStartedAt = nil
+		account.syncCallCompleted = nil
+		if acknowledged then
+			account.acknowledgedRaw = payload
+			account.acknowledgedGeneration = capturedGeneration
+			if account.generation == capturedGeneration then account.dirty = false end
+		else
+			account.dirty = true
+		end
+		if callOk ~= true then log_warning("[SaveV1] synchronous update raised; exact readback reconciled") end
+		return acknowledged and account.dirty ~= true
+	end
+	@ExecSpace("ServerOnly")
+	@EventSender("Service", "UserService")
+	handler HandleUserLeaveEvent(UserLeaveEvent event)
+		-- 離線前先捕獲安全狀態，再同步寫入；航行中維持已持久化的出發港 snapshot。
+		if _GreatVoyageVoyageState ~= nil then _GreatVoyageVoyageState:CaptureProfileForLeave(event.UserId) end
+		local profileCode = event.ProfileCode
+		if profileCode == nil or profileCode == "" then profileCode = self.profileByUser[event.UserId] end
+		if profileCode ~= nil and profileCode ~= "" then self:FlushAndWait(profileCode) end
+		local current = _UserService:GetUserEntityByUserId(event.UserId)
+		if current == nil or current.PlayerComponent == nil or current.PlayerComponent.ProfileCode ~= profileCode then
+			if self.profileByUser[event.UserId] == profileCode then self.profileByUser[event.UserId] = nil end
+			self.loadStatusByUser[event.UserId] = nil
+			local account = self.accounts[profileCode or ""]
+			if account ~= nil and account.activeUserId == event.UserId then account.activeUserId = nil end
+		end
+	end
+end
