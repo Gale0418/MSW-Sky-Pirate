@@ -1,6 +1,6 @@
 <!-- Generated materialized view. Do not edit directly; rebuild from canonical MissionCenter files. -->
 <!-- Deprecated compatibility view: focus.md is generated from tasks.md only and must never be edited or treated as a second lifecycle source. -->
-<!-- mission-center-derived schema=1.0 fingerprint-format=sha256-v2-lf source-fingerprint=1b0a0db9eb1c0b530742fe710abc6b378f5ef3c6497211547a6abee58fcd980b -->
+<!-- mission-center-derived schema=1.0 fingerprint-format=sha256-v2-lf source-fingerprint=4301340689eac4bbe97d6c2de5a3caf434f82c2427c6937796e25ac8472c3012 -->
 # P0 Focus
 
 - Source of truth: `tasks.md`
@@ -13,7 +13,7 @@
 | GV-SAVE-DATA | 版本化帳號快照與市場遷移 | Review | S3 limited：已知 10 項完成處置；補正式 bootstrap 閘門預置、跨 WorldInstance CAS 與實際斷線保存證據；參照 S3 ledger。 |  | 金錢、貨物成本、五船船況、三槽及卡數守恆；壞檔／未來版本拒絕覆寫 |
 | GV-SAVE-LIFE | 單一寫入者與登入離線保存 | Review | S3 limited：已知 10 項完成處置；補正式 bootstrap 閘門預置、跨 WorldInstance CAS 與實際斷線保存證據；參照 S3 ledger。 | GV-SAVE-DATA | 寫入失敗／延遲／快速重登不清掉未存更新；載入失敗不發初始資產 |
 | GV-SAVE-FLOW | 交易、出航與沉船整合 | Review | S3 limited：已知 10 項完成處置；補正式 bootstrap 閘門預置、跨 WorldInstance CAS 與實際斷線保存證據；參照 S3 ledger。 | GV-SAVE-LIFE | 出發前失敗拒絕航行；航行離線回出發港；沉船清貨不得因重登復原 |
-| GV-SAVE-QA | 存檔全流程與故障回歸 | Review | 15:06 正式 uncertain/code0 已收；補新版 phase/valueKind，Maker 恢復後 native 驗證；唯讀核對正式 gate，安全維護後驗首次保存與重登。 | GV-SAVE-FLOW | 同版 build/runtime、正面 VRF、守恆、成本與故障證據；未驗項明示 |
+| GV-SAVE-QA | 存檔全流程與故障回歸 | Review | 15:41 新版 native 5 例通過；15:37 正式仍缺 phase/valueKind，使用者確認 Maker 發布；已加教學右下 v2026.10.08.1 並通過 native 顯示／隱藏；重新發布／重登核對 CLIENT 版本及 SERVER phase/valueKind，再唯讀核對 gate 與安全初始化／保存。 | GV-SAVE-FLOW | 同版 build/runtime、正面 VRF、守恆、成本與故障證據；未驗項明示 |
 | GV-M1 | Great Voyage M1：港口資料、世界地圖 UI 與整合 QA | In Progress | 完成四港往返、交易與箭頭端點驗收，修正剩餘問題 | E8, GV-M1-P3 | 四港／甲板／交易／HUD、60 秒自動抵港及 Maker 視覺證據齊全；再由主人確認主觀視覺 |
 | GV-M1-P1 | Phase 1：Data & Geometry | Review | 重驗四港資料、直線幾何與空域分段；核對世界圖座標 | E8 | 四港與甲板 MapleTile mode／Body／入口、路線正反向與邊界測試有證據 |
 | GV-M1-P3 | Phase 3：Ports Integration & QA | In Progress | 補四港完整往返、無舊事件與交易回歸；處理驗收缺陷 | GV-M1-P1, GV-M1-P2 | 四港皆可抵達／開商店／再次出航，60 秒倒數與船體保留有 Maker 證據 |

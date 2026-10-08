@@ -62,3 +62,13 @@
 - 13:35｜GV-SAVE-QA／GV-SAVE-LIFE：依正式服截圖與GitHub skill完成首次讀取NotFound 1000002、gate後重讀及建檔前取消修正；不清檔、不自動Set OPEN、不擴大Set/CAS ack。補setup持續提示／30秒polling、loading圖片／卡槽／船況與pager清理。90 tests／13 subtests、167 bodies通過；Maker refresh回not running，正式SERVER／DB未核驗。Rabbit三輪2 minor皆查證修正（setup polling／clone test assertion）、第二輪0 issues；第三輪後單一測試斷言已重跑90/13通過，未第4輪；維持Review。[診斷](../docs/Published-Save-Diagnosis-20261008.md)。
 
 - 15:27｜GV-SAVE-QA／GV-SAVE-LIFE：已收到正式 13:43 missing/code0 與 15:06 uncertain/code0；補初讀 code0＋nil→setup、先前未知 claim 仍 uncertain/no-resend、失敗 phase／去識別化 valueKind。95 tests／24 subtests 通過，兩檔 CodeRabbit 0 issues／exit0（本時段一次）；README與診斷更新。13:51舊版 Maker Refresh/Play 讀既有 revision25與Maker-only OPEN有實際MCP；本次Maker未執行，新增程式native及正式首次保存重登仍待，Review不前進。無正式DB寫入／自動OPEN／counter bootstrap。[診斷與審查](../docs/Published-Save-Diagnosis-20261008.md)。
+
+- 15:43｜GV-SAVE-QA／GV-SAVE-LIFE：Maker恢復，同世界map01/edit；15:38 Refresh成功、build66Info/0Warning/Error，15:41 server_main 五個假gate診斷案例全pass=true，runtime37Info/0Warning/Error，stop後build66Info，已回edit。正式15:37仍缺phase/valueKind，主人確認操作Maker發布；發布時點／版本未獨立核驗，已請從本次Refresh版再發布並重進。native補驗完成但正式首次建檔、DB維護仍未做，Review保留。[原生回執](../docs/reviews/2026-10-08/published-save/gate-150647/maker-1541-receipt.json)。
+
+### 2026-10-08 15:55 — GV-SAVE-QA：教學版本辨識
+
+- Timestamp：2026-10-08T15:55:00+08:00
+- Change：右下新增淡金小字 `v2026.10.08.1`，登入紀錄共用 Onboarding.buildVersion；既有 15 個 UI entity 保持原值，新增 1 個 Modal 子節點。
+- Reason：使用者希望直接辨認 Maker 發布的新版本，避免以等待時間推測正式服是否更新。
+- Impact：Maker 原生 VRF initial/started 皆 pass=true，文字 fits=true、rightMargin=40/bottomMargin=28；遮罩關閉且控制恢復。build 66 Info/runtime 35 Info、0 Warning/Error，已 stop 回 edit。此證據不取代 SERVER SaveV1 的正式初始化驗收，GV-SAVE-QA 保留 Review。
+- Review：隔離審查只送 Onboarding.mlua 與 Onboarding.ui 共 2 檔，CodeRabbit exit 0／review_completed／0 issues；首次 base branch 前置失敗經 --base main 修正，沒有重送其他大檔。任務中心 sync 已完成、doctor status=pass（既有 legacy completion passport 警告保留）。

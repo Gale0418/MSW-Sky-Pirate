@@ -2,6 +2,9 @@
 script GreatVoyageOnboarding extends Logic
 
 	property Entity modal = "106bbf30-4503-45f1-a893-d8edb58cd037"
+	-- 每次發布時遞增尾碼；右下角與登入紀錄共用此版本。
+	property string buildVersion = "v2026.10.08.1"
+	property Entity versionLabel = "03c858cc-a9a7-44a1-a395-9d43e3127de0"
 	property boolean active = true
 	property boolean releasing = false
 	property any keyHandler = nil
@@ -20,12 +23,15 @@ script GreatVoyageOnboarding extends Logic
 			log_warning("[Onboarding] missing UI; continue without input lock")
 			return
 		end
+		if isvalid(self.versionLabel) then
+			self.versionLabel.TextGUIRendererComponent.Text = self.buildVersion
+		end
 		self.modal.Enable = true
 		self:LockControls()
 		self.keyHandler = _InputService:ConnectEvent(KeyDownEvent, self.OnKeyDown)
 		self.touchHandler = _InputService:ConnectEvent(ScreenTouchEvent, self.OnTouchDown)
 		self.touchReleaseHandler = _InputService:ConnectEvent(ScreenTouchReleaseEvent, self.OnTouchRelease)
-		log("[Onboarding] shown; waiting for any key or touch")
+		log("[Onboarding] shown; build=" .. self.buildVersion .. "; waiting for any key or touch")
 	end
 
 	@ExecSpace("ClientOnly")

@@ -67,3 +67,18 @@ Maker refresh_workspace 實際回報 Maker is not running，故本輪沒有 nati
 同一組回歸測試更新為 **95 passed／24 subtests passed**。新增初讀 code0＋nil、prior-claim＋nil、未知 CAS 後 reconcile 的三組目標案例先在舊碼失敗，再於修正後通過；另驗 token/handle throw、分類白名單與日誌不洩漏 token/raw。CodeRabbit 本輪只送兩個小檔案，0 issues／complete／exit0；資產與 Native API 排除。原始回應與來源雜湊見 [15:06 診斷審查](reviews/2026-10-08/published-save/gate-150647/review-summary.md)。
 
 本次 Maker MCP 回報 `Maker is not running`；已請使用者開啟 Maker，尚未收到恢復回覆。新增變更的 Refresh／native build／Play 與正式服首次保存／重登均仍待驗，任務維持 Review。Git commit/push 不會自動更新 Maker 發布版本。
+
+
+## 15:38–15:43 Maker 恢復與發布版本核對
+
+使用者補充 15:37:59 正式服仍是舊 `uncertain code=0`，沒有新版 phase/valueKind，並確認操作的是 Maker「發布／更新世界」。本地 HEAD 為 f04727a；該版失敗 warning 已在第 660 行帶兩個欄位。正式日誌缺欄位支持「該次登入未執行新版分支」的推論，尚不能分辨發布前尚未 Refresh、不同發布來源或舊 instance。
+
+15:38 MCP 確認同一世界 map01/edit，Stop／Clear／Refresh 成功；build 66 Info、0 Warning／Error，normal 空。15:41 server_main 執行五個假 gate 隔離案例：初讀 code0＋nil、初讀 NotFound＋nil、prior-claim＋nil、未知 CAS 後 reconcile nil／other，全數 positive pass=true；初讀 missing 不 CAS，prior-claim 不重送，reconcile 仍 uncertain。Maker startup 正常讀到既有 revision25；此資料不代表正式存檔。runtime 37 Info、0 Warning／Error；Stop 後 build 仍 66 Info，已回 map01/edit。詳見 [去識別化原生回執](reviews/2026-10-08/published-save/gate-150647/maker-1541-receipt.json)。
+
+本次完成的是 f04727a 的 native 編譯／隔離診斷驗證，尚未發布或寫正式 DB。已告知使用者從這份 Refresh 後的 Maker 再發布，等待右下完成通知，再退出世界至大廳重進，以新版 phase/valueKind 判斷實際版本。[官方 Release World](https://maplestoryworlds-creators.nexon.com/ko/docs?postId=1321) 的官方搜尋索引說明發布時間依世界容量而異；沒有採用固定等待分鐘數。正式 bootstrap 初始化、首次保存／重登、跨 instance CAS 與實際斷線仍維持待驗。
+
+## 15:54：登入教學顯示版本
+
+依使用者要求，在新手教學 Modal 下新增 VersionLabel；右下錨點、距右 40／底 28 UI px、22 px 淡金字、不接收 Raycast。既有 15 個 UI entity 經 builder 比對未變，版本由 Onboarding.buildVersion 單一來源提供，值為 `v2026.10.08.1`，CLIENT 登入紀錄同步印出。原生 probe 正面證據確認文字完整、正確顯示與 RequestStart 後隱藏／控制恢復；build 66 Info、runtime 35 Info，均 0 Warning/Error。已 stop 回 edit；回執見 [onboarding-version/maker-receipt.json](reviews/2026-10-08/onboarding-version/maker-receipt.json)。
+
+重新發布完成後，離開世界回大廳再登入，先看教學右下角與 CLIENT build 紀錄；它只識別客戶端教學程式，不單獨證明 SaveV1 的伺服器程式或正式 gate 已更新。正式首次建檔仍維持 Review，需接續唯讀 gate 核對與有維護窗口的安全初始化。

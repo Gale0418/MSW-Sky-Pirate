@@ -1,0 +1,31 @@
+{
+  "version": "v2026.10.08.1",
+  "verifiedAt": "2026-10-08T15:54:42+08:00",
+  "environment": "Maker play / map01 / client",
+  "build": {
+    "info": 66,
+    "warning": 0,
+    "error": 0
+  },
+  "runtime": {
+    "info": 35,
+    "warning": 0,
+    "error": 0
+  },
+  "proof": [
+    {
+      "time": "2026-10-08T15:54:41",
+      "server": false,
+      "message": "[VRF][OnboardingVersion] initial pass=true build=v2026.10.08.1 fits=true rightMargin=40.0 bottomMargin=28.0"
+    },
+    {
+      "time": "2026-10-08T15:54:42",
+      "server": false,
+      "message": "[VRF][OnboardingVersion] started pass=true overlayHidden=true controlsRestored=true"
+    }
+  ],
+  "method": "Native client probe calls production RequestStart; no DataStorage calls in probe.",
+  "scope": "Label correctness, text fits, bottom-right anchors/margins, non-raycast sprite, parent hides after RequestStart and player controls restore. No published-world verification.",
+  "priorEntitiesUnchanged": 15,
+  "addedEntities": 1
+}

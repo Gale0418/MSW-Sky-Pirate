@@ -1,0 +1,50 @@
+{
+  "testedCommit": "f04727a00f4ece809e68860b0212ea5e8402c9bb",
+  "world": "MSW GreatVoyage",
+  "map": "map01",
+  "refresh": "2026-10-08T15:38:34+08:00",
+  "build": {
+    "count": 66,
+    "info": 66,
+    "nonInfo": 0
+  },
+  "runtime": {
+    "count": 37,
+    "nonInfo": 0,
+    "proof": [
+      {
+        "message": "[VRF][GateDiagnostic] case=initial-ok-nil pass=true state=missing code=0 phase=read valueKind=nil updates=0",
+        "time": "2026-10-08T15:41:34",
+        "server": true
+      },
+      {
+        "message": "[VRF][GateDiagnostic] case=initial-notfound-nil pass=true state=missing code=1000002 phase=read valueKind=nil updates=0",
+        "time": "2026-10-08T15:41:34",
+        "server": true
+      },
+      {
+        "message": "[VRF][GateDiagnostic] case=prior-claim-nil pass=true state=uncertain code=0 phase=prior-claim valueKind=nil updates=0",
+        "time": "2026-10-08T15:41:34",
+        "server": true
+      },
+      {
+        "message": "[VRF][GateDiagnostic] case=unknown-cas-nil pass=true state=uncertain code=0 phase=reconcile valueKind=nil updates=1",
+        "time": "2026-10-08T15:41:34",
+        "server": true
+      },
+      {
+        "message": "[VRF][GateDiagnostic] case=unknown-cas-other pass=true state=uncertain code=0 phase=reconcile valueKind=other updates=1",
+        "time": "2026-10-08T15:41:34",
+        "server": true
+      },
+      {
+        "message": "[VRF][GateDiagnostic] completed isolated cases; no DataStorage handle or write used",
+        "time": "2026-10-08T15:41:34",
+        "server": true
+      }
+    ]
+  },
+  "modeAfter": "edit",
+  "scope": "Maker server_main；ClaimBootstrapGate 假儲存物件隔離案例；不使用 DataStorage handle 或 write；不代表正式服初始化／存讀驗收",
+  "formalEvidence": "User 15:37:59 SERVER warning still lacks phase/valueKind; user confirms Maker release used; release timestamp/version not independently verified"
+}

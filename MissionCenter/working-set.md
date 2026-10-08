@@ -1,5 +1,5 @@
 <!-- Generated materialized view. Do not edit directly; rebuild from canonical MissionCenter files. -->
-<!-- mission-center-derived schema=1.0 fingerprint-format=sha256-v2-lf source-fingerprint=1b0a0db9eb1c0b530742fe710abc6b378f5ef3c6497211547a6abee58fcd980b -->
+<!-- mission-center-derived schema=1.0 fingerprint-format=sha256-v2-lf source-fingerprint=4301340689eac4bbe97d6c2de5a3caf434f82c2427c6937796e25ac8472c3012 -->
 # Active Working Set
 
 - Source of truth: `tasks.md`

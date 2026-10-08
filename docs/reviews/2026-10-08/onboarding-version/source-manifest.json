@@ -1,0 +1,12 @@
+[
+  {
+    "file": "RootDesk/MyDesk/UI/GreatVoyageOnboarding.mlua",
+    "bytes": 4784,
+    "sha256": "47e0513cd1c02e852efc2880626459ae049b35914a815579d91cfa8658e4088f"
+  },
+  {
+    "file": "ui/GreatVoyageOnboarding.ui",
+    "bytes": 71898,
+    "sha256": "98b8dfec8f07bb60431878324f0c76debdb3a3a44a2a22fe4b4740710e71969a"
+  }
+]
