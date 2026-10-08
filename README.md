@@ -16,7 +16,7 @@
 
 規格與後續工作見 [M1 設計](docs/GreatVoyage-M1-GDD.md)、[Roadmap](docs/GreatVoyage-Roadmap.md)、[Save V1 規格](docs/GreatVoyage-Save-V1.md)、[完整驗證與限制](docs/Save-V1-Verification.md) 與 [Mission Center 任務](MissionCenter/tasks.md)。2026-10-05 的商品價格表與文案文件是當日資料快照；市場動態成交價以伺服器計算為準。
 
-正式服首次建檔另需本專案自訂的 `GVSaveV1Bootstrap/gate=OPEN` 維護設定；缺值會保護資產並拒絕建檔。Maker 的測試結果不能證明正式環境已完成此設定。15:06 正式服回報 `uncertain code=0`，新版已區分初讀缺值與未知 claim，並補上 phase/valueKind 診斷；95 項本地測試與 24 個子案例通過、兩檔 CodeRabbit 0 issues，新版於 15:41 通過 Maker 原生編譯與 5 個隔離診斷案例；正式服版本與首次建檔仍待確認。缺值提示、載入畫面與核驗步驟見 [正式服載入診斷](docs/Published-Save-Diagnosis-20261008.md)。
+正式服首次建檔另需本專案自訂的 `GVSaveV1Bootstrap/gate=OPEN` 維護設定；缺值會保護資產並拒絕建檔。Maker 的測試結果不能證明正式環境已完成此設定。15:06 正式服回報 `uncertain code=0`，新版已區分初讀缺值與未知 claim，並補上 phase/valueKind 診斷；95 項本地測試與 24 個子案例通過、兩檔 CodeRabbit 0 issues，新版於 15:41 通過 Maker 原生編譯與 5 個隔離診斷案例；16:57 正式服已確認新版，但自訂 gate 仍缺值，首次建檔待初始化。缺值提示、載入畫面與核驗步驟見 [正式服載入診斷](docs/Published-Save-Diagnosis-20261008.md)。
 
 Save V1 目前維持 **Review**。本地測試與 Maker 存讀、貨艙及介面 checkpoint 有紀錄；正式環境仍須在維護窗口預置 bootstrap gate，跨 World instance 的 CAS 競態與真實網路斷線也尚無驗證證據，因此不代表存檔總體驗收或遊戲發布完成。細節與限制見 [Save V1 驗證紀錄](docs/Save-V1-Verification.md)。
 
@@ -24,4 +24,11 @@ Save V1 目前維持 **Review**。本地測試與 Maker 存讀、貨艙及介面
 
 ### 登入版本辨識
 
-新手教學右下角顯示淡金色小字版本 `v2026.10.08.1`，開始冒險後會跟著教學遮罩隱藏；同次登入的 CLIENT 紀錄包含 `[Onboarding] shown; build=v2026.10.08.1`。版本由 `RootDesk/MyDesk/UI/GreatVoyageOnboarding.mlua` 的 `buildVersion` 統一提供，發布新版時請遞增尾碼。Maker Refresh／原生驗收與兩檔 CodeRabbit（0 issues）已通過；正式服需在 Maker 再發布、等完成通知後離開世界並重登核對。此標記辨認客戶端教學程式版本，存檔伺服器仍要另外核對 `[SERVER] [SaveV1]` 診斷與 gate 設定。
+新手教學右下角顯示淡金色小字版本 `v2026.10.08.2`，開始冒險後會跟著教學遮罩隱藏；同次登入的 CLIENT 紀錄包含 `[Onboarding] shown; build=v2026.10.08.2`。版本由 `RootDesk/MyDesk/UI/GreatVoyageOnboarding.mlua` 的 `buildVersion` 統一提供，發布新版時請遞增尾碼。本維護版 Maker Refresh／原生驗收已通過，登入版本文字核對成功；正式服需在 Maker 再發布、等完成通知後離開世界並重登核對。此標記辨認客戶端教學程式版本，存檔伺服器仍要另外核對 `[SERVER] [SaveV1]` 診斷與 gate 設定。
+
+
+### 正式服首次建檔維護
+
+16:57 的正式服新版日誌已確認自訂 `GVSaveV1Bootstrap/gate` 缺值。依主人授權直接準備 `v2026.10.08.2` 一次性維護版：`GreatVoyageSaveMaintenance` 已啟用，限定本世界與創作者帳號，只在單人／唯一 instance、確認 gate 不存在時寫一次 `OPEN` 並精確回讀。已有 OPEN 不重寫；BUSY、空值字串、錯誤、結果未知均不覆寫或重送；不讀寫玩家存檔。維護版暫停普通載入，回讀成功後須停用 helper 並再次發布一般版，才開放存檔。
+
+本地 **114 tests／31 subtests** 通過；CodeRabbit 首輪 1 minor 已查證修正，五檔複查 0 issues（兩輪）；Maker build 68 Info、runtime 44 Info，0 Warning／Error，註冊、維護隔離、版本文字與六個假 storage 情境皆有正面紀錄；已 Stop 回 edit。ReleaseOnly instance 清單尚未在正式服執行，清單只是快照，不能當作跨 instance 鎖。正式服仍需從 Refresh 後的 Maker 發布維護版、退出舊連線並重新登入，將 `[SaveV1][Maintenance]` 回執核對後撤下維護版；未知寫入不可以重登重試。詳細操作與待驗項見 [正式服診斷](docs/Published-Save-Diagnosis-20261008.md) 與 [Maker 回執](docs/reviews/2026-10-08/published-save/maintenance-1657/maker-receipt.json)。

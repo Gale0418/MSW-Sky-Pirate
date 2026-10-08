@@ -1632,5 +1632,25 @@ class SaveV1LuaTests(unittest.TestCase):
         print(f"max-fixture records=624 utf8-bytes={byte_count} credit-at-4000={byte_count / 4000:.2f}")
 
 
+
+
+class SaveMaintenanceLoadIsolationTests(unittest.TestCase):
+    def test_maintenance_blocks_profile_access_before_lookup(self):
+        lua, store = make_runtime()
+        lua.execute("_GreatVoyageSaveMaintenance = {enabled=true}; "
+                    "_UserService = {GetUserEntityByUserId=function() error('profile lookup during maintenance') end}; "
+                    "Store.SetPlayerLoadStatus=function(self, playerId, status) self.testStatus=status end")
+        self.assertIsNone(store.LoadForPlayer(store, "owner"))
+        self.assertEqual(store.testStatus, "setup")
+        self.assertEqual(len(list(store.accounts.items())), 0)
+
+    def test_disabled_maintenance_keeps_normal_player_lookup(self):
+        lua, store = make_runtime()
+        lua.execute("_GreatVoyageSaveMaintenance = {enabled=false}; "
+                    "_UserService = {GetUserEntityByUserId=function() Store.testLookup=true; return nil end}")
+        self.assertIsNone(store.LoadForPlayer(store, "owner"))
+        self.assertTrue(store.testLookup)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

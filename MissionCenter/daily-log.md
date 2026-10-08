@@ -72,3 +72,13 @@
 - Reason：使用者希望直接辨認 Maker 發布的新版本，避免以等待時間推測正式服是否更新。
 - Impact：Maker 原生 VRF initial/started 皆 pass=true，文字 fits=true、rightMargin=40/bottomMargin=28；遮罩關閉且控制恢復。build 66 Info/runtime 35 Info、0 Warning/Error，已 stop 回 edit。此證據不取代 SERVER SaveV1 的正式初始化驗收，GV-SAVE-QA 保留 Review。
 - Review：隔離審查只送 Onboarding.mlua 與 Onboarding.ui 共 2 檔，CodeRabbit exit 0／review_completed／0 issues；首次 base branch 前置失敗經 --base main 修正，沒有重送其他大檔。任務中心 sync 已完成、doctor status=pass（既有 legacy completion passport 警告保留）。
+
+### 2026-10-08 17:40 — GV-SAVE-QA：首次上線維護初始化
+
+- Timestamp：2026-10-08T17:40:49+08:00
+- Change：正式16:57新版已確認 gate 缺值，依主人「直接更新」授權啟用限定本世界／creator 的一次性維護 helper，版本 v2026.10.08.2；維護版封鎖普通載入／首建，僅 confirmed missing gate 可 Set OPEN 一次並精確回讀，既有值／未知結果不覆寫或重送。
+- Reason：自訂 bootstrap 門沒有正式預置；Maker與正式 DataStorage 分開，重複發布不會補資料。
+- Impact：114 tests／31 subtests 通過；Maker build68 Info、runtime44 Info、0Warning/Error，原生註冊、owner 比對、Maker 拒絕正式操作、維護隔離／CLIENT setup／版本、六個 production-body 假 storage 情境 positive pass，已 Stop。正式 ReleaseOnly 分頁、初始化寫入／保存重登尚未執行，維持 Review。公開維護授權不宣稱 Private 或跨 instance 鎖成立。
+- Review：CodeRabbit 首輪只實際收到三個 tracked 檔、1 minor；script-mode 測試發現順序已查證修正，直接執行57 tests全部通過；第二輪已將兩個新檔納入 staging，五檔複查 complete／exit0／0 issues；本時段兩輪，未第三輪。
+- Unfinished：使用者從已 Refresh Maker 發布維護版、重登取得 exact OPEN 回執後，停用維護 helper 並發布一般版，再驗正式交易／重登。
+- Evidence：[去識別化 Maker 回執](../docs/reviews/2026-10-08/published-save/maintenance-1657/maker-receipt.json)、[正式服診斷與操作](../docs/Published-Save-Diagnosis-20261008.md)。

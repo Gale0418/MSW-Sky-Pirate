@@ -1,0 +1,61 @@
+{
+  "sourceFiles": [
+    {
+      "path": "RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.mlua",
+      "sha256": "284e3b4277802602f89af484e5499e8523a33b1e54d942cc3bfc551a2ca3ca09",
+      "bytes": 59333
+    },
+    {
+      "path": "RootDesk/MyDesk/Persistence/GreatVoyageSaveMaintenance.mlua",
+      "sha256": "9283514b4ee88d9573f08d2af8ff23e66d2101108dc6f1f7e391827931eee926",
+      "bytes": 7029
+    },
+    {
+      "path": "RootDesk/MyDesk/UI/GreatVoyageOnboarding.mlua",
+      "sha256": "0e888cae0ae42b75ced67183ba4ead3cb7edc8b3b524c93d3d9149acb9acdcdd",
+      "bytes": 4784
+    },
+    {
+      "path": "Tests/test_save_v1_lua.py",
+      "sha256": "19cbd5e6138a0a937454477494013c7c74d730460aac024136bd9a08069bcd98",
+      "bytes": 85729
+    },
+    {
+      "path": "Tests/test_save_maintenance_lua.py",
+      "sha256": "23cbce881f2aa8f2d7fa213bf918f5e7147b94a8e6b865739403cf0bcc1c087b",
+      "bytes": 19139
+    }
+  ],
+  "reviewResults": [
+    {
+      "round": "first",
+      "issues": [
+        {
+          "severity": "minor",
+          "file": "Tests/test_save_v1_lua.py"
+        }
+      ],
+      "reviewedFiles": [
+        "RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.mlua",
+        "RootDesk/MyDesk/UI/GreatVoyageOnboarding.mlua",
+        "Tests/test_save_v1_lua.py"
+      ],
+      "exitCode": 0
+    },
+    {
+      "round": "focused",
+      "issues": [],
+      "reviewedFiles": [
+        "RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.mlua",
+        "RootDesk/MyDesk/Persistence/GreatVoyageSaveMaintenance.mlua",
+        "RootDesk/MyDesk/UI/GreatVoyageOnboarding.mlua",
+        "Tests/test_save_maintenance_lua.py",
+        "Tests/test_save_v1_lua.py"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "formalGateSeeded": false,
+  "normalPlayEnabled": false,
+  "buildVersion": "v2026.10.08.2"
+}

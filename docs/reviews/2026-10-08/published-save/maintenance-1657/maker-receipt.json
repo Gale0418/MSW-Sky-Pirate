@@ -1,0 +1,89 @@
+{
+  "time": "2026-10-08T17:38:00+08:00",
+  "scope": "Maker; production-method-body probes use fake storage, NOT formal DataStorage",
+  "build": {
+    "count": 68,
+    "types": {
+      "Info": 68
+    }
+  },
+  "runtime": {
+    "count": 44,
+    "types": {
+      "Info": 44
+    },
+    "markers": [
+      {
+        "message": "[VRF][MaintenanceNative] registered=true makerReject=true attempted=false ownerMatches=true",
+        "server": true
+      },
+      {
+        "message": "[VRF][MaintenanceGuard] blocked=true noAccountsCreated=true",
+        "server": true
+      },
+      {
+        "message": "[VRF][MaintenanceVersion] pass=true version=v2026.10.08.2 visible=true",
+        "server": false
+      },
+      {
+        "message": "[VRF][MaintenanceClientStatus] setup=true",
+        "server": false
+      },
+      {
+        "message": "[VRF][SaveV1][Maintenance] gate OPEN confirmed by exact readback; no profile touched; disable maintenance and republish before normal play",
+        "server": true
+      },
+      {
+        "message": "[VRF][MaintenanceBody] case=1 pass=true get=2 set=1",
+        "server": true
+      },
+      {
+        "message": "[VRF][SaveV1][Maintenance] gate OPEN confirmed by exact readback; no profile touched; disable maintenance and republish before normal play",
+        "server": true
+      },
+      {
+        "message": "[VRF][MaintenanceBody] case=2 pass=true get=2 set=1",
+        "server": true
+      },
+      {
+        "message": "[VRF][SaveV1][Maintenance] gate already OPEN; no write and no profile access",
+        "server": true
+      },
+      {
+        "message": "[VRF][MaintenanceBody] case=3 pass=true get=1 set=0",
+        "server": true
+      },
+      {
+        "message": "[SaveV1][Maintenance] refused: gate read was not confirmed missing; no write",
+        "server": true
+      },
+      {
+        "message": "[VRF][MaintenanceBody] case=4 pass=true get=1 set=0",
+        "server": true
+      },
+      {
+        "message": "[SaveV1][Maintenance] refused: gate read was not confirmed missing; no write",
+        "server": true
+      },
+      {
+        "message": "[VRF][MaintenanceBody] case=5 pass=true get=1 set=0",
+        "server": true
+      },
+      {
+        "message": "[VRF][SaveV1][Maintenance] gate OPEN confirmed by exact readback; no profile touched; disable maintenance and republish before normal play",
+        "server": true
+      },
+      {
+        "message": "[VRF][MaintenanceBody] case=setExceptionReadback pass=true",
+        "server": true
+      }
+    ]
+  },
+  "formalStorageTouched": false,
+  "nativeReleaseInstanceEnumerationExecuted": false,
+  "finalMode": "edit",
+  "tests": {
+    "passed": 114,
+    "subtestsPassed": 31
+  }
+}

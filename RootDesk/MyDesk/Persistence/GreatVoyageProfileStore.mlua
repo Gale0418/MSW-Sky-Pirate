@@ -571,6 +571,11 @@ script GreatVoyageProfileStore extends Logic
 	@ExecSpace("ServerOnly")
 	method any LoadForPlayer(string playerId)
 		-- ProfileCode owns the single account writer; new profiles require the preprovisioned global CAS gate.
+		-- 維護版只預置 global gate，阻止一般載入與首建搶先 claim。
+		if _GreatVoyageSaveMaintenance ~= nil and _GreatVoyageSaveMaintenance.enabled == true then
+			self:SetPlayerLoadStatus(playerId, "setup")
+			return nil
+		end
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		if player == nil or player.PlayerComponent == nil then return nil end
 		local profileCode = player.PlayerComponent.ProfileCode

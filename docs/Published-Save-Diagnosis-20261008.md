@@ -82,3 +82,28 @@ Maker refresh_workspace 實際回報 Maker is not running，故本輪沒有 nati
 依使用者要求，在新手教學 Modal 下新增 VersionLabel；右下錨點、距右 40／底 28 UI px、22 px 淡金字、不接收 Raycast。既有 15 個 UI entity 經 builder 比對未變，版本由 Onboarding.buildVersion 單一來源提供，值為 `v2026.10.08.1`，CLIENT 登入紀錄同步印出。原生 probe 正面證據確認文字完整、正確顯示與 RequestStart 後隱藏／控制恢復；build 66 Info、runtime 35 Info，均 0 Warning/Error。已 stop 回 edit；回執見 [onboarding-version/maker-receipt.json](reviews/2026-10-08/onboarding-version/maker-receipt.json)。
 
 重新發布完成後，離開世界回大廳再登入，先看教學右下角與 CLIENT build 紀錄；它只識別客戶端教學程式，不單獨證明 SaveV1 的伺服器程式或正式 gate 已更新。正式首次建檔仍維持 Review，需接續唯讀 gate 核對與有維護窗口的安全初始化。
+
+
+## 16:57：新版正式服確認缺少 bootstrap gate
+
+使用者看到教學版本號，且同次 SERVER warning 為 `state=missing code=0 phase=read valueKind=nil`（Store:698）。因此本次已確認正式伺服器執行新版診斷分支；後續不再以發布延遲解釋這次失敗。它代表首次建檔前讀到自訂 gate 缺值，尚未發放初始資產，也不表示既有 profile 被清空。
+
+使用者確認世界公開、認為尚無其他玩家，接著明確要求「直接更新」。依這份初次上線授權，已啟用固定維護版 `GreatVoyageSaveMaintenance`，限定 Maker 世界資訊與實際 PlayerComponent 核對一致的創作者帳號。這不是 Private 已確認的宣稱，不再把改私人當作使用者批准前置。
+
+維護版封鎖所有普通 Store 載入／首建，指定創作者進入後核對 Environment.IsPublishedPlay、WorldId、本地單人、完整 instance 分頁只有本 instance、Store 無既有 writer。只對 code0／NotFound 加 nil 的 gate 缺值，送出最多一次 Set OPEN，再精確回讀；既有 OPEN 不寫、BUSY／空字串／其他值／錯誤拒寫。每次原生等待後重查本地狀態；分頁失敗與原生例外停止，Set 例外僅允許一次回讀，結果未知不重送。helper 沒有 Client RPC，沒有 UserDataStorage 呼叫，日誌不輸出 UserId／ProfileCode／gate token。
+
+[WorldInstanceService](https://maplestoryworlds-creators.nexon.com/en/apiReference/Services/WorldInstanceService) 的 ReleaseOnly 清單是快照，不是鎖；因此這是一份只用於目前初次上線的固定維護版，不應留作日後一般登入自動初始化器。任何其他 instance 都拒絕寫入；發布前退出舊遊戲連線，維護回執成功後立即撤下 helper 並發布一般版。公開世界與舊 instance／延遲請求的風險沒有被描述成已消除。Chrome 官方操作本次逾時，Maker MCP 只能操作 Maker，本次未點擊正式發布或寫正式 DB。
+
+### 本輪驗證
+
+- 回歸指令增加 `Tests/test_save_maintenance_lua.py`，共 **114 passed／31 subtests passed**。包含正式方法內容、native Environment／UserEntities.Values mock、完整分頁、第二頁／分頁失敗、owner 離開／新玩家進入、重入、既有 writer、錯世界／帳號、Get／Set／回讀例外及 BUSY token 不洩漏。
+- Maker 實際 Stop／Clear／Refresh／Play／logs／Stop：build 68 Info、runtime 44 Info、0 Warning／Error。原生註冊與 Maker 不初始化、creator ID 比對、普通載入不建立帳號、CLIENT setup 與 `v2026.10.08.2` label 正向證據通過；六個 production-body 假 storage 案例 pass=true。這些案例沒有存取正式 DataStorage，也沒有執行正式 ReleaseOnly instance 清單。詳見 [Maker 回執](reviews/2026-10-08/published-save/maintenance-1657/maker-receipt.json)。
+- 首輪驗收探針誤用無效測試 UserId 與不存在的 GetPlayerLoadStatus，導致兩個探針 Error；改為有效登入 UserId／既有 clientLoadStatus 後重新完成清空日誌的完整 cycle，最終 0 Error。未把前一輪錯誤隱藏成生產通過。
+
+- CodeRabbit 首輪實際只有三檔、1 minor（script-mode discovery），查證修正後直接執行 57 tests 通過；納入兩個新檔後的五檔複查完成／exit0／0 issues。兩輪都已完成，未第3輪；詳見 [本輪審查](reviews/2026-10-08/published-save/maintenance-1657/review-summary.md)。
+
+### 正式執行
+
+1. 從本次 Refresh 的 Maker 發布／更新世界，完成後退出所有舊連線，再進入新 `v2026.10.08.2`。此版為維護用途，船艙／商會暫時不發放資產。
+2. 取得 SERVER `[VRF][SaveV1][Maintenance] gate OPEN confirmed by exact readback`（或 gate already OPEN）。只有這兩種是可以撤下維護版的確認回執。其他 refused／indeterminate 要先查原因，不重登或重發初始化來猜測成功。
+3. 收到回執後，把 helper 的 enabled 與 initialRolloutAuthorized 停用，遞增版本、Refresh／驗證並再發布一般版；最後買賣、等待保存、重登核對金錢／貨物／船況。未完成這一步前 GV-SAVE-QA 維持 Review，不能宣稱正式存檔已修復。
