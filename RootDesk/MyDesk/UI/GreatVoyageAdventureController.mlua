@@ -581,7 +581,7 @@ script GreatVoyageAdventureController extends Logic
 		-- 以實際幀時間推進特效，不受原本每 0.1 秒 UI 更新節流影響。
 		self:UpdateShipAcquired(delta)
 		-- 暫時連線失敗時低頻要求重新載入；伺服器仍保有自己的 backoff。
-		if _GreatVoyageProfileStore ~= nil and _GreatVoyageProfileStore.clientLoadStatus == "retry" then
+		if _GreatVoyageProfileStore ~= nil and (_GreatVoyageProfileStore.clientLoadStatus == "retry" or _GreatVoyageProfileStore.clientLoadStatus == "setup") then
 			self._T.loadRetryElapsed = (self._T.loadRetryElapsed or 0) + delta
 			if self._T.loadRetryElapsed >= 30 then
 				self._T.loadRetryElapsed = 0
@@ -2011,6 +2011,7 @@ script GreatVoyageAdventureController extends Logic
 		-- 載入失敗時顯示可理解的狀態，不用初始金額假裝已讀到存檔。
 		local status = "loading"
 		if _GreatVoyageProfileStore ~= nil then status = _GreatVoyageProfileStore.clientLoadStatus end
+		if status == "setup" then return "存檔服務尚未初始化，請聯絡管理員；資產已保護。" end
 		if status == "blocked" then return "存檔暫時無法讀取，資產已保護；請聯絡管理員。" end
 		if status == "retry" then return "存檔連線暫時忙碌，稍後自動重試…" end
 		return "正在讀取飛船與資產存檔…"
@@ -2119,6 +2120,30 @@ script GreatVoyageAdventureController extends Logic
 			self.shipCapacityText.Text = "貨艙同步中…"
 			self.shipCargoText.Text = "等待港口資料"
 			self.shipCargoIcon.Entity.Enable = false
+			if isvalid(self.shipPreviewImage) then self.shipPreviewImage.Entity.Enable = false end
+			local modSlotButtons = { self.shipModSlot1Button, self.shipModSlot2Button, self.shipModSlot3Button }
+			for i = 1, 3 do
+				if isvalid(modSlotButtons[i]) then
+					modSlotButtons[i].Entity.Enable = false
+					modSlotButtons[i].Enable = false
+				end
+			end
+			local conditionFills = { self.shipShieldBarFillTransform, self.shipArmorBarFillTransform, self.shipHullBarFillTransform }
+			local conditionValues = { self.shipShieldValueText, self.shipArmorValueText, self.shipHullValueText }
+			for i = 1, 3 do
+				if isvalid(conditionFills[i]) then conditionFills[i].Entity.Enable = false end
+				if isvalid(conditionValues[i]) then conditionValues[i].Text = "—" end
+			end
+			if isvalid(self.shipCargoHintText) then self.shipCargoHintText.Entity.Enable = false end
+			if isvalid(self.shipCargoGridPageText) then self.shipCargoGridPageText.Entity.Enable = false end
+			if isvalid(self.shipCargoGridPrevButton) then
+				self.shipCargoGridPrevButton.Entity.Enable = false
+				self.shipCargoGridPrevButton.Enable = false
+			end
+			if isvalid(self.shipCargoGridNextButton) then
+				self.shipCargoGridNextButton.Entity.Enable = false
+				self.shipCargoGridNextButton.Enable = false
+			end
 			local cargoCells = { self.shipCargoGridCell1, self.shipCargoGridCell2, self.shipCargoGridCell3, self.shipCargoGridCell4, self.shipCargoGridCell5, self.shipCargoGridCell6, self.shipCargoGridCell7, self.shipCargoGridCell8, self.shipCargoGridCell9, self.shipCargoGridCell10, self.shipCargoGridCell11, self.shipCargoGridCell12, self.shipCargoGridCell13, self.shipCargoGridCell14, self.shipCargoGridCell15, self.shipCargoGridCell16, self.shipCargoGridCell17, self.shipCargoGridCell18 }
 			for i = 1, 18 do if isvalid(cargoCells[i]) then cargoCells[i].Enable = false end end
 			self.shipRepairButton.Enable = false

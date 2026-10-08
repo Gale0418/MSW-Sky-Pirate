@@ -16,6 +16,8 @@
 
 規格與後續工作見 [M1 設計](docs/GreatVoyage-M1-GDD.md)、[Roadmap](docs/GreatVoyage-Roadmap.md)、[Save V1 規格](docs/GreatVoyage-Save-V1.md)、[完整驗證與限制](docs/Save-V1-Verification.md) 與 [Mission Center 任務](MissionCenter/tasks.md)。2026-10-05 的商品價格表與文案文件是當日資料快照；市場動態成交價以伺服器計算為準。
 
+正式服首次建檔另需本專案自訂的 `GVSaveV1Bootstrap/gate=OPEN` 維護設定；缺值會保護資產並拒絕建檔。Maker 的測試結果不能證明正式環境已完成此設定。缺值提示、載入畫面與核驗步驟見 [正式服載入診斷](docs/Published-Save-Diagnosis-20261008.md)。
+
 Save V1 目前維持 **Review**。本地測試與 Maker 存讀、貨艙及介面 checkpoint 有紀錄；正式環境仍須在維護窗口預置 bootstrap gate，跨 World instance 的 CAS 競態與真實網路斷線也尚無驗證證據，因此不代表存檔總體驗收或遊戲發布完成。細節與限制見 [Save V1 驗證紀錄](docs/Save-V1-Verification.md)。
 
 2026-10-07 的 [CodeRabbit 與離線驗證紀錄](docs/CodeRabbit-Review-20261007.md) 是既有歷史審查，涵蓋 16 個遊戲腳本並記錄 0 issues；當時 Maker 工具不可用，未宣稱實機通過。2026-10-08 完整審查涵蓋 23 檔，4 issues 均查證修正，修正後複查 0 issues；53 項測試與 5 個子案例通過，Maker 隔離市場／離場探針通過。範圍、原始回應與未驗界線見[本輪審查紀錄](docs/CodeRabbit-Review-20261008.md)。

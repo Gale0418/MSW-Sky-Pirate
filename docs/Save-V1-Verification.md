@@ -76,3 +76,8 @@ Environment/config 既有修改保留。所有 UI 經 builder，codeblock 只由
 ## 2026-10-08 11:35 貨艙格式增量
 
 有空位可續買／混裝，帳號 schema2 保留 v1 讀取與原 raw CAS。78 tests/5 subtests、Maker 原生 JSON／table RPC／UI 投影通過；完整範圍、Rabbit 1 fixed/1 rejected 與發布重登限制見 [貨艙驗證](Cargo-Mixed-Verification-20261008.md)。既有 S3 凍結資料不變，不能將其 council 套用為本次增量的 formal Done。
+
+
+## 2026-10-08 正式服首次建檔診斷增量
+
+上游 GitHub skill 與本地一致，指出 GetAndWait 的不存在 key 回 1000002；修正首讀／重讀與建檔前取消的契約處理，維持 exact payload code0 ack。缺 gate 明確提示 setup 並以原30秒節奏重試；loading 不保留預覽／卡槽／假船況。90 tests／13 subtests、167 body syntax通過；詳細來源、反證及正式核驗界線見 [診斷文件](Published-Save-Diagnosis-20261008.md)。Maker refresh 實際回報 not running，未驗 Native／正式DB，Save仍Review；本次增量不改S3凍結證據。

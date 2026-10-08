@@ -384,6 +384,7 @@ script GreatVoyageProfileStore extends Logic
 			account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30
 			return
 		end
+		account.loadFailureStatus = status
 		if terminal then
 			account.loadBlocked = true
 			account.corrupt = true
@@ -399,9 +400,14 @@ script GreatVoyageProfileStore extends Logic
 	method boolean ClaimBootstrapGate(any account)
 		-- Claim only the maintainer-preprovisioned global OPEN gate; an unknown claim never writes a profile.
 		if account == nil then return false end
+		account.bootstrapGateErrorCode = nil
 		if account.bootstrapGateToken == nil then
 			local tokenOk, token = pcall(function() return _UtilLogic:NewGuid() end)
-			if tokenOk ~= true or type(token) ~= "string" or token == "" then return false end
+			if tokenOk ~= true or type(token) ~= "string" or token == "" then
+				account.bootstrapGateState = "unavailable"
+				account.bootstrapGateErrorCode = tokenOk == true and "invalid-token" or "throw"
+				return false
+			end
 			account.bootstrapGateToken = token
 			account.bootstrapGateValue = "BUSY:" .. token
 		end
@@ -410,27 +416,52 @@ script GreatVoyageProfileStore extends Logic
 			local storageOk, gateStorage = pcall(function() return _DataStorageService:GetGlobalDataStorage(storageName) end)
 			if storageOk ~= true or gateStorage == nil then
 				account.bootstrapGateState = "unavailable"
+				account.bootstrapGateErrorCode = storageOk == true and "unavailable" or "throw"
 				return false
 			end
 			account.bootstrapGateStorage = gateStorage
 		end
 		local gateStorage = account.bootstrapGateStorage
 		local readOk, readCode, current = pcall(function() return gateStorage:GetAndWait(self.bootstrapGateKey) end)
-		if readOk ~= true or readCode ~= 0 then
+		if readOk ~= true then
 			account.bootstrapGateState = "uncertain"
+			account.bootstrapGateErrorCode = "throw"
+			return false
+		end
+		if readCode == self.notFoundCode then
+			if current == nil then
+				account.bootstrapGateState = "missing"
+				account.bootstrapGateErrorCode = readCode
+				return false
+			end
+			account.bootstrapGateState = "uncertain"
+			account.bootstrapGateErrorCode = readCode
+			return false
+		end
+		if readCode ~= 0 then
+			account.bootstrapGateState = "uncertain"
+			account.bootstrapGateErrorCode = readCode
 			return false
 		end
 		if current == account.bootstrapGateValue then
 			account.bootstrapGateState = "held"
+			account.bootstrapGateErrorCode = nil
 			account.bootstrapClaimAttempted = nil
 			return true
 		end
 		if account.bootstrapClaimAttempted == true then
 			account.bootstrapGateState = "uncertain"
+			account.bootstrapGateErrorCode = "prior-claim-unknown"
+			return false
+		end
+		if current == nil then
+			account.bootstrapGateState = "uncertain"
+			account.bootstrapGateErrorCode = readCode
 			return false
 		end
 		if current ~= "OPEN" then
-			account.bootstrapGateState = (current == nil or current == "") and "missing" or "busy"
+			account.bootstrapGateState = "busy"
+			account.bootstrapGateErrorCode = readCode
 			return false
 		end
 		account.bootstrapClaimAttempted = true
@@ -439,21 +470,25 @@ script GreatVoyageProfileStore extends Logic
 		end)
 		if updateOk == true and updateCode == 0 and updated == account.bootstrapGateValue then
 			account.bootstrapGateState = "held"
+			account.bootstrapGateErrorCode = nil
 			account.bootstrapClaimAttempted = nil
 			return true
 		end
 		if updateOk == true and updateCode == self.compareFailedCode then
 			account.bootstrapClaimAttempted = nil
 			account.bootstrapGateState = "busy"
+			account.bootstrapGateErrorCode = updateCode
 			return false
 		end
 		local reconcileOk, reconcileCode, observed = pcall(function() return gateStorage:GetAndWait(self.bootstrapGateKey) end)
 		if reconcileOk == true and reconcileCode == 0 and observed == account.bootstrapGateValue then
 			account.bootstrapGateState = "held"
+			account.bootstrapGateErrorCode = nil
 			account.bootstrapClaimAttempted = nil
 			return true
 		end
 		account.bootstrapGateState = "uncertain"
+		account.bootstrapGateErrorCode = reconcileOk == true and reconcileCode or "throw"
 		return false
 	end
 
@@ -496,7 +531,8 @@ script GreatVoyageProfileStore extends Logic
 		-- A pre-Set abort may release only after an exact profile read; it never clears a possibly written record.
 		if account == nil or account.bootstrapSetAttempted == true or account.bootstrapGateToken == nil then return false end
 		local readOk, readCode, currentRaw = pcall(function() return account.storage:GetAndWait(self:GetProfileKey(account.profileCode)) end)
-		if readOk ~= true or readCode ~= 0 then return false end
+		local confirmedNotFound = readOk == true and readCode == self.notFoundCode and currentRaw == nil
+		if readOk ~= true or (readCode ~= 0 and confirmedNotFound ~= true) then return false end
 		if currentRaw ~= nil and type(currentRaw) ~= "string" then return false end
 		return self:ReleaseBootstrapGate(account)
 	end
@@ -514,6 +550,7 @@ script GreatVoyageProfileStore extends Logic
 			return nil
 		end
 		if account ~= nil and account.ready == true then
+			account.loadFailureStatus = nil
 			if self:IsSameBoundProfile(playerId, profileCode) == false then self:SetPlayerLoadStatus(playerId, "retry") return nil end
 			if account.activeUserId ~= nil and account.activeUserId ~= playerId and _UserService:GetUserEntityByUserId(account.activeUserId) ~= nil then self:SetPlayerLoadStatus(playerId, "retry") return nil end
 			account.activeUserId = playerId
@@ -523,7 +560,7 @@ script GreatVoyageProfileStore extends Logic
 		end
 		if account ~= nil and account.loading == true then self:SetPlayerLoadStatus(playerId, "loading") return nil end
 		if account ~= nil and account.nextRetryAt ~= nil and _UtilLogic.ServerElapsedSeconds < account.nextRetryAt then
-			self:SetPlayerLoadStatus(playerId, "retry")
+			self:SetPlayerLoadStatus(playerId, account.loadFailureStatus or "retry")
 			return nil
 		end
 		if account == nil then
@@ -535,6 +572,7 @@ script GreatVoyageProfileStore extends Logic
 		account.loadSequence = (account.loadSequence or 0) + 1
 		local loadSequence = account.loadSequence
 		account.loading = true
+		account.loadFailureStatus = nil
 		account.loadBlocked = false
 		account.corrupt = false
 		account.nextRetryAt = nil
@@ -543,9 +581,15 @@ script GreatVoyageProfileStore extends Logic
 		local getOk, code, raw = pcall(function() return account.storage:GetAndWait(self:GetProfileKey(profileCode)) end)
 		if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return nil end
 		if self:IsSameBoundProfile(playerId, profileCode) == false then account.loading = false account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30 return nil end
-		if getOk ~= true or code ~= 0 then
+		local profileNotFound = getOk == true and code == self.notFoundCode
+		if getOk ~= true or (code ~= 0 and profileNotFound ~= true) then
 			self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
-			log_warning("[SaveV1] profile read failed")
+			log_warning("[SaveV1] profile read failed state=GetAndWait code=" .. tostring(getOk == true and code or "throw"))
+			return nil
+		end
+		if profileNotFound and raw ~= nil then
+			self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
+			log_warning("[SaveV1] profile read returned NotFound with data; retry code=" .. tostring(code))
 			return nil
 		end
 		local profile = nil
@@ -576,7 +620,14 @@ script GreatVoyageProfileStore extends Logic
 				return nil
 			end
 			if self:ClaimBootstrapGate(account) ~= true then
-				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
+				local failureStatus = account.bootstrapGateState == "missing" and "setup" or "retry"
+				self:SetLoadFailure(playerId, profileCode, account, loadSequence, failureStatus, false)
+				if account.bootstrapGateState == "missing" then
+					local storageName = self.storagePrefix == "GVSaveV1" and "GVSaveV1Bootstrap" or self.storagePrefix .. "Bootstrap"
+					log_warning("[SaveV1] " .. storageName .. " gate 未預置; state=missing code=" .. tostring(account.bootstrapGateErrorCode or "unknown"))
+				else
+					log_warning("[SaveV1] bootstrap gate claim failed state=" .. tostring(account.bootstrapGateState or "unknown") .. " code=" .. tostring(account.bootstrapGateErrorCode or "unknown"))
+				end
 				return nil
 			end
 			if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return nil end
@@ -591,11 +642,17 @@ script GreatVoyageProfileStore extends Logic
 			if self:IsSameBoundProfile(playerId, profileCode) == false then
 				account.loading = false
 				account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30
-				if recheckOk == true and recheckCode == 0 and account.bootstrapSetAttempted ~= true then self:ReleaseBootstrapGate(account) end
+				if recheckOk == true and (recheckCode == 0 or (recheckCode == self.notFoundCode and recheckRaw == nil)) and account.bootstrapSetAttempted ~= true then self:ReleaseBootstrapGate(account) end
 				return nil
 			end
-			if recheckOk ~= true or recheckCode ~= 0 then
+			local recheckNotFound = recheckOk == true and recheckCode == self.notFoundCode
+			if recheckOk ~= true or (recheckCode ~= 0 and recheckNotFound ~= true) then
 				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
+				return nil
+			end
+			if recheckNotFound and recheckRaw ~= nil then
+				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
+				log_warning("[SaveV1] profile recheck returned NotFound with data; retry code=" .. tostring(recheckCode))
 				return nil
 			end
 			if recheckRaw ~= nil then
@@ -690,6 +747,7 @@ script GreatVoyageProfileStore extends Logic
 		if account.lastCoreSignature == nil then self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true) return nil end
 		account.loading = false
 		account.ready = true
+		account.loadFailureStatus = nil
 		account.nextRetryAt = nil
 		self.profileByUser[playerId] = profileCode
 		self:SetPlayerLoadStatus(playerId, "ready")

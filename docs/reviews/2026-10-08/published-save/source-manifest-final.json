@@ -1,0 +1,11 @@
+{
+  "projectBase": "e91c928fdd1409df39fff02e81e8a2da173fb420",
+  "review3Base": "19736ba",
+  "postReviewDelta": "clone assertion target only; validated by production-body tests; no fourth review",
+  "files": {
+    "RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.mlua": "71f9f9afc7f64f7e9ce2529ba2beac3388a2c633195266750803c552c66ffcbb",
+    "RootDesk/MyDesk/UI/GreatVoyageAdventureController.mlua": "8f897ed29f9a01bf35d42ddde4b4baae6b2504d9b9225828a106a93698a18694",
+    "Tests/test_save_v1_lua.py": "7660a3254cea12df9ce308cf51d972c6f79802758bee0c8e293e9fbb7925c5b5",
+    "Tests/test_cargo_ui.py": "1736e170e531b23951ff7ab4d2eb7ac54403ddc23b680bf295aa882f1dec5734"
+  }
+}

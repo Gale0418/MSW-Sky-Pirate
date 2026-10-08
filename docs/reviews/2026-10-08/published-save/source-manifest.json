@@ -1,0 +1,9 @@
+{
+  "base": "e91c928fdd1409df39fff02e81e8a2da173fb420",
+  "files": {
+    "RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.mlua": "fb58b64afb42a7f75a6690286d3889b47cc014c09e8eb85cacedd6c8d6f82433",
+    "RootDesk/MyDesk/UI/GreatVoyageAdventureController.mlua": "72b77f9c730bb4b071b2a3b2790dc29045dd2474e3374c0946285b014a4570b7",
+    "Tests/test_save_v1_lua.py": "b11978cb71aef291bfac60e59dc4f7ffeb9b1a020a8f3cc99dd92daeb963807a",
+    "Tests/test_cargo_ui.py": "85a2f0d88008d31a805608d53e67642729f0134f875afa0d5928248dc2804a24"
+  }
+}
