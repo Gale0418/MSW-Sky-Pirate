@@ -1,0 +1,17 @@
+{
+  "source": "Luna 實際工具輸出回報；未保存獨立 stdout artifact",
+  "command": "python -m pytest Tests/test_save_v1_lua.py -q -k 'gate_ok_nil_requests_setup or prior_claim_with_nil or unknown_cas_reconcile_records_phase'",
+  "red": {
+    "exitCode": 1,
+    "summary": "4 failed, 1 passed, 50 deselected, 2 subtests passed"
+  },
+  "green": {
+    "exitCode": 0,
+    "summary": "3 passed, 50 deselected, 2 subtests passed"
+  },
+  "rootRegression": {
+    "command": "C:/Users/USER/miniconda3/python.exe -X utf8 -m pytest Tests/test_save_v1_lua.py Tests/test_cargo_ui.py Tests/test_cargo_transactions.py Tests/test_transaction_feedback.py Tests/test_git_review_regressions.py -q",
+    "exitCode": 0,
+    "summary": "95 passed, 24 subtests passed"
+  }
+}

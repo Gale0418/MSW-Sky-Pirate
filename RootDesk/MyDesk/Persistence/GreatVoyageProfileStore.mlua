@@ -397,11 +397,25 @@ script GreatVoyageProfileStore extends Logic
 	end
 
 	@ExecSpace("ServerOnly")
+	method string ClassifyGateValue(any value, any account)
+		-- 僅輸出值的分類，避免把鎖的 token 或原始資料寫進日誌。
+		if value == nil then return "nil" end
+		if type(value) ~= "string" then return "other" end
+		if value == "" then return "empty" end
+		if value == "OPEN" then return "open" end
+		if account ~= nil and account.bootstrapGateValue ~= nil and value == account.bootstrapGateValue then return "owner" end
+		if string.sub(value, 1, 5) == "BUSY:" then return "busy" end
+		return "other"
+	end
+
+	@ExecSpace("ServerOnly")
 	method boolean ClaimBootstrapGate(any account)
 		-- Claim only the maintainer-preprovisioned global OPEN gate; an unknown claim never writes a profile.
 		if account == nil then return false end
 		account.bootstrapGateErrorCode = nil
+		account.bootstrapGateValueKind = "nil"
 		if account.bootstrapGateToken == nil then
+			account.bootstrapGatePhase = "token"
 			local tokenOk, token = pcall(function() return _UtilLogic:NewGuid() end)
 			if tokenOk ~= true or type(token) ~= "string" or token == "" then
 				account.bootstrapGateState = "unavailable"
@@ -412,6 +426,7 @@ script GreatVoyageProfileStore extends Logic
 			account.bootstrapGateValue = "BUSY:" .. token
 		end
 		if account.bootstrapGateStorage == nil then
+			account.bootstrapGatePhase = "handle"
 			local storageName = self.storagePrefix == "GVSaveV1" and "GVSaveV1Bootstrap" or self.storagePrefix .. "Bootstrap"
 			local storageOk, gateStorage = pcall(function() return _DataStorageService:GetGlobalDataStorage(storageName) end)
 			if storageOk ~= true or gateStorage == nil then
@@ -422,20 +437,33 @@ script GreatVoyageProfileStore extends Logic
 			account.bootstrapGateStorage = gateStorage
 		end
 		local gateStorage = account.bootstrapGateStorage
+		account.bootstrapGatePhase = "read"
 		local readOk, readCode, current = pcall(function() return gateStorage:GetAndWait(self.bootstrapGateKey) end)
+		account.bootstrapGateValueKind = self:ClassifyGateValue(current, account)
 		if readOk ~= true then
 			account.bootstrapGateState = "uncertain"
 			account.bootstrapGateErrorCode = "throw"
+			account.bootstrapGateValueKind = "nil"
 			return false
 		end
-		if readCode == self.notFoundCode then
-			if current == nil then
-				account.bootstrapGateState = "missing"
-				account.bootstrapGateErrorCode = readCode
-				return false
+		if account.bootstrapClaimAttempted == true then
+			if readCode == 0 and current == account.bootstrapGateValue then
+				account.bootstrapGateState = "held"
+				account.bootstrapGateErrorCode = nil
+				account.bootstrapGateValueKind = "owner"
+				account.bootstrapClaimAttempted = nil
+				return true
 			end
+			account.bootstrapGatePhase = "prior-claim"
 			account.bootstrapGateState = "uncertain"
+			account.bootstrapGateErrorCode = readCode == nil and "unknown" or readCode
+			return false
+		end
+		local confirmedMissing = current == nil and (readCode == 0 or readCode == self.notFoundCode)
+		if confirmedMissing then
+			account.bootstrapGateState = "missing"
 			account.bootstrapGateErrorCode = readCode
+			account.bootstrapGateValueKind = "nil"
 			return false
 		end
 		if readCode ~= 0 then
@@ -446,13 +474,9 @@ script GreatVoyageProfileStore extends Logic
 		if current == account.bootstrapGateValue then
 			account.bootstrapGateState = "held"
 			account.bootstrapGateErrorCode = nil
+			account.bootstrapGateValueKind = "owner"
 			account.bootstrapClaimAttempted = nil
 			return true
-		end
-		if account.bootstrapClaimAttempted == true then
-			account.bootstrapGateState = "uncertain"
-			account.bootstrapGateErrorCode = "prior-claim-unknown"
-			return false
 		end
 		if current == nil then
 			account.bootstrapGateState = "uncertain"
@@ -465,12 +489,14 @@ script GreatVoyageProfileStore extends Logic
 			return false
 		end
 		account.bootstrapClaimAttempted = true
+		account.bootstrapGatePhase = "cas"
 		local updateOk, updateCode, updated = pcall(function()
 			return gateStorage:UpdateAndWait(self.bootstrapGateKey, "OPEN", account.bootstrapGateValue)
 		end)
 		if updateOk == true and updateCode == 0 and updated == account.bootstrapGateValue then
 			account.bootstrapGateState = "held"
 			account.bootstrapGateErrorCode = nil
+			account.bootstrapGateValueKind = "owner"
 			account.bootstrapClaimAttempted = nil
 			return true
 		end
@@ -478,17 +504,22 @@ script GreatVoyageProfileStore extends Logic
 			account.bootstrapClaimAttempted = nil
 			account.bootstrapGateState = "busy"
 			account.bootstrapGateErrorCode = updateCode
+			account.bootstrapGateValueKind = self:ClassifyGateValue(updated, account)
 			return false
 		end
+		account.bootstrapGatePhase = "reconcile"
 		local reconcileOk, reconcileCode, observed = pcall(function() return gateStorage:GetAndWait(self.bootstrapGateKey) end)
+		account.bootstrapGateValueKind = self:ClassifyGateValue(observed, account)
 		if reconcileOk == true and reconcileCode == 0 and observed == account.bootstrapGateValue then
 			account.bootstrapGateState = "held"
 			account.bootstrapGateErrorCode = nil
+			account.bootstrapGateValueKind = "owner"
 			account.bootstrapClaimAttempted = nil
 			return true
 		end
 		account.bootstrapGateState = "uncertain"
 		account.bootstrapGateErrorCode = reconcileOk == true and reconcileCode or "throw"
+		if reconcileOk ~= true then account.bootstrapGateValueKind = "nil" end
 		return false
 	end
 
@@ -624,9 +655,9 @@ script GreatVoyageProfileStore extends Logic
 				self:SetLoadFailure(playerId, profileCode, account, loadSequence, failureStatus, false)
 				if account.bootstrapGateState == "missing" then
 					local storageName = self.storagePrefix == "GVSaveV1" and "GVSaveV1Bootstrap" or self.storagePrefix .. "Bootstrap"
-					log_warning("[SaveV1] " .. storageName .. " gate 未預置; state=missing code=" .. tostring(account.bootstrapGateErrorCode or "unknown"))
+					log_warning("[SaveV1] " .. storageName .. " gate 未預置; state=missing code=" .. tostring(account.bootstrapGateErrorCode or "unknown") .. " phase=" .. tostring(account.bootstrapGatePhase or "unknown") .. " valueKind=" .. tostring(account.bootstrapGateValueKind or "nil"))
 				else
-					log_warning("[SaveV1] bootstrap gate claim failed state=" .. tostring(account.bootstrapGateState or "unknown") .. " code=" .. tostring(account.bootstrapGateErrorCode or "unknown"))
+					log_warning("[SaveV1] bootstrap gate claim failed state=" .. tostring(account.bootstrapGateState or "unknown") .. " code=" .. tostring(account.bootstrapGateErrorCode or "unknown") .. " phase=" .. tostring(account.bootstrapGatePhase or "unknown") .. " valueKind=" .. tostring(account.bootstrapGateValueKind or "nil"))
 				end
 				return nil
 			end

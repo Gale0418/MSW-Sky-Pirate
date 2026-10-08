@@ -10,12 +10,12 @@
 
 ### GitHub skill 找到的先行問題
 
-上游 [MSW-Git DataStorage skill](https://github.com/MSW-Git/msw-ai-coding-plugins-official/blob/96133b2991d71b66bbe1e2494d28e4cc4bf57f82/plugins/msw-maker-base-skill/skills/msw-scripting/references/datastorage.md#L440-L483) 明文 GetAndWait 的新 key 回 1000002 NotFound。舊 Store 的首讀與 gate 後重讀把所有非零 code 都判 retry，僅 code0＋nil 能走 first-create；因此正式新帳號可能在抵達 gate 前就被擋。這是已查證的程式／文件差異，仍沒有本次正式 DB code。已修正為只接受 confirmed NotFound＋nil，其他 error／throw 或 NotFound帶資料仍 fail-closed；精確 Set/CAS 回讀成功條件保持 code0。建檔前取消也接受 confirmed NotFound＋nil 以釋放自己的 gate；已嘗試 Set、未知回應與矛盾資料仍不可走此釋放。
+上游 [MSW-Git DataStorage skill](https://github.com/MSW-Git/msw-ai-coding-plugins-official/blob/96133b2991d71b66bbe1e2494d28e4cc4bf57f82/plugins/msw-maker-base-skill/skills/msw-scripting/references/datastorage.md#L440-L483) 明文 GetAndWait 的新 key 回 1000002 NotFound。舊 Store 的首讀與 gate 後重讀把所有非零 code 都判 retry，僅 code0＋nil 能走 first-create；因此正式新帳號可能在抵達 gate 前就被擋。這是已查證的程式／文件差異；後續正式 SERVER 日誌見下方時間序列。已修正為只接受 confirmed NotFound＋nil，其他 error／throw 或 NotFound帶資料仍 fail-closed；精確 Set/CAS 回讀成功條件保持 code0。建檔前取消也接受 confirmed NotFound＋nil 以釋放自己的 gate；已嘗試 Set、未知回應與矛盾資料仍不可走此釋放。
 
 本地相關技能與上游 96133b2991d71b66bbe1e2494d28e4cc4bf57f82（2026-10-06 23:06:27Z）內容一致，無需重裝。GVSaveV1Bootstrap 是專案自訂跨初始化 CAS 保護，不是 MSW 官方首次建檔前置。
 
 
-LoadForPlayer 先讀 UserDataStorage(ProfileCode) 的 GVSaveV1_<ProfileCode>。既有非 nil profile 直接驗證／載入；只有不存在的 profile（成功讀取但 raw=nil，或已確認 NotFound＋nil）的首次建立路徑會 ClaimBootstrapGate。該閘門要求維護者預置 GlobalDataStorage GVSaveV1Bootstrap 的 gate 字串為 OPEN。確認 gate NotFound 會拒絕建檔；非零 API code 的舊處理把它歸為 retry，畫面因此只能顯示忙碌。既有驗證紀錄僅證明 Maker gate 已預置，正式環境預置一直未驗。確認 NotFound 處理後仍需核驗此路徑，但尚無該次正式 SERVER 日誌或 DB 讀取證據，故不能定案。
+LoadForPlayer 先讀 UserDataStorage(ProfileCode) 的 GVSaveV1_<ProfileCode>。既有非 nil profile 直接驗證／載入；只有不存在的 profile（成功讀取但 raw=nil，或已確認 NotFound＋nil）的首次建立路徑會 ClaimBootstrapGate。該閘門要求維護者預置 GlobalDataStorage GVSaveV1Bootstrap 的 gate 字串為 OPEN。確認 gate NotFound 會拒絕建檔；非零 API code 的舊處理把它歸為 retry，畫面因此只能顯示忙碌。既有驗證紀錄僅證明 Maker gate 已預置，正式環境預置一直未驗。確認 NotFound 處理後仍需核驗此路徑，後續已收到正式 SERVER 日誌；目前仍缺獨立 DB 唯讀與初始化證據，不能宣稱已修復正式服。
 
 本輪將 missing gate 分類 setup，30 秒退避期間保留該狀態；UI 明示「存檔服務尚未初始化，請聯絡管理員；資產已保護。」真正重新載入或 ready 會清除舊 failure 狀態。busy／unknown claim／服務異常仍 retry；壞檔仍 blocked。新增 SERVER warning 的 state／code 與正確 storage 名稱，排除身份、token、raw 及 payload。未增加自動 Set OPEN，未重設或覆寫玩家資料。
 
@@ -43,3 +43,27 @@ C:/Users/USER/miniconda3/python.exe -X utf8 -m pytest Tests/test_save_v1_lua.py 
 Maker refresh_workspace 實際回報 Maker is not running，故本輪沒有 native build／Play 或正式伺服器修復宣稱。CodeRabbit 第一輪四檔增量提出 1 minor（setup 自動 polling 遺漏），查證修正；第二輪包含 NotFound／載入 UI 修正的複查 0 issues；第三輪針對取消建檔的兩檔增量提出 1 minor（測試斷言誤查原 store），查證修正並重跑通過；三輪均 complete／exit0，未執行第四輪。不沿用先前審查作本輪結果。正式 SERVER 訊息與 DB 唯讀核驗仍待取得。
 
 本地紅／綠證據：首次初始化與缺閘門兩個正向案例在舊 Store 失敗，修正後通過；建檔前取消的 NotFound 正向案例亦先失敗後通過。NotFound 帶 raw 的 retry/no-write 是原有安全守則，初測一度期待 blocked，已更正，不列為生產缺陷。完整回歸、紅綠紀錄與逐輪來源見 [審查摘要](reviews/2026-10-08/published-save/review-summary.md)。
+
+
+## 13:43／13:51／15:06 後續證據
+
+- **13:43 正式服（使用者提供）**：`GVSaveV1Bootstrap gate 未預置; state=missing code=0`。代表當時程式走到專案首次建檔 gate 保護分支，玩家沒有拿到初始資產；不是一般 ShipUI opened 造成。尚未獨立核對該 instance 的發布版本。
+- **13:51–13:53 Maker（實際 MCP）**：Refresh 成功、build 66 Info／0 Warning／0 Error；Play 載入既有 profile revision=25，伺服器探針確認 prefix=GVSaveV1、notFoundCode=1000002、gateKey=gate，Maker-only gate code0／OPEN；已 Stop 回編輯。這是前一版 `6809717` 的 Maker 證據，不涵蓋下面新增程式，也不能代替正式 DB。未公開 ProfileCode／token／payload。
+- **15:06 正式服（使用者提供）**：`bootstrap gate claim failed state=uncertain code=0`。`code=0` 本身只表示最後一次 API 回應成功；既可能是初次 read 成功但 nil，也可能是未知 CAS 後 reconcile 成功但沒有看見 owner。原訊息沒有 phase/valueKind，不能只憑這一行判定已搶鎖、保存成功或資料遺失。
+
+本次小修把**尚未嘗試 claim 的 code0＋nil** 歸入 missing/setup，保持原有 30 秒退避且不寫 gate/profile；**已嘗試但未確認的 claim** 保持 uncertain/retry，包括後續 code0＋nil。每個失敗訊息新增 `phase=token/handle/read/prior-claim/cas/reconcile` 與白名單 `valueKind=nil/empty/open/owner/busy/other`，不輸出原始值。精確 code0＋owner 的持鎖確認、profile Set 與原始 raw CAS 成功條件保留。
+
+新訊息的判讀方式：
+
+| 新版日誌 | 處置 |
+|---|---|
+| `state=missing code=0 phase=read valueKind=nil` | 初次讀取沒有 gate 值，維持 setup；核對正式 storage 與安全維護初始化。 |
+| `state=uncertain ... phase=prior-claim` | 前次 claim 尚未確認，不重送；核對 gate 與延遲請求。 |
+| `state=uncertain ... phase=reconcile` | CAS 後未確認 owner，最後 read code0 不等於 CAS 成功；維持 no-write。 |
+| `valueKind=busy/empty/other` | 不能改寫為 OPEN；先查維護與既有 writer。 |
+
+已對照上游 skill，沒有可直接安全補上首次「不存在 key 的 create-if-absent」方案。Sortable Increase 雖有官方計數用途說明，但本專案已有併發 IncreaseAsync 回傳重複 1 的隔離反例；不能據此假定跨 instance 唯一 owner，因此未引入計數器自動初始化，也未自動 Set OPEN。維護方案仍要求唯一操作者、其他 instances 停止、延遲中的舊 claim/write 已排除，且 code0＋nil 的正式缺值語義已核對；任何未知 Set 結果不可直接重送。正式維護執行入口目前尚未驗證可用，沒有執行正式 DB 寫入。
+
+同一組回歸測試更新為 **95 passed／24 subtests passed**。新增初讀 code0＋nil、prior-claim＋nil、未知 CAS 後 reconcile 的三組目標案例先在舊碼失敗，再於修正後通過；另驗 token/handle throw、分類白名單與日誌不洩漏 token/raw。CodeRabbit 本輪只送兩個小檔案，0 issues／complete／exit0；資產與 Native API 排除。原始回應與來源雜湊見 [15:06 診斷審查](reviews/2026-10-08/published-save/gate-150647/review-summary.md)。
+
+本次 Maker MCP 回報 `Maker is not running`；已請使用者開啟 Maker，尚未收到恢復回覆。新增變更的 Refresh／native build／Play 與正式服首次保存／重登均仍待驗，任務維持 Review。Git commit/push 不會自動更新 Maker 發布版本。

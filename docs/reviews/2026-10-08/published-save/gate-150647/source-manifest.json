@@ -1,0 +1,15 @@
+{
+  "baseline": "680971790b7559ff19fbf44dca96a4f92fe7b6da",
+  "files": [
+    {
+      "file": "RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.mlua",
+      "bytes": 59092,
+      "sha256": "02cbc90d1e8eeda9d2a66e317226bcf83a344b4c6a2f5da250707a333a61af1a"
+    },
+    {
+      "file": "Tests/test_save_v1_lua.py",
+      "bytes": 84696,
+      "sha256": "41455622b85e25f9d6da9b13b0281bb95c86d287ae7421527884757ab0012023"
+    }
+  ]
+}

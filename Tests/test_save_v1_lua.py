@@ -118,6 +118,7 @@ def make_runtime():
         "SetPlayerLoadStatus",
         "SetLoadFailure",
         "ClaimBootstrapGate",
+        "ClassifyGateValue",
         "ReleaseBootstrapGate",
         "ReleaseBootstrapGateBeforeWrite",
         "LoadForPlayer",
@@ -921,6 +922,8 @@ class SaveV1LuaTests(unittest.TestCase):
                 else:
                     warnings = [load_warning for load_warning in self.lua.globals().loadWarnings.values()]
                     self.assertTrue(any("bootstrap gate claim failed state=busy code=0" in warning for warning in warnings))
+                    self.assertTrue(any("phase=read valueKind=busy" in warning for warning in warnings))
+                    self.assertTrue(all("BUSY:other-instance" not in warning and "BUSY:crashed-owner" not in warning for warning in warnings))
 
     def test_profile_read_failure_logs_state_and_error_code(self):
         storage = self.lua.eval(
@@ -947,6 +950,44 @@ class SaveV1LuaTests(unittest.TestCase):
         self.assertEqual(storage.setCalls, 0)
         warnings = [load_warning for load_warning in self.lua.globals().loadWarnings.values()]
         self.assertTrue(any("profile read failed state=GetAndWait code=throw" in warning for warning in warnings))
+
+    def test_bootstrap_gate_token_and_handle_failures_report_exact_phase(self):
+        for failure_stage in ("token", "handle"):
+            with self.subTest(failure_stage=failure_stage):
+                storage = self.lua.eval("{GetAndWait=function(self,key) return 1000002,nil end}")
+                _, _, _, store = self.configure_bootstrap_runtime(storage)
+                if failure_stage == "token":
+                    self.lua.globals()._UtilLogic.NewGuid = self.lua.eval("function(self) error('private token generator failure') end")
+                else:
+                    self.lua.globals()._DataStorageService.GetGlobalDataStorage = self.lua.eval(
+                        "function(self,name) error('private gate handle failure') end"
+                    )
+
+                self.assertIsNone(store.LoadForPlayer(store, "user-A"))
+
+                account = store.accounts["profile-A"]
+                self.assertEqual(account.bootstrapGateState, "unavailable")
+                self.assertEqual(account.bootstrapGatePhase, failure_stage)
+                self.assertEqual(account.bootstrapGateValueKind, "nil")
+                warnings = [load_warning for load_warning in self.lua.globals().loadWarnings.values()]
+                self.assertTrue(any(f"phase={failure_stage} valueKind=nil" in warning for warning in warnings))
+                self.assertTrue(all("private token generator failure" not in warning and "private gate handle failure" not in warning for warning in warnings))
+
+    def test_bootstrap_gate_value_classification_is_whitelisted(self):
+        _, _, _, store = self.configure_bootstrap_runtime()
+        account = self.lua.table_from({"bootstrapGateValue": "BUSY:private-owner-token"})
+        cases = (
+            (None, "nil"),
+            ("", "empty"),
+            ("OPEN", "open"),
+            ("BUSY:private-owner-token", "owner"),
+            ("BUSY:other-private-token", "busy"),
+            ("private-raw-gate-value", "other"),
+            (123, "other"),
+        )
+        for value, expected in cases:
+            with self.subTest(expected=expected):
+                self.assertEqual(store.ClassifyGateValue(store, value, account), expected)
 
     def test_profile_not_found_with_open_gate_initializes_once(self):
         storage = self.lua.eval(
@@ -983,6 +1024,107 @@ class SaveV1LuaTests(unittest.TestCase):
         self.assertEqual(store.loadStatusByUser["user-A"], "setup")
         self.assertEqual(storage.setCalls, 0)
         self.assertIsNone(storage.raw)
+
+    def test_gate_ok_nil_requests_setup_and_honors_cooldown_without_writes(self):
+        storage = self.lua.eval(
+            "{raw=nil,getCalls=0,setCalls=0,GetAndWait=function(self,key) "
+            "self.getCalls=self.getCalls+1; return 1000002,nil end, "
+            "SetAndWait=function(self,key,value) self.setCalls=self.setCalls+1; error('profile write must not run') end}"
+        )
+        _, gate, _, store = self.configure_bootstrap_runtime(storage)
+        self.lua.globals()._UtilLogic.ServerElapsedSeconds = 0
+        gate.value = None
+        gate.GetAndWait = self.lua.eval("function(self,key) self.calls=self.calls+1; return 0,nil end")
+        gate.UpdateAndWait = self.lua.eval("function(self,key,expected,value) error('missing gate must not be updated') end")
+
+        self.assertIsNone(store.LoadForPlayer(store, "user-A"))
+        account = store.accounts["profile-A"]
+        self.assertEqual(account.bootstrapGateState, "missing")
+        self.assertEqual(account.loadFailureStatus, "setup")
+        self.assertEqual(account.bootstrapGateErrorCode, 0)
+        self.assertEqual(account.bootstrapGatePhase, "read")
+        self.assertEqual(account.bootstrapGateValueKind, "nil")
+        self.assertEqual(account.nextRetryAt, 30)
+        self.assertEqual(store.loadStatusByUser["user-A"], "setup")
+        self.assertEqual(storage.setCalls, 0)
+        self.assertIsNone(storage.raw)
+
+        profileReads = storage.getCalls
+        gateReads = gate.calls
+        self.assertIsNone(store.LoadForPlayer(store, "user-A"))
+        self.assertEqual(store.loadStatusByUser["user-A"], "setup")
+        self.assertEqual(storage.getCalls, profileReads)
+        self.assertEqual(gate.calls, gateReads)
+        self.assertEqual(storage.setCalls, 0)
+        warnings = [load_warning for load_warning in self.lua.globals().loadWarnings.values()]
+        self.assertTrue(any("state=missing code=0 phase=read valueKind=nil" in warning for warning in warnings))
+
+    def test_prior_claim_with_nil_remains_uncertain_without_resending_cas(self):
+        storage = self.lua.eval(
+            "{getCalls=0,setCalls=0,GetAndWait=function(self,key) self.getCalls=self.getCalls+1; return 1000002,nil end, "
+            "SetAndWait=function(self,key,value) self.setCalls=self.setCalls+1; error('profile write must not run') end}"
+        )
+        _, gate, _, store = self.configure_bootstrap_runtime(storage)
+        gate.calls = 0
+        gate.updateCalls = 0
+        gate.GetAndWait = self.lua.eval("function(self,key) self.calls=self.calls+1; return 0,nil end")
+        gate.UpdateAndWait = self.lua.eval(
+            "function(self,key,expected,value) self.updateCalls=self.updateCalls+1; return 0,value end"
+        )
+        account = self.lua.eval(
+            "{profileCode='profile-A',storage=storageFixture,bootstrapGateStorage=bootstrapGateFixture,"
+            "bootstrapGateToken='private-owner-token',bootstrapGateValue='BUSY:private-owner-token',"
+            "bootstrapClaimAttempted=true}"
+        )
+        store.accounts["profile-A"] = account
+
+        self.assertIsNone(store.LoadForPlayer(store, "user-A"))
+
+        self.assertEqual(account.bootstrapGateState, "uncertain")
+        self.assertEqual(account.loadFailureStatus, "retry")
+        self.assertEqual(account.bootstrapGateErrorCode, 0)
+        self.assertEqual(account.bootstrapGatePhase, "prior-claim")
+        self.assertEqual(account.bootstrapGateValueKind, "nil")
+        self.assertEqual(gate.calls, 1)
+        self.assertEqual(gate.updateCalls, 0)
+        self.assertEqual(storage.setCalls, 0)
+        warnings = [load_warning for load_warning in self.lua.globals().loadWarnings.values()]
+        self.assertTrue(any("phase=prior-claim valueKind=nil" in warning for warning in warnings))
+        self.assertTrue(all("private-owner-token" not in warning and "BUSY:" not in warning for warning in warnings))
+
+    def test_unknown_cas_reconcile_records_phase_and_sanitized_value_kind(self):
+        for observed, expected_kind in ((None, "nil"), ("private-raw-gate-value", "other")):
+            with self.subTest(expected_kind=expected_kind):
+                storage = self.lua.eval(
+                    "{raw=nil,setCalls=0,GetAndWait=function(self,key) return 1000002,nil end, "
+                    "SetAndWait=function(self,key,value) self.setCalls=self.setCalls+1; error('profile write must not run') end}"
+                )
+                _, gate, _, store = self.configure_bootstrap_runtime(storage)
+                gate.calls = 0
+                gate.updateCalls = 0
+                gate.observed = observed
+                gate.GetAndWait = self.lua.eval(
+                    "function(self,key) self.calls=self.calls+1; if self.calls == 1 then return 0,'OPEN' end; return 0,self.observed end"
+                )
+                gate.UpdateAndWait = self.lua.eval(
+                    "function(self,key,expected,value) self.updateCalls=self.updateCalls+1; return 1234567,nil end"
+                )
+
+                self.assertIsNone(store.LoadForPlayer(store, "user-A"))
+
+                account = store.accounts["profile-A"]
+                self.assertEqual(account.bootstrapGateState, "uncertain")
+                self.assertEqual(account.loadFailureStatus, "retry")
+                self.assertEqual(account.bootstrapGateErrorCode, 0)
+                self.assertEqual(account.bootstrapGatePhase, "reconcile")
+                self.assertEqual(account.bootstrapGateValueKind, expected_kind)
+                self.assertEqual(gate.calls, 2)
+                self.assertEqual(gate.updateCalls, 1)
+                self.assertEqual(storage.setCalls, 0)
+                warnings = [load_warning for load_warning in self.lua.globals().loadWarnings.values()]
+                self.assertTrue(any(f"phase=reconcile valueKind={expected_kind}" in warning for warning in warnings))
+                self.assertTrue(all("private-raw-gate-value" not in warning and "BUSY:" not in warning for warning in warnings))
+                self.assertTrue(all(account.bootstrapGateToken not in warning for warning in warnings))
 
     def test_profile_not_found_with_raw_payload_retries_without_write(self):
         storage = self.lua.eval(
