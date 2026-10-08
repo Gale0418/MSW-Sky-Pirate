@@ -1,8 +1,8 @@
 # 2026-10-08 Git 保存 checkpoint｜main／CodeRabbit
 
-- Summary: 依主人授權保存存檔與UI工作，直接提交main；上傳前README與任務中心已更新。[審查紀錄](../docs/CodeRabbit-Review-20261008.md)。本段目前為推送前紀錄，實際遠端確認後追加收據。
+- Summary: 依主人授權保存存檔與UI工作，直接提交main；上傳前README與任務中心已更新。[審查紀錄](../docs/CodeRabbit-Review-20261008.md)。實作checkpoint [f8ad28e](https://github.com/Gale0418/MSW-Sky-Pirate/commit/f8ad28eaaf98610e0dbf52781b5f4a5183efcd2e) 已於10:44一般推送origin/main；git ls-remote與GitHub connector確認同SHA，回執以後續文件提交保存。
 - Completed: 完整23檔CodeRabbit提出4 issues（1 major／3 minor），均查證修正；一次修正複查0 issues、兩輪exit0。修正市場可選欄位、離場載入狀態快取、取消航程card revision與舊價格>4000分支。資源／快取／產生檔預先排除，未建立遊戲分支或PR。
-- Unfinished: Git推送待最後提交與遠端SHA確認；Save八筆任務仍Review，發布環境bootstrap gate、跨World instance CAS、真斷線及Native timeout待補。Abandon本輪Native行為unknown。
+- Unfinished: Git保存／審查／上傳已完成；Save八筆任務仍Review，發布環境bootstrap gate、跨World instance CAS、真斷線及Native timeout待補。Abandon本輪Native行為unknown。
 - Risks: 本次為Git checkpoint，沒有發布Maker世界；S3 limited凍結快照不包含後續Rabbit source delta。新回歸檔untracked時未列複查名單，但已納入53項本機測試。
 - Smoke tests: 53 passed＋5 subtests；409 mLua body syntax、184catalog／624交易案例通過。實際Maker refresh／play／隔離production probe／logs／stop：10:36:29 build72 Info、normal39 Info，0 Warning／Error；market defaults與leave status markers通過、fake storage=nil未測DB寫入，最後map01/edit。[Native可攜摘要](../docs/reviews/2026-10-08/maker-native-summary.json)。
 - Retro: 本時段review僅兩次；二進位與215KB literal不上傳兔子，邏輯仍完整。既有S3與2026-10-04歷史保留，不把舊證據改成新驗收。

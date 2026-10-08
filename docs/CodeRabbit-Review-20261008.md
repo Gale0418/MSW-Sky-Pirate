@@ -43,4 +43,9 @@ Maker實際stop／clear normal logs／refresh／play／server_main probe／logs�
 
 本輪未對真玩家執行AbandonVoyage（會移圖並發快照）；該修正有本機回歸與Native編譯證據，沒有新增Native行為PASS。也未做真斷線重登入、跨World instance CAS、Native timeout或發布環境bootstrap gate預置。既有S3四席結果為limited，凍結快照保持不動；這次Rabbit修正是其後的新source delta，不宣稱已被S3快照覆蓋。
 
-UI公開截圖見[Save V1驗證](Save-V1-Verification.md)，README與MissionCenter已更新。推送收據會在實際origin/main確認後追加。
+UI公開截圖見[Save V1驗證](Save-V1-Verification.md)，README與MissionCenter已更新。實際推送收據見下段。
+
+
+## 實際上傳回執
+
+2026-10-08 10:44（Asia/Taipei）：61檔實作／素材／測試／文件checkpoint [f8ad28e](https://github.com/Gale0418/MSW-Sky-Pirate/commit/f8ad28eaaf98610e0dbf52781b5f4a5183efcd2e) 已一般推送origin/main，git push exit0。git ls-remote refs/heads/main與GitHub connector讀取main均確認完整SHA f8ad28eaaf98610e0dbf52781b5f4a5183efcd2e；當次工作樹乾淨。全程沒有新增遊戲分支／PR，也未force push。此回執以後續文件提交保存；存檔Review與發布限制不變。
