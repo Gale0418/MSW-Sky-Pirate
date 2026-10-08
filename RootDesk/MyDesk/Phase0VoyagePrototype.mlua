@@ -295,12 +295,16 @@ script Phase0VoyagePrototype extends Logic
 
 	@ExecSpace("ClientOnly")
 	method string GetCargoText()
-		if _GreatVoyageVoyageState == nil then return "貨艙資料讀取中…" end
+		-- 顯示混裝貨艙總量；逐商品行情與出售由商會處理。
+		if _GreatVoyageVoyageState == nil or _GreatVoyageVoyageData == nil then return "貨艙資料讀取中…" end
 		local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
-		local quantity = 0
-		if snapshot.cargo ~= nil then quantity = snapshot.cargo.quantity or 0 end
-		if quantity <= 0 then return "貨艙 0/" .. tostring(self.cargoCapacity) end
-		return "貨艙 " .. self:GetCargoGoodName() .. " x" .. tostring(quantity) .. "/" .. tostring(self.cargoCapacity) .. "｜本港收購 " .. tostring(self:GetCargoSalePrice()) .. "G/件"
+		local cargo = snapshot.cargo or {}
+		local quantity = cargo.quantity or 0
+		local capacity = snapshot.ship ~= nil and snapshot.ship.cargoCapacity or self.cargoCapacity
+		if quantity <= 0 then return "貨艙 0/" .. tostring(capacity) end
+		local goods = _GreatVoyageVoyageData:GetCargoGoods(cargo)
+		if #goods > 1 then return "貨艙 " .. tostring(#goods) .. " 種貨物 " .. tostring(quantity) .. "/" .. tostring(capacity) .. "｜商會可分別出售" end
+		return "貨艙 " .. self:GetCargoGoodName() .. " x" .. tostring(quantity) .. "/" .. tostring(capacity) .. "｜本港收購 " .. tostring(self:GetCargoSalePrice()) .. "G/件"
 	end
 
 	@ExecSpace("ClientOnly")

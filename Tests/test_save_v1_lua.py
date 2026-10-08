@@ -107,6 +107,7 @@ def make_runtime():
         "CalculateSavedShipLimits",
         "ValidateMarketEntries",
         "ValidateProfile",
+        "BuildRuntimeProfile",
         "DecodeProfile",
         "GetProfileKey",
         "EmptyMarkets",
@@ -123,6 +124,7 @@ def make_runtime():
         "GetProfileForUser",
         "SyncMarket",
         "TouchDirty",
+        "EncodeCargoLots",
         "EncodeCore",
         "EncodeMarketRows",
         "IsWriteAcknowledged",
@@ -141,7 +143,7 @@ def make_runtime():
     handler_args = ", ".join(["self", *handler_parameters])
     lua.execute("Store.HandleUserLeaveEvent = function(" + handler_args + ")\n" + handler_body + "\nend")
     store = lua.globals().Store
-    store.schemaVersion = 1
+    store.schemaVersion = 2
     store.maxPayloadBytes = 50000
     store.compareFailedCode = 2000000
     lua.globals()._UtilLogic = lua.table_from({"ServerElapsedSeconds": 0})
@@ -170,12 +172,17 @@ GOODS = [
 
 def base_profile():
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "revision": 4,
         "safePortId": "forest",
         "core": {
             "money": 12000,
-            "cargo": {"id": "commodity_a", "quantity": 2, "buyPrice": 1000},
+            "cargo": {
+                "id": "commodity_a",
+                "quantity": 2,
+                "buyPrice": 1000,
+                "lots": [{"id": "commodity_a", "quantity": 2, "buyPrice": 1000}],
+            },
             "activeShipId": "small_sampan",
             "ships": {
                 "small_sampan": {"hull": 91, "shield": 10, "armor": 20, "slots": ["", "", ""]},
@@ -212,11 +219,29 @@ class SaveV1LuaTests(unittest.TestCase):
         http.JSONEncode = native_json_encode
         cls.lua.globals()._HttpService = http
 
+    def setUp(self):
+        self.lua.globals()._GreatVoyageVoyageData = self.lua.eval(
+            "{GetShipCatalog=function() return Store.shipCatalog end, "
+            "GetShipUpgradeCards=function() return Store.cardCatalog end, "
+            "GetShipById=function(self,id) return Store:FindById(id,Store.shipCatalog) end, "
+            "GetStartingMoney=function() return 12000 end}"
+        )
+        self.lua.globals()._GreatVoyageCommodityCatalog = self.lua.eval(
+            "{GetAll=function() return Store.goodsCatalog end, "
+            "GetById=function(_,id) return Store:FindById(id,Store.goodsCatalog) end}"
+        )
+
     def valid(self, profile=None):
         profile = profile or base_profile()
         return self.store.ValidateProfile(
             self.store, lua_value(profile, self.lua), self.ship_catalog, self.card_catalog, self.goods_catalog
         )
+
+    def legacy_profile(self, cargo=None):
+        profile = base_profile()
+        profile["schemaVersion"] = 1
+        profile["core"]["cargo"] = cargo or {"id": "commodity_a", "quantity": 2, "buyPrice": 1000}
+        return profile
 
     def test_profile_round_trip_through_lua_decoder_and_validator(self):
         raw = json.dumps(base_profile(), ensure_ascii=False, separators=(",", ":"))
@@ -227,7 +252,7 @@ class SaveV1LuaTests(unittest.TestCase):
     def test_corrupt_and_future_schema_fail_closed(self):
         self.assertIsNone(self.store.DecodeProfile(self.store, "{broken"))
         future = base_profile()
-        future["schemaVersion"] = 2
+        future["schemaVersion"] = 3
         raw = json.dumps(future, separators=(",", ":"))
         self.assertIsNone(self.store.DecodeProfile(self.store, raw))
 
@@ -237,12 +262,13 @@ class SaveV1LuaTests(unittest.TestCase):
         self.assertFalse(self.valid(too_many))
         over_capacity = base_profile()
         over_capacity["core"]["cargo"]["quantity"] = 10
+        over_capacity["core"]["cargo"]["lots"] = [{"id": "commodity_a", "quantity": 10, "buyPrice": 1000}]
         self.assertFalse(self.valid(over_capacity))
         self.assertTrue(self.valid())
 
     def test_explicit_empty_object_and_arrays_round_trip_through_native_like_encoder(self):
         profile = base_profile()
-        profile["core"]["cargo"] = {"id": "", "quantity": 0, "buyPrice": 0}
+        profile["core"]["cargo"] = {"id": "", "quantity": 0, "buyPrice": 0, "lots": []}
         profile["core"]["cardInventory"] = {}
         profile["markets"] = {"forest": [], "sky": [], "ludus": [], "nihal": []}
         raw = self.store.EncodeProfile(self.store, lua_value(profile, self.lua))
@@ -251,6 +277,133 @@ class SaveV1LuaTests(unittest.TestCase):
         self.assertEqual(decoded["core"]["cardInventory"], {})
         self.assertEqual(decoded["markets"], {"forest": [], "sky": [], "ludus": [], "nihal": []})
         self.assertTrue(self.valid(decoded))
+
+    def test_v1_empty_and_single_cargo_upgrade_after_legacy_validation(self):
+        empty = self.store.DecodeProfile(self.store, json.dumps(self.legacy_profile({"id": "", "quantity": 0, "buyPrice": 0}), separators=(",", ":")))
+        self.assertIsNotNone(empty)
+        self.assertEqual(empty.schemaVersion, 2)
+        self.assertEqual(python_value(empty.core.cargo), {"id": "", "quantity": 0, "buyPrice": 0, "lots": []})
+
+        single = self.store.DecodeProfile(self.store, json.dumps(self.legacy_profile(), separators=(",", ":")))
+        self.assertIsNotNone(single)
+        self.assertEqual(single.schemaVersion, 2)
+        self.assertEqual(
+            python_value(single.core.cargo),
+            {"id": "commodity_a", "quantity": 2, "buyPrice": 1000, "lots": [{"id": "commodity_a", "quantity": 2, "buyPrice": 1000}]},
+        )
+
+        invalid_legacy = self.legacy_profile()
+        invalid_legacy["core"]["cargo"]["quantity"] = 0
+        self.assertIsNone(self.store.DecodeProfile(self.store, json.dumps(invalid_legacy, separators=(",", ":"))))
+
+    def test_v1_migration_keeps_original_raw_as_cas_acknowledgement(self):
+        legacy_raw = json.dumps(self.legacy_profile(), ensure_ascii=False, separators=(",", ":"))
+        self.lua.globals().legacyRaw = legacy_raw
+        storage = self.lua.eval(
+            "{raw=legacyRaw,setCalls=0,GetAndWait=function(self,key) return 0,self.raw end, "
+            "SetAndWait=function(self,key,value) self.setCalls=self.setCalls+1; self.raw=value; return 0 end}"
+        )
+        _, gate, _, store = self.configure_bootstrap_runtime(storage)
+        production = self.lua.globals().Store
+        store.schemaVersion = 2
+        store.ValidateProfile = production.ValidateProfile
+        store.DecodeProfile = production.DecodeProfile
+        store.EncodeCore = production.EncodeCore
+
+        profile = store.LoadForPlayer(store, "user-A")
+        account = store.accounts["profile-A"]
+        self.assertIsNotNone(profile)
+        self.assertEqual(profile.schemaVersion, 2)
+        self.assertEqual(account.profile.schemaVersion, 2)
+        self.assertEqual(account.acknowledgedRaw, legacy_raw)
+        self.assertFalse(account.dirty)
+        self.assertEqual(storage.setCalls, 0)
+        self.assertEqual(gate.calls, 0)
+
+    def test_build_runtime_profile_deep_copies_all_cargo_lots(self):
+        data = self.lua.globals()._GreatVoyageVoyageData
+        original = data.CopyCargo
+        data.CopyCargo = self.lua.eval(
+            "function(self,cargo) local lots={}; for i,lot in ipairs(cargo.lots or {}) do "
+            "lots[i]={id=lot.id,quantity=lot.quantity,buyPrice=lot.buyPrice} end; "
+            "return {id=cargo.id,quantity=cargo.quantity,buyPrice=cargo.buyPrice,lots=lots} end"
+        )
+        try:
+            cargo = lua_value(
+                {
+                    "id": "commodity_a",
+                    "quantity": 3,
+                    "buyPrice": 1000,
+                    "lots": [
+                        {"id": "commodity_a", "quantity": 2, "buyPrice": 1000},
+                        {"id": "commodity_b", "quantity": 1, "buyPrice": 1750},
+                    ],
+                },
+                self.lua,
+            )
+            state = lua_value(
+                {"money": 9000, "cargo": cargo, "activeShipId": "small_sampan", "cardInventory": {}, "ownedShips": {}, "safePortId": "forest"},
+                self.lua,
+            )
+            profile = lua_value(base_profile(), self.lua)
+            saved = self.store.BuildRuntimeProfile(self.store, state, profile)
+            self.assertIsNotNone(saved)
+            cargo.lots[1].buyPrice = 2000
+            self.assertEqual(saved.core.cargo.lots[1].buyPrice, 1000)
+            self.assertEqual(saved.core.cargo.lots[2].buyPrice, 1750)
+        finally:
+            data.CopyCargo = original
+
+    def test_v2_mixed_cargo_with_distinct_costs_round_trips(self):
+        profile = base_profile()
+        profile["core"]["cargo"] = {
+            "id": "commodity_a",
+            "quantity": 3,
+            "buyPrice": 1000,
+            "lots": [
+                {"id": "commodity_a", "quantity": 2, "buyPrice": 1000},
+                {"id": "commodity_b", "quantity": 1, "buyPrice": 1750},
+            ],
+        }
+        raw = self.store.EncodeProfile(self.store, lua_value(profile, self.lua))
+        self.assertIsNotNone(raw)
+        decoded_json = json.loads(raw)
+        self.assertEqual(decoded_json["core"]["cargo"]["lots"], profile["core"]["cargo"]["lots"])
+        decoded = self.store.DecodeProfile(self.store, raw)
+        self.assertIsNotNone(decoded)
+        self.assertEqual(python_value(decoded.core.cargo), profile["core"]["cargo"])
+
+    def test_v2_cargo_rejects_sparse_lots_over_capacity_and_projection_mismatch(self):
+        valid = base_profile()
+        valid["core"]["cargo"] = {
+            "id": "commodity_a",
+            "quantity": 2,
+            "buyPrice": 1000,
+            "lots": [{"id": "commodity_a", "quantity": 1, "buyPrice": 1000}, {"id": "commodity_a", "quantity": 1, "buyPrice": 1250}],
+        }
+        self.assertTrue(self.valid(valid))
+
+        sparse = base_profile()
+        sparse["core"]["cargo"] = {
+            "id": "commodity_a",
+            "quantity": 2,
+            "buyPrice": 1000,
+            "lots": {1: {"id": "commodity_a", "quantity": 1, "buyPrice": 1000}, 3: {"id": "commodity_b", "quantity": 1, "buyPrice": 1250}},
+        }
+        self.assertFalse(self.valid(sparse))
+
+        over_capacity = base_profile()
+        over_capacity["core"]["cargo"] = {
+            "id": "commodity_a",
+            "quantity": 9,
+            "buyPrice": 1000,
+            "lots": [{"id": "commodity_a", "quantity": 8, "buyPrice": 1000}, {"id": "commodity_b", "quantity": 1, "buyPrice": 1250}],
+        }
+        self.assertFalse(self.valid(over_capacity))
+
+        mismatch = base_profile()
+        mismatch["core"]["cargo"]["buyPrice"] = 1300
+        self.assertFalse(self.valid(mismatch))
 
     def test_json_encoder_exception_returns_nil_instead_of_escaping(self):
         http = self.lua.globals()._HttpService
@@ -1033,7 +1186,7 @@ class SaveV1LuaTests(unittest.TestCase):
             "safePortId": "forest",
             "core": lua.table_from({
                 "money": 12000,
-                "cargo": lua.table_from({"id": "", "quantity": 0, "buyPrice": 0}),
+                "cargo": lua.table_from({"id": "", "quantity": 0, "buyPrice": 0, "lots": lua.table()}),
                 "cardInventory": lua.table(),
                 "activeShipId": "small_sampan",
                 "ships": lua.table_from({"small_sampan": lua.table_from({"hull": 71, "shield": 18, "armor": 39, "slots": lua.table_from(["", "", ""])})}),
@@ -1045,7 +1198,10 @@ class SaveV1LuaTests(unittest.TestCase):
         voyage_profile_store = profile_store
         lua.globals()._GreatVoyageProfileStore = voyage_profile_store
         previous_voyage_data = lua.globals()._GreatVoyageVoyageData
-        lua.globals()._GreatVoyageVoyageData = lua.eval("{GetShipById=function(self,id) return {id='small_sampan',name='Sampan',maxHull=100,maxShield=20,maxArmor=40,cargoCapacity=8} end}")
+        lua.globals()._GreatVoyageVoyageData = lua.eval(
+            "{GetShipById=function(self,id) return {id='small_sampan',name='Sampan',maxHull=100,maxShield=20,maxArmor=40,cargoCapacity=8} end, "
+            "CopyCargo=function(self,cargo) return {id=cargo.id,quantity=cargo.quantity,buyPrice=cargo.buyPrice,lots={}} end}"
+        )
         lua.globals()._UserService = lua.eval("{GetUserEntityByUserId=function(self,id) return {PlayerComponent={ProfileCode='profile-A'},CurrentMapName='map_forest_port'} end}")
         voyage.CaptureProfileForLeave(voyage, "same-user")
         self.assertIsNone(voyage.voyageByPlayer["same-user"])

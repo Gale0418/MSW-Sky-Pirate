@@ -47,3 +47,14 @@
 - Retro: 未來完成任務時應立即以單一任務 ID、預期與觀察分欄記錄測試。
 
 - 2026-10-04 19:04：GV-UI-RESKIN-20261004完成：16透明PNG已匯入回查，13種26Material／322nodes，四HUD與五頁元件翻新，貨艙4×3每頁12，保留原容量。R4十五張原生圖、R5正確參數定點回歸、Luna一對一最終確認無未解P0/P1/P2；Maker已stop。R4測試probe Error保留，R5 build60/normal24全Info。Rust已依序committed InProgress→Review→Done，current completion passport通過。來源與證據：evidence/2026-10-04/ui-reskin/completion.md；風格：design/ui-material-style.md。未驗Mobile／GUI實體滑鼠／交易持久化；184商品與M1各任務狀態保留。
+
+
+## 2026-10-08 貨艙續買／混裝 checkpoint
+
+- Summary: 有空位即可續買，混裝與指定商品出售接入既有存檔；Review checkpoint。
+- Completed: 批次 FIFO 成本、v1→v2 記憶體遷移／CAS基準保留、完整清單RPC、商會與船艙分頁；Rabbit有效1項修復、1項排除。
+- Unfinished: 發布版混裝真重登與完整Save驗收未執行；原Save八項Review保留。
+- Risks: v2寫入後回退版本必須保留v2 reader；未混入使用者既存UI／map／Global工作樹變更。
+- Smoke tests: ST-GV-CARGO-MIXED-20261008 Pass限定隔離方法與投影；78 tests/5 subtests、build66Info／normal39Info全Info，還原後Stop。
+- Retro: 不能只刪拒買條件；需要同時保留舊貨物、批次成本、存檔與選賣投影。首次JSON空表probe錯誤與後續正式encoder通過均保留。
+- Evidence: [完整紀錄](../docs/Cargo-Mixed-Verification-20261008.md)。本輪未重開S3評論或宣稱Done。

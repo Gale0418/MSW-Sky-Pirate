@@ -1,4 +1,5 @@
 # Tasks
+> 2026-10-08 11:35：修正非空貨艙拒買，支援容量內續買／混裝、分批 FIFO 成本、指定商品出售與 v1→v2 保留原 CAS raw 的遷移。78 tests＋5 subtests；Maker 同種／混裝／滿艙／選賣、原生 JSON 與真 Client table RPC／商會／船艙第二頁通過。新 build66 Info、normal39 Info，0 Warning/Error，已 stop。Rabbit 2 minor：1 查證修正、1 反證排除；未額外重審、未聲稱零 issues。詳見 [貨艙修正](../docs/Cargo-Mixed-Verification-20261008.md)。維持 Review，未宣稱發布重登或跨 instance 完成。
 > 2026-10-08 06:51 追加指定美術：以使用者兩張原生圖重繪棕金錢袋與橫躺楓葉浮雕金幣，船艙／商會共同排列「袋→金額→幣」，保留透明與比例。存檔＋回執合併 46 tests／5 subtests 通過；Native targeted Client RPC 編譯錯誤已修，build 77 Info／0 Error。既有 Global／User 鍵各 8 路並發 CAS 均 1 winner、7 compare failure，僅單一 Maker instance 請求並發；全域 bootstrap gate 已實作，QA 原生首次建檔及最終 UI／CodeRabbit／closure 待驗，保持 Review。
 > 2026-10-08 追加截圖回饋：獲船標題／船特寫已放大；船內貨艙背景、護盾→裝甲→船體排序、板手維修按鈕、船艙與商會共同金幣袋／金屬金額基線正在整合。出航序號回執與存檔 timeout 讀回修復已通過 35 項測試（另 2 子案例）；首次建檔正在補全域既有鍵 CAS gate。原生 Sortable 8 次並發遞增全部回 1、最終也為 1，已否決作為鎖。尚待最終同版 Maker／CodeRabbit／獨立 closure，維持 Review。
 > 2026-10-08 04:13：存檔 V1／金額 UI／貨圖比例／成交幣音／新船祝賀已實作。本地 22+6 測試、CodeRabbit 0 issues；隔離 QA 原生交易、航行離線捕獲、抵港、沉船與冷啟讀回有正面證據。最終 build91／normal43 全 Info，Maker 已 stop。主人本輪已核准總額／每席／工具／時間均無上限，三位獨立 Luna 盲評進行中，隨後由獨立仲裁；保留 Review 至 closure。詳見 [驗證](../docs/Save-V1-Verification.md)。
@@ -28,6 +29,7 @@
 
 | ID | Title | Type | Parent | Priority | Status | Owner | Depends on | Next action | Verification | Estimate | Labels | Comments |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| GV-CARGO-CAPACITY-20261008 | 空位可續買與混裝貨艙 | Task | GV-SAVE-FLOW | P0 | Review | Codex / Luna | GV-SAVE-DATA | 已完成受影響本地與 Maker 隔離驗證；發布時補真帳號混裝保存／重登，回退需保留 v2 reader。 | ST-GV-CARGO-MIXED-20261008；78 tests/5 subtests、Native table RPC、商會選賣及船艙第二頁；Rabbit 1 fixed/1 rejected | M | execution, economy, persistence, verification | 保留現有貨物與容量；每件一格，批次成本 FIFO；原存檔鍵不換、原始 raw CAS 不換；未將隔離方法當真交易。 |
 | GV-SAVE-V1 | 完整帳號永久存檔 V1 | Epic |  | P0 | Review | Codex / Luna |  | S3 limited：已知 10 項完成處置；補正式 bootstrap 閘門預置、跨 WorldInstance CAS 與實際斷線保存證據；參照 S3 ledger。 | 對應子任務的存讀、故障與 Maker 證據 | L | execution, verification | 2026-10-08 核准；跨領域模擬檢查不冒充獨立專家審查。 |
 | GV-SAVE-DATA | 版本化帳號快照與市場遷移 | Task | GV-SAVE-V1 | P0 | Review | Luna / Codex |  | S3 limited：已知 10 項完成處置；補正式 bootstrap 閘門預置、跨 WorldInstance CAS 與實際斷線保存證據；參照 S3 ledger。 | 金錢、貨物成本、五船船況、三槽及卡數守恆；壞檔／未來版本拒絕覆寫 | L | execution, verification | 單一原子快照保存核心與個人市場；不得序列化整個航行 runtime。 |
 | GV-SAVE-LIFE | 單一寫入者與登入離線保存 | Task | GV-SAVE-V1 | P0 | Review | Luna / Codex | GV-SAVE-DATA | S3 limited：已知 10 項完成處置；補正式 bootstrap 閘門預置、跨 WorldInstance CAS 與實際斷線保存證據；參照 S3 ledger。 | 寫入失敗／延遲／快速重登不清掉未存更新；載入失敗不發初始資產 | L | execution, verification | ProfileCode 帳號識別；UserLeaveEvent 主保存，OnEndPlay 補救。 |

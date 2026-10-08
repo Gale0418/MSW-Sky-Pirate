@@ -18,6 +18,8 @@ script GreatVoyageVoyageState extends Logic
 	property string clientSnapshotCargoId = ""
 	property integer clientSnapshotCargoQuantity = 0
 	property integer clientSnapshotCargoBuyPrice = 0
+	property table clientSnapshotCargo = { id = "", quantity = 0, buyPrice = 0, lots = {} }
+	property integer clientCargoRevision = -1
 	property integer clientSnapshotMoney = 12000
 	property integer clientSnapshotEconomyRevision = 0
 	property string clientSnapshotEconomyMessage = ""
@@ -149,8 +151,8 @@ script GreatVoyageVoyageState extends Logic
 		local state = self.voyageByPlayer[playerId]
 		if state ~= nil and state.persistencePending == true then return nil end
 		if state == nil or state.profileCode ~= profileCode then
-			state = { playerId = playerId, profileCode = profileCode, status = "idle", originId = profile.safePortId, destinationId = "", route = nil, segments = {}, distanceTravelled = 0, budgetRemaining = 0, pausedDistance = 0, pendingEncounter = nil, encounterCount = 0, cargo = { id = "", quantity = 0, buyPrice = 0 }, money = profile.core.money, economyRevision = 0, economyMessage = "", hullDamage = 0, elapsedSailingSeconds = 0, voyageDurationSeconds = self.voyageDurationSeconds, startedAt = -1, raidRemaining = 0, raidEnemies = {}, lastRaidDamageAt = -1, lastAdvanceAt = -1, lastReason = "", cardInventory = {}, cardInventoryRevision = 0, ownedShips = {}, safePortId = profile.safePortId }
-			state.cargo = { id = profile.core.cargo.id, quantity = profile.core.cargo.quantity, buyPrice = profile.core.cargo.buyPrice }
+			state = { playerId = playerId, profileCode = profileCode, status = "idle", originId = profile.safePortId, destinationId = "", route = nil, segments = {}, distanceTravelled = 0, budgetRemaining = 0, pausedDistance = 0, pendingEncounter = nil, encounterCount = 0, cargo = { id = "", quantity = 0, buyPrice = 0, lots = {} }, money = profile.core.money, economyRevision = 0, economyMessage = "", hullDamage = 0, elapsedSailingSeconds = 0, voyageDurationSeconds = self.voyageDurationSeconds, startedAt = -1, raidRemaining = 0, raidEnemies = {}, lastRaidDamageAt = -1, lastAdvanceAt = -1, lastReason = "", cardInventory = {}, cardInventoryRevision = 0, ownedShips = {}, safePortId = profile.safePortId }
+			state.cargo = _GreatVoyageVoyageData:CopyCargo(profile.core.cargo)
 			for cardId, quantity in pairs(profile.core.cardInventory) do state.cardInventory[cardId] = quantity end
 			for shipId, savedShip in pairs(profile.core.ships) do
 				local definition = _GreatVoyageVoyageData:GetShipById(shipId)
@@ -174,6 +176,7 @@ script GreatVoyageVoyageState extends Logic
 			state.cardInventoryRevision = 0
 			state.lastPublishedShipRevision = -1
 			state.lastPublishedInventoryRevision = -1
+		state.lastPublishedCargoRevision = -1
 			self.voyageByPlayer[playerId] = state
 			local player = _UserService:GetUserEntityByUserId(playerId)
 			if player ~= nil and player.PlayerComponent ~= nil and player.PlayerComponent.ProfileCode == profileCode and self:GetPortIdFromMap(player.CurrentMapName) ~= profile.safePortId then self:MovePlayerToPort(playerId, profile.safePortId) end
@@ -379,7 +382,7 @@ script GreatVoyageVoyageState extends Logic
 
 	@ExecSpace("ServerOnly")
 	method void PublishSnapshot(string playerId, any state)
-		-- 只傳送純量欄位，避免跨 RPC 傳遞 any/table；最後一個 playerId 是目標客戶端。
+		-- 旅程沿用純量投影；貨物批次僅在版本更新或明確重送時傳給目標客戶端。
 		local pendingEncounterId = ""
 		if state.pendingEncounter ~= nil then pendingEncounterId = state.pendingEncounter.id end
 		local cargoId = ""
@@ -391,6 +394,10 @@ script GreatVoyageVoyageState extends Logic
 			cargoBuyPrice = state.cargo.buyPrice or 0
 		end
 		self:ReceiveVoyageSnapshot(playerId, state.status, state.originId, state.destinationId, state.distanceTravelled, state.budgetRemaining, state.pausedDistance, pendingEncounterId, state.encounterCount, cargoId, cargoQuantity, cargoBuyPrice, state.money, state.economyRevision, state.economyMessage, state.hullDamage, math.max(0, (state.voyageDurationSeconds or self.voyageDurationSeconds) - state.elapsedSailingSeconds), state.raidRemaining, state.lastReason, playerId)
+		if state.lastPublishedCargoRevision ~= state.economyRevision then
+			self:ReceiveCargoInventorySnapshot(_GreatVoyageVoyageData:CopyCargo(state.cargo), state.economyRevision, playerId)
+			state.lastPublishedCargoRevision = state.economyRevision
+		end
 		if state.lastPublishedInventoryRevision ~= state.cardInventoryRevision then
 			local inventoryParts = {}
 			if _GreatVoyageVoyageData ~= nil then
@@ -510,6 +517,7 @@ script GreatVoyageVoyageState extends Logic
 		if state == nil then return end
 		state.lastPublishedShipRevision = -1
 		state.lastPublishedInventoryRevision = -1
+		state.lastPublishedCargoRevision = -1
 		self:PublishSnapshot(playerId, state)
 	end
 
@@ -875,12 +883,18 @@ script GreatVoyageVoyageState extends Logic
 		self.clientSnapshotPausedDistance = pausedDistance
 		self.clientSnapshotPendingEncounterId = pendingEncounterId
 		self.clientSnapshotEncounterCount = encounterCount
-		self.clientSnapshotCargoId = cargoId
-		self.clientSnapshotCargoQuantity = cargoQuantity
-		self.clientSnapshotCargoBuyPrice = cargoBuyPrice
-		self.clientSnapshotMoney = money
-		self.clientSnapshotEconomyRevision = economyRevision
-		self.clientSnapshotEconomyMessage = economyMessage
+		if economyRevision > self.clientCargoRevision then
+			self.clientSnapshotCargoId = cargoId
+			self.clientSnapshotCargoQuantity = cargoQuantity
+			self.clientSnapshotCargoBuyPrice = cargoBuyPrice
+			self.clientSnapshotCargo = _GreatVoyageVoyageData:CopyCargo({ id = cargoId, quantity = cargoQuantity, buyPrice = cargoBuyPrice })
+			self.clientCargoRevision = economyRevision
+		end
+		if economyRevision >= self.clientSnapshotEconomyRevision and economyRevision >= self.clientCargoRevision then
+			self.clientSnapshotMoney = money
+			self.clientSnapshotEconomyRevision = economyRevision
+			self.clientSnapshotEconomyMessage = economyMessage
+		end
 		self.clientSnapshotHullDamage = hullDamage
 		self.clientSnapshotRemainingSeconds = remainingSeconds
 		self.clientSnapshotRaidRemaining = raidRemaining
@@ -888,6 +902,17 @@ script GreatVoyageVoyageState extends Logic
 		if encounterChanged or raidChanged or arrivedNow then
 			log("[VoyageState] client snapshot player=" .. snapshotPlayerId .. " status=" .. status .. " raidRemaining=" .. tostring(raidRemaining))
 		end
+	end
+
+	@ExecSpace("Client")
+	method void ReceiveCargoInventorySnapshot(table cargo, integer economyRevision)
+		-- 新完整貨物 RPC 以經濟版本拒絕延遲的舊內容。
+		if economyRevision < self.clientCargoRevision then return end
+		self.clientSnapshotCargo = _GreatVoyageVoyageData:CopyCargo(cargo)
+		self.clientSnapshotCargoId = self.clientSnapshotCargo.id
+		self.clientSnapshotCargoQuantity = self.clientSnapshotCargo.quantity
+		self.clientSnapshotCargoBuyPrice = self.clientSnapshotCargo.buyPrice
+		self.clientCargoRevision = economyRevision
 	end
 
 	method any CopyClientSnapshot()
@@ -911,7 +936,7 @@ script GreatVoyageVoyageState extends Logic
 			segments = segments,
 			pendingEncounter = pendingEncounter,
 			encounterCount = self.clientSnapshotEncounterCount,
-			cargo = { id = self.clientSnapshotCargoId, quantity = self.clientSnapshotCargoQuantity },
+			cargo = _GreatVoyageVoyageData:CopyCargo(self.clientSnapshotCargo),
 			cargoBuyPrice = self.clientSnapshotCargoBuyPrice,
 			money = self.clientSnapshotMoney,
 			economyRevision = self.clientSnapshotEconomyRevision,
@@ -1215,7 +1240,7 @@ script GreatVoyageVoyageState extends Logic
 			state.shipRevision = state.shipRevision + 1
 			if state.ship.hull <= 0 then
 				state.status = "sunk"
-				state.cargo = { id = "", quantity = 0, buyPrice = 0 }
+				state.cargo = _GreatVoyageVoyageData:CopyCargo(nil)
 				state.economyRevision = state.economyRevision + 1
 				state.economyMessage = "飛船沉沒了，船上的貨物都掉光啦…"
 				state.lastReason = "鍋爐過熱燒壞船體，貨物都清空了…"
@@ -1288,7 +1313,7 @@ script GreatVoyageVoyageState extends Logic
 		battle.endedAt = now
 		if phase == "sunk" then
 			state.status = "sunk"
-			state.cargo = { id = "", quantity = 0, buyPrice = 0 }
+			state.cargo = _GreatVoyageVoyageData:CopyCargo(nil)
 			state.economyRevision = state.economyRevision + 1
 			state.economyMessage = "沉船，船貨已全數遺失。"
 			state.lastReason = "遭遇沉船！貨物遺失並返回出發港，小風帆可免費維修。"
@@ -1424,22 +1449,24 @@ script GreatVoyageVoyageState extends Logic
 
 	@ExecSpace("Server")
 	method void BuyGood(string goodId, integer quantity)
-		-- 驗證商品、數量與總價後才扣款，避免超過貨艙或錢包整數範圍。
+		-- 初次驗證與市場讀取後再驗證總件數，避免 yield 期間船艙改變。
 		local playerId = senderUserId
 		if playerId == nil or playerId == "" then return end
 		local state = self:GetOrCreateState(playerId)
 		if state == nil then return end
-		local cargoCapacity = math.max(0, state.ship.cargoCapacity or 0)
-		if quantity < 1 or quantity > cargoCapacity then self:CompleteEconomyRequest(playerId, state, "交易數量太多，超出貨艙容量啦！") return end
+		local cargoData = _GreatVoyageVoyageData
+		if cargoData == nil then self:CompleteEconomyRequest(playerId, state, "商品資料還在整理中，請稍候！") return end
+		local capacity = math.max(0, state.ship.cargoCapacity or 0)
+		local normalizedCargo = cargoData:CopyCargo(state.cargo)
+		local currentQuantity = normalizedCargo.quantity
+		if quantity < 1 or quantity ~= math.floor(quantity) or currentQuantity + quantity > capacity then self:CompleteEconomyRequest(playerId, state, "交易數量太多，超出貨艙容量啦！") return end
 		if state.status == "sailing" then self:CompleteEconomyRequest(playerId, state, "航行中專心開船，不能做生意喔！") return end
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		local portId = ""
 		if player ~= nil then portId = self:GetPortIdFromMap(player.CurrentMapName) end
 		if portId == "" or self:IsAtShop(player, portId) == false then self:CompleteEconomyRequest(playerId, state, "請靠近港口商人再來交易喔！") return end
-		if _GreatVoyageVoyageData == nil then self:CompleteEconomyRequest(playerId, state, "商品資料還在整理中，請稍候！") return end
-		if state.cargo ~= nil and (state.cargo.quantity or 0) > 0 then self:CompleteEconomyRequest(playerId, state, "貨艙還有貨物，先賣出再來進新特產吧！") return end
 		local good = nil
-		local port = _GreatVoyageVoyageData:GetPort(portId)
+		local port = cargoData:GetPort(portId)
 		if port ~= nil then
 			for _, localGood in ipairs(port.goods) do
 				if localGood.id == goodId then good = localGood break end
@@ -1448,11 +1475,13 @@ script GreatVoyageVoyageState extends Logic
 		if good == nil or good.price <= 0 then self:CompleteEconomyRequest(playerId, state, "這座港口沒有賣這項特產喔！") return end
 		local market = _GreatVoyagePlayerMarket:GetMarket(playerId, portId)
 		if market == nil then self:CompleteEconomyRequest(playerId, state, "市場存檔尚未就緒，暫時不能交易。") return end
-		-- 首次讀檔會讓出執行權，成交前再次確認位置、航程與貨艙。
+		-- 市場讀取會 yield；玩家、航程、容量及貨艙都必須以當下狀態重驗。
 		player = _UserService:GetUserEntityByUserId(playerId)
 		if not isvalid(player) or self.voyageByPlayer[playerId] ~= state then return end
+		local currentCargo = cargoData:CopyCargo(state.cargo)
+		capacity = math.max(0, state.ship.cargoCapacity or 0)
 		if state.status == "sailing" or not self:IsAtShop(player, portId) then self:CompleteEconomyRequest(playerId, state, "交易期間離開了商人，請重新交易。") return end
-		if (state.cargo.quantity or 0) > 0 or quantity > state.ship.cargoCapacity then self:CompleteEconomyRequest(playerId, state, "貨艙狀態已變更，請重新交易。") return end
+		if currentCargo.quantity + quantity > capacity then self:CompleteEconomyRequest(playerId, state, "貨艙狀態已變更，請重新交易。") return end
 		local now = _GreatVoyagePlayerMarket:GetNow()
 		local stock = _GreatVoyageMarketPricing:GetBossStock(market.entries, market.profileCode, good.id, now)
 		if stock.remaining >= 0 and quantity > stock.remaining then self:CompleteEconomyRequest(playerId, state, "BOSS 特產庫存只剩 " .. tostring(stock.remaining) .. " 件，請減少數量或等待補貨。") return end
@@ -1460,7 +1489,7 @@ script GreatVoyageVoyageState extends Logic
 		if total > 2147483647 then self:CompleteEconomyRequest(playerId, state, "總金額太龐大，超出金幣上限囉！") return end
 		if state.money < total then self:CompleteEconomyRequest(playerId, state, "金幣不足，需要 " .. tostring(total) .. " G。") return end
 		state.money = state.money - total
-		state.cargo = { id = good.id, quantity = quantity, buyPrice = good.price }
+		state.cargo = cargoData:AddCargo(state.cargo, good.id, quantity, good.price)
 		if good.isBoss == true then
 			_GreatVoyageMarketPricing:ConsumeBossStock(market.entries, market.profileCode, good.id, quantity, now)
 			_GreatVoyagePlayerMarket:MarkDirty(playerId, portId, good.id)
@@ -1472,23 +1501,31 @@ script GreatVoyageVoyageState extends Logic
 
 	@ExecSpace("Server")
 	method void SellCargo()
-		-- 舊呼叫相容：無參數仍出售全部貨物。
+		-- 舊單貨呼叫維持全售；混裝時只出售首次出現的商品全持有量。
 		local playerId = senderUserId
 		if playerId == nil or playerId == "" then return end
-		self:SellCargoInternal(playerId, 0, true)
+		self:SellCargoInternal(playerId, "", 0, true)
 	end
 
 	@ExecSpace("Server")
 	method void SellCargoQuantity(integer quantity)
-		-- 新入口只接受明確數量；實際持有量與交易條件由伺服器重驗。
+		-- 舊數量入口仍按首商品出售，讓既有單貨呼叫保持相容。
 		local playerId = senderUserId
 		if playerId == nil or playerId == "" then return end
-		self:SellCargoInternal(playerId, quantity, false)
+		self:SellCargoInternal(playerId, "", quantity, false)
+	end
+
+	@ExecSpace("Server")
+	method void SellGoodQuantity(string goodId, integer quantity)
+		-- 混貨介面可指定商品出售數量；伺服器仍會重新驗證持有量。
+		local playerId = senderUserId
+		if playerId == nil or playerId == "" then return end
+		self:SellCargoInternal(playerId, goodId, quantity, false)
 	end
 
 	@ExecSpace("ServerOnly")
-	method void SellCargoInternal(string playerId, integer requestedQuantity, boolean sellAll)
-		-- 部分出售只扣本次數量，並保留原貨物成本供後續損益計算。
+	method void SellCargoInternal(string playerId, string requestedGoodId, integer requestedQuantity, boolean sellAll)
+		-- 指定商品按該商品的 FIFO 成本批次出售，不影響其他商品。
 		local state = self:GetOrCreateState(playerId)
 		if state == nil then return end
 		if state.status == "sailing" then self:CompleteEconomyRequest(playerId, state, "航行中專心開船，不能做生意喔！") return end
@@ -1496,34 +1533,38 @@ script GreatVoyageVoyageState extends Logic
 		local portId = ""
 		if player ~= nil then portId = self:GetPortIdFromMap(player.CurrentMapName) end
 		if portId == "" or self:IsAtShop(player, portId) == false then self:CompleteEconomyRequest(playerId, state, "請靠近港口商人再來交易喔！") return end
-		if _GreatVoyageVoyageData == nil then self:CompleteEconomyRequest(playerId, state, "商品資料還在整理中，請稍候！") return end
-		local cargo = state.cargo
-		if cargo == nil or cargo.quantity < 1 or cargo.quantity > state.ship.cargoCapacity then self:CompleteEconomyRequest(playerId, state, "貨艙空空如也，沒有能賣的貨物喔！") return end
-		local quantity = sellAll and cargo.quantity or requestedQuantity
-		if quantity < 1 or quantity > cargo.quantity or quantity ~= math.floor(quantity) then self:CompleteEconomyRequest(playerId, state, "賣出數量請輸入 1 到持有數量的整數喔！") return end
-		local good = _GreatVoyageVoyageData:GetGoodById(cargo.id)
+		local cargoData = _GreatVoyageVoyageData
+		if cargoData == nil then self:CompleteEconomyRequest(playerId, state, "商品資料還在整理中，請稍候！") return end
+		local cargoReference = state.cargo
+		local cargo = cargoData:CopyCargo(cargoReference)
+		local goods = cargoData:GetCargoGoods(cargo)
+		if cargo.quantity < 1 or cargo.quantity > state.ship.cargoCapacity or #goods == 0 then self:CompleteEconomyRequest(playerId, state, "貨艙空空如也，沒有能賣的貨物喔！") return end
+		local goodId = requestedGoodId
+		if goodId == "" then goodId = goods[1].id end
+		local heldQuantity = cargoData:GetCargoGoodQuantity(cargo, goodId)
+		local quantity = sellAll and heldQuantity or requestedQuantity
+		if heldQuantity < 1 or quantity < 1 or quantity > heldQuantity or quantity ~= math.floor(quantity) then self:CompleteEconomyRequest(playerId, state, "賣出數量請輸入 1 到持有數量的整數喔！") return end
+		local good = cargoData:GetGoodById(goodId)
 		local market = _GreatVoyagePlayerMarket:GetMarket(playerId, portId)
 		if market == nil then self:CompleteEconomyRequest(playerId, state, "市場存檔尚未就緒，暫時不能交易。") return end
-		-- 首次讀檔會讓出執行權，成交前再次確認位置、航程與貨艙。
+		-- 市場讀取會 yield；貨艙引用、指定商品數量及容量都要重新驗證。
 		player = _UserService:GetUserEntityByUserId(playerId)
 		if not isvalid(player) or self.voyageByPlayer[playerId] ~= state then return end
 		if state.status == "sailing" or not self:IsAtShop(player, portId) then self:CompleteEconomyRequest(playerId, state, "交易期間離開了商人，請重新交易。") return end
-		if state.cargo ~= cargo or quantity > cargo.quantity or cargo.quantity > state.ship.cargoCapacity then self:CompleteEconomyRequest(playerId, state, "貨艙狀態已變更，請重新交易。") return end
-		local quote = _GreatVoyageMarketPricing:GetSaleQuote(market.entries, portId, cargo.id, quantity, _GreatVoyagePlayerMarket:GetNow())
+		if state.cargo ~= cargoReference or cargoData:GetCargoGoodQuantity(state.cargo, goodId) < quantity or cargoData:CopyCargo(state.cargo).quantity > state.ship.cargoCapacity then self:CompleteEconomyRequest(playerId, state, "貨艙狀態已變更，請重新交易。") return end
+		local quote = _GreatVoyageMarketPricing:GetSaleQuote(market.entries, portId, goodId, quantity, _GreatVoyagePlayerMarket:GetNow())
 		if good == nil or quote.valid ~= true or quote.unitPrice <= 0 then self:CompleteEconomyRequest(playerId, state, "貨物資料怪怪的，交易先取消囉！") return end
 		local total = quote.total
 		if total > 2147483647 or state.money > 2147483647 - total then self:CompleteEconomyRequest(playerId, state, "金幣快滿出來啦，請先花掉一些再來賣！") return end
-		local profit = total - (cargo.buyPrice or 0) * quantity
-		_GreatVoyageMarketPricing:ApplySale(market.entries, cargo.id, quote)
-		_GreatVoyagePlayerMarket:MarkDirty(playerId, portId, cargo.id)
+		local removal = cargoData:RemoveCargo(state.cargo, goodId, quantity)
+		if removal == nil then self:CompleteEconomyRequest(playerId, state, "貨艙狀態已變更，請重新交易。") return end
+		local profit = total - removal.cost
+		_GreatVoyageMarketPricing:ApplySale(market.entries, goodId, quote)
+		_GreatVoyagePlayerMarket:MarkDirty(playerId, portId, goodId)
 		state.money = state.money + total
-		if quantity == cargo.quantity then
-			state.cargo = { id = "", quantity = 0, buyPrice = 0 }
-		else
-			state.cargo = { id = cargo.id, quantity = cargo.quantity - quantity, buyPrice = cargo.buyPrice }
-		end
+		state.cargo = removal.cargo
 		self:CompleteEconomyRequest(playerId, state, "賣出 " .. good.displayName .. " ×" .. tostring(quantity) .. "，收入 " .. tostring(total) .. " G。")
-		self:ReceiveTransactionFeedback("goods_sell", cargo.id, state.economyRevision, playerId)
+		self:ReceiveTransactionFeedback("goods_sell", goodId, state.economyRevision, playerId)
 		log("[VoyageState] server sell player=" .. playerId .. " port=" .. portId .. " good=" .. good.id .. " qty=" .. tostring(quantity) .. " remaining=" .. tostring(state.cargo.quantity) .. " revenue=" .. tostring(total) .. " profit=" .. tostring(profit))
 	end
 

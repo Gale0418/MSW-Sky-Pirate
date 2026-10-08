@@ -2211,11 +2211,15 @@ script GreatVoyageAdventureController extends Logic
 			end
 		end
 		self.shipWalletText.Text = self:FormatMoney(snapshot.money or 0)
-		local quantity = snapshot.cargo.quantity or 0
+		local cargo = _GreatVoyageVoyageData:CopyCargo(snapshot.cargo)
+		local quantity = cargo.quantity or 0
 		local capacity = math.max(0, ship.cargoCapacity or 0)
 		self.shipCapacityText.Text = tostring(quantity) .. " / " .. tostring(ship.cargoCapacity) .. "　·　空位 " .. tostring(math.max(0, ship.cargoCapacity - quantity))
-		local good = nil
-		if quantity > 0 and _GreatVoyageVoyageData ~= nil then good = _GreatVoyageVoyageData:GetGoodById(snapshot.cargo.id) end
+		local cargoItems = {}
+		for _, lot in ipairs(cargo.lots) do
+			local good = _GreatVoyageVoyageData:GetGoodById(lot.id)
+			for itemIndex = 1, lot.quantity do table.insert(cargoItems, good or false) end
+		end
 		local gridCells = { self.shipCargoGridCell1, self.shipCargoGridCell2, self.shipCargoGridCell3, self.shipCargoGridCell4, self.shipCargoGridCell5, self.shipCargoGridCell6, self.shipCargoGridCell7, self.shipCargoGridCell8, self.shipCargoGridCell9, self.shipCargoGridCell10, self.shipCargoGridCell11, self.shipCargoGridCell12, self.shipCargoGridCell13, self.shipCargoGridCell14, self.shipCargoGridCell15, self.shipCargoGridCell16, self.shipCargoGridCell17, self.shipCargoGridCell18 }
 		local gridIcons = { self.shipCargoGridIcon1, self.shipCargoGridIcon2, self.shipCargoGridIcon3, self.shipCargoGridIcon4, self.shipCargoGridIcon5, self.shipCargoGridIcon6, self.shipCargoGridIcon7, self.shipCargoGridIcon8, self.shipCargoGridIcon9, self.shipCargoGridIcon10, self.shipCargoGridIcon11, self.shipCargoGridIcon12, self.shipCargoGridIcon13, self.shipCargoGridIcon14, self.shipCargoGridIcon15, self.shipCargoGridIcon16, self.shipCargoGridIcon17, self.shipCargoGridIcon18 }
 		local gridLabels = { self.shipCargoGridLabel1, self.shipCargoGridLabel2, self.shipCargoGridLabel3, self.shipCargoGridLabel4, self.shipCargoGridLabel5, self.shipCargoGridLabel6, self.shipCargoGridLabel7, self.shipCargoGridLabel8, self.shipCargoGridLabel9, self.shipCargoGridLabel10, self.shipCargoGridLabel11, self.shipCargoGridLabel12, self.shipCargoGridLabel13, self.shipCargoGridLabel14, self.shipCargoGridLabel15, self.shipCargoGridLabel16, self.shipCargoGridLabel17, self.shipCargoGridLabel18 }
@@ -2234,6 +2238,7 @@ script GreatVoyageAdventureController extends Logic
 			local cargoIndex = cargoGridOffset + i
 			local isCapacityCell = cargoIndex <= capacity
 			local isOccupied = isCapacityCell and cargoIndex <= occupiedCount
+			local good = cargoItems[cargoIndex] or nil
 			if isvalid(gridCells[i]) then gridCells[i].Enable = isCapacityCell end
 			if isvalid(gridIcons[i]) then
 				gridIcons[i].Entity.Enable = isOccupied and good ~= nil
@@ -2270,9 +2275,16 @@ script GreatVoyageAdventureController extends Logic
 			self:SetButtonEnabled("/ui/GreatVoyageAdventure/ShipModal/Window/Cargo/Next", self.shipCargoGridNextButton, self.shipCargoGridPage < cargoGridPageCount)
 		end
 		self.shipCargoIcon.Entity.Enable = false
-		if good ~= nil then
-			self.shipCargoIcon.ImageRUID = DataRef(good.iconRuid)
-			self.shipCargoText.Text = good.displayName .. " ×" .. tostring(quantity) .. "　·　買入 " .. tostring(snapshot.cargoBuyPrice) .. " G／件\n產地：" .. self:GetPortName(good.originId)
+		local cargoGoods = _GreatVoyageVoyageData:GetCargoGoods(cargo)
+		if #cargoGoods > 0 then
+			local names = {}
+			for index, entry in ipairs(cargoGoods) do
+				local good = _GreatVoyageVoyageData:GetGoodById(entry.id)
+				if index <= 2 and good ~= nil then table.insert(names, good.displayName .. " ×" .. tostring(entry.quantity)) end
+			end
+			self.shipCargoText.Text = table.concat(names, "　·　")
+			if #cargoGoods > 2 then self.shipCargoText.Text = self.shipCargoText.Text .. "　等 " .. tostring(#cargoGoods) .. " 種" end
+			self.shipCargoText.Text = self.shipCargoText.Text .. "\n每件占一格 · 進貨成本依批次保留"
 		else
 			self.shipCargoText.Text = "貨艙空蕩蕩的，找港口商人挑些特產吧！"
 		end
@@ -2678,7 +2690,7 @@ script GreatVoyageAdventureController extends Logic
 					end
 					if self.shopTab == "inventory" then self:SetMerchantText(entity.Path .. "/Price", "持有 " .. tostring((snapshot.cardInventory or {})[item.id] or 0) .. " 張") end
 					if self.shopTab == "sell" then
-						local cargoQuantity = (snapshot.cargo or {}).quantity or 0
+						local cargoQuantity = _GreatVoyageVoyageData:GetCargoGoodQuantity(snapshot.cargo or {}, item.id)
 						local saleUnitPrice = _GreatVoyagePlayerMarket:GetClientQuote(self.currentPortId, item.id, 1).unitPrice
 						local unit = item.unit or "箱"
 						self:SetMerchantText(entity.Path .. "/Price", tostring(cargoQuantity) .. unit .. " · " .. self:FormatMoney(saleUnitPrice) .. "G/" .. unit)
@@ -2830,7 +2842,12 @@ script GreatVoyageAdventureController extends Logic
 			self.shopCargoText.Text = "未安裝持有 " .. tostring(owned) .. " 張"
 		end
 		local sellingCargo = self.shopTab == "sell"
-		local cargoQuantity = cargo.quantity or 0
+		local cargoQuantity = selected ~= nil and _GreatVoyageVoyageData:GetCargoGoodQuantity(cargo, selected.id) or 0
+		local freeSlots = math.max(0, capacity - (cargo.quantity or 0))
+		if self.shopTab == "goods" then
+			quantity = math.max(1, math.min(quantity, freeSlots))
+			if _Phase0VoyagePrototype ~= nil then _Phase0VoyagePrototype.tradeQuantity = quantity end
+		end
 		if sellingCargo then
 			if _Phase0VoyagePrototype ~= nil then
 				_Phase0VoyagePrototype.tradeQuantity = cargoQuantity > 0 and math.max(1, math.min(cargoQuantity, quantity)) or 1
@@ -2853,7 +2870,7 @@ script GreatVoyageAdventureController extends Logic
 			self.shopQuantityText.BestFit = false
 			self.shopQuantityText.VerticalAlignment = TextVerticalAlignmentOption.Middle
 		end
-		local canAdjustCargoQuantity = not sellingCargo or cargoQuantity > 0
+		local canAdjustCargoQuantity = sellingCargo and cargoQuantity > 0 or (not sellingCargo and (self.shopTab ~= "goods" or freeSlots > 0))
 		self:SetButtonEnabled("/ui/GreatVoyageAdventure/ShopModal/Window/Trade/Minus", self.shopMinusButton, canAdjustCargoQuantity)
 		self:SetButtonEnabled("/ui/GreatVoyageAdventure/ShopModal/Window/Trade/Plus", self.shopPlusButton, canAdjustCargoQuantity)
 		local remainingCardCapacity = 99
@@ -2872,19 +2889,19 @@ script GreatVoyageAdventureController extends Logic
 			end
 		end
 		local canAfford = selected ~= nil and (snapshot.money or 0) >= (selected.price or 0) * quantity
-		self.shopBuyButton.Enable = not sellingCargo and selected ~= nil and self.shopTab ~= "inventory" and snapshot.playerId ~= "" and remainingCardCapacity > 0 and canAfford and stockAllowsBuy
+		self.shopBuyButton.Enable = not sellingCargo and selected ~= nil and self.shopTab ~= "inventory" and snapshot.playerId ~= "" and remainingCardCapacity > 0 and canAfford and stockAllowsBuy and (self.shopTab ~= "goods" or quantity <= freeSlots)
 		local saleUnitPrice = 0
-		if (cargo.quantity or 0) > 0 and cargo.id ~= nil and cargo.id ~= "" then
-			saleUnitPrice = _GreatVoyagePlayerMarket:GetClientQuote(self.currentPortId, cargo.id, 1).unitPrice
+		if sellingCargo and selected ~= nil and cargoQuantity > 0 then
+			saleUnitPrice = _GreatVoyagePlayerMarket:GetClientQuote(self.currentPortId, selected.id, 1).unitPrice
 		end
 		if sellingCargo and selected ~= nil then
 			self.shopSelectedText.Text = (selected.displayName or selected.name or "貨物") .. " ×" .. tostring(cargoQuantity)
 			local unit = selected.unit or "箱"
-			local quote = _GreatVoyagePlayerMarket:GetClientQuote(self.currentPortId, cargo.id, quantity)
+			local quote = _GreatVoyagePlayerMarket:GetClientQuote(self.currentPortId, selected.id, quantity)
 			self.shopQuoteText.Text = detailDescription .. "\n首件 " .. tostring(quote.unitPrice) .. "G/" .. unit .. " · 本次 " .. tostring(quote.total) .. "G"
 			self.shopCargoText.Text = ""
 		end
-		local canSell = (cargo.quantity or 0) > 0 and saleUnitPrice > 0
+		local canSell = self.shopTab == "goods" and (cargo.quantity or 0) > 0 or (sellingCargo and cargoQuantity > 0 and saleUnitPrice > 0)
 		if sellingCargo then canSell = selected ~= nil and canSell end
 		if self.shopTab ~= "goods" and not sellingCargo then canSell = selected ~= nil and (selected.sellPrice or 0) > 0 and ((snapshot.cardInventory or {})[selected.id] or 0) >= quantity end
 		local sellButtonText = self.shopSellButton.Entity.TextGUIRendererComponent
@@ -2938,11 +2955,11 @@ script GreatVoyageAdventureController extends Logic
 	method void AdjustQuantity(integer delta)
 		-- 貨艙出售以持有數量為上限；改裝卡出售仍以未安裝庫存為上限。
 		local game = _Phase0VoyagePrototype
-		if game == nil then return end
+		if game == nil or _GreatVoyageVoyageState == nil then return end
 		if self.shopTab == "sell" then
-			if _GreatVoyageVoyageState == nil then return end
 			local cargo = _GreatVoyageVoyageState:GetVoyageSnapshot().cargo or {}
-			local upper = cargo.quantity or 0
+			local selected = self:GetShopEntries()[self.shopSelectedIndex]
+			local upper = selected ~= nil and _GreatVoyageVoyageData:GetCargoGoodQuantity(cargo, selected.id) or 0
 			if upper <= 0 then
 				game.tradeQuantity = 1
 				self.shopStatusMessage = "貨艙空空的，沒有貨物可賣喔！"
@@ -2964,7 +2981,9 @@ script GreatVoyageAdventureController extends Logic
 			end
 			game.tradeQuantity = math.max(1, math.min(upper, game.tradeQuantity + delta))
 		else
-			game:AdjustTradeQuantity(delta)
+			local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
+			local freeSlots = math.max(0, (snapshot.ship.cargoCapacity or 0) - ((snapshot.cargo or {}).quantity or 0))
+			game.tradeQuantity = math.max(1, math.min(freeSlots, game.tradeQuantity + delta))
 		end
 		self.shopStatusMessage = "交易數量調整為 " .. tostring(game.tradeQuantity)
 		self:RefreshShop()
@@ -3003,15 +3022,15 @@ script GreatVoyageAdventureController extends Logic
 			else
 				local snapshot = _GreatVoyageVoyageState:GetVoyageSnapshot()
 				local cargo = snapshot.cargo or {}
-				local good = nil
-				if _GreatVoyageVoyageData ~= nil and cargo.id ~= nil and cargo.id ~= "" then good = _GreatVoyageVoyageData:GetGoodById(cargo.id) end
+				local good = self:GetShopEntries()[self.shopSelectedIndex]
+				local ownedQuantity = good ~= nil and _GreatVoyageVoyageData:GetCargoGoodQuantity(cargo, good.id) or 0
 				local saleUnitPrice = 0
-				if good ~= nil then saleUnitPrice = _GreatVoyagePlayerMarket:GetClientQuote(self.currentPortId, cargo.id, 1).unitPrice end
-				if snapshot.playerId == "" or (cargo.quantity or 0) <= 0 or good == nil or saleUnitPrice <= 0 then
+				if good ~= nil then saleUnitPrice = _GreatVoyagePlayerMarket:GetClientQuote(self.currentPortId, good.id, 1).unitPrice end
+				if snapshot.playerId == "" or ownedQuantity <= 0 or good == nil or saleUnitPrice <= 0 then
 					self.shopStatusMessage = "貨艙空空的，沒有貨物可賣喔！"
 				else
 					local quantity = _Phase0VoyagePrototype ~= nil and _Phase0VoyagePrototype.tradeQuantity or 1
-					_GreatVoyageVoyageState:SellCargoQuantity(quantity)
+					_GreatVoyageVoyageState:SellGoodQuantity(good.id, quantity)
 					self.shopStatusMessage = "賣出請求已送出，等待確認中…"
 				end
 			end
@@ -3034,8 +3053,8 @@ script GreatVoyageAdventureController extends Logic
 		if _GreatVoyageVoyageState == nil then
 			self.shopStatusMessage = "商店連線中，暫時沒辦法交易喔！"
 		else
-			game:SellCargo()
-			self.shopStatusMessage = "賣出請求已送出，等待確認中…"
+			self:SetShopTab("sell")
+			self.shopStatusMessage = "挑選貨艙裡要出售的商品與數量。"
 		end
 		self:RefreshShop()
 	end
@@ -3221,10 +3240,12 @@ script GreatVoyageAdventureController extends Logic
 		if _GreatVoyageVoyageState == nil then return {} end
 		if self.shopTab == "sell" then
 			local cargo = _GreatVoyageVoyageState:GetVoyageSnapshot().cargo or {}
-			if (cargo.quantity or 0) <= 0 or cargo.id == nil or cargo.id == "" then return {} end
-			local good = _GreatVoyageVoyageData:GetGoodById(cargo.id)
-			if good == nil then return {} end
-			return { good }
+			local goods = {}
+			for _, cargoGood in ipairs(_GreatVoyageVoyageData:GetCargoGoods(cargo)) do
+				local good = _GreatVoyageVoyageData:GetGoodById(cargoGood.id)
+				if good ~= nil then table.insert(goods, good) end
+			end
+			return goods
 		end
 		local list = {}
 		if self.shopTab == "cards" then

@@ -8,7 +8,7 @@ script GreatVoyageProfileStore extends Logic
 	property string storagePrefix = "GVSaveV1"
 	property string legacyMarketPrefix = "GVMarketV1"
 	property string bootstrapGateKey = "gate"
-	property integer schemaVersion = 1
+	property integer schemaVersion = 2
 	property integer notFoundCode = 1000002
 	property integer compareFailedCode = 2000000
 	property integer maxPayloadBytes = 48000
@@ -132,7 +132,7 @@ script GreatVoyageProfileStore extends Logic
 	@ExecSpace("ServerOnly")
 	method boolean ValidateProfile(any profile, table shipCatalog, table cardCatalog, table goodsCatalog)
 		-- 嚴格驗證完整核心與四港市場；任何欄位錯誤都拒絕整份帳號。
-		if type(profile) ~= "table" or profile.schemaVersion ~= self.schemaVersion or not self:IsIntegerInRange(profile.revision, 1, 2147483647) then return false end
+		if type(profile) ~= "table" or (profile.schemaVersion ~= 1 and profile.schemaVersion ~= self.schemaVersion) or not self:IsIntegerInRange(profile.revision, 1, 2147483647) then return false end
 		if type(profile.safePortId) ~= "string" then return false end
 		local knownPort = false
 		for _, portId in ipairs(self.openPorts) do if profile.safePortId == portId then knownPort = true end end
@@ -165,14 +165,41 @@ script GreatVoyageProfileStore extends Logic
 			if card == nil or card.available ~= true or quantity + (core.cardInventory[cardId] or 0) > 99 then return false end
 		end
 		local cargo = core.cargo
-		if type(cargo.id) ~= "string" or not self:IsIntegerInRange(cargo.quantity, 0, 2147483647) or not self:IsIntegerInRange(cargo.buyPrice, 0, 2147483647) then return false end
-		if cargo.id == "" then
-			if cargo.quantity ~= 0 or cargo.buyPrice ~= 0 then return false end
+		if type(cargo) ~= "table" or type(cargo.id) ~= "string" or not self:IsIntegerInRange(cargo.quantity, 0, 2147483647) or not self:IsIntegerInRange(cargo.buyPrice, 0, 2147483647) then return false end
+		local activeDefinition = self:FindById(core.activeShipId, shipCatalog)
+		local limits = self:CalculateSavedShipLimits(activeDefinition, core.ships[core.activeShipId].slots, cardCatalog)
+		if limits == nil then return false end
+		if profile.schemaVersion == 1 then
+			-- v1 的單貨格式先照舊規則完整驗證，再由 DecodeProfile 升級。
+			if cargo.id == "" then
+				if cargo.quantity ~= 0 or cargo.buyPrice ~= 0 then return false end
+			else
+				local good = self:FindById(cargo.id, goodsCatalog)
+				if good == nil or good.verified ~= true or cargo.quantity < 1 or cargo.buyPrice < 1 or cargo.quantity > limits.cargoCapacity then return false end
+			end
 		else
-			local good = self:FindById(cargo.id, goodsCatalog)
-			local activeDefinition = self:FindById(core.activeShipId, shipCatalog)
-			local limits = self:CalculateSavedShipLimits(activeDefinition, core.ships[core.activeShipId].slots, cardCatalog)
-			if good == nil or good.verified ~= true or cargo.quantity < 1 or cargo.buyPrice < 1 or limits == nil or cargo.quantity > limits.cargoCapacity then return false end
+			if type(cargo.lots) ~= "table" then return false end
+			local lotCount = 0
+			local highestIndex = 0
+			local totalQuantity = 0
+			local firstLot = nil
+			for index, lot in pairs(cargo.lots) do
+				if type(index) ~= "number" or index < 1 or index ~= math.floor(index) or index > limits.cargoCapacity or type(lot) ~= "table" then return false end
+				if type(lot.id) ~= "string" or not self:IsIntegerInRange(lot.quantity, 1, limits.cargoCapacity) or not self:IsIntegerInRange(lot.buyPrice, 1, 2147483647) then return false end
+				local good = self:FindById(lot.id, goodsCatalog)
+				if good == nil or good.verified ~= true then return false end
+				totalQuantity = totalQuantity + lot.quantity
+				if totalQuantity > limits.cargoCapacity then return false end
+				if index == 1 then firstLot = lot end
+				if index > highestIndex then highestIndex = index end
+				lotCount = lotCount + 1
+			end
+			if lotCount ~= highestIndex then return false end
+			if lotCount == 0 then
+				if cargo.id ~= "" or cargo.quantity ~= 0 or cargo.buyPrice ~= 0 then return false end
+			else
+				if firstLot == nil or cargo.id ~= firstLot.id or cargo.buyPrice ~= firstLot.buyPrice or cargo.quantity ~= totalQuantity then return false end
+			end
 		end
 		if type(profile.markets) ~= "table" then return false end
 		for _, portId in ipairs(self.openPorts) do
@@ -190,8 +217,11 @@ script GreatVoyageProfileStore extends Logic
 	@ExecSpace("ServerOnly")
 	method any BuildRuntimeProfile(any state, any profile)
 		-- 將 runtime 狀態收斂為 schema 欄位，不保存航程、戰鬥與衍生 stats。
-		local core = { money = state.money, cargo = { id = "", quantity = 0, buyPrice = 0 }, activeShipId = state.activeShipId, ships = {}, cardInventory = {} }
-		if state.cargo ~= nil then core.cargo = { id = state.cargo.id or "", quantity = state.cargo.quantity or 0, buyPrice = state.cargo.buyPrice or 0 } end
+		local core = { money = state.money, cargo = { id = "", quantity = 0, buyPrice = 0, lots = {} }, activeShipId = state.activeShipId, ships = {}, cardInventory = {} }
+		if state.cargo ~= nil then
+			core.cargo = _GreatVoyageVoyageData:CopyCargo(state.cargo)
+			if core.cargo == nil then return nil end
+		end
 		for cardId, quantity in pairs(state.cardInventory or {}) do if quantity > 0 then core.cardInventory[cardId] = quantity end end
 		for shipId, ship in pairs(state.ownedShips or {}) do
 			local slots = ship.slots or { "", "", "" }
@@ -224,7 +254,7 @@ script GreatVoyageProfileStore extends Logic
 		end
 		local ship = _GreatVoyageVoyageData:GetShipById("small_sampan")
 		if ship == nil then return nil end
-		return { schemaVersion = self.schemaVersion, revision = 1, safePortId = "forest", core = { money = startingMoney, cargo = { id = "", quantity = 0, buyPrice = 0 }, activeShipId = "small_sampan", ships = { small_sampan = { hull = ship.maxHull, shield = ship.maxShield, armor = ship.maxArmor, slots = { "", "", "" } } }, cardInventory = {} }, markets = markets }
+		return { schemaVersion = self.schemaVersion, revision = 1, safePortId = "forest", core = { money = startingMoney, cargo = { id = "", quantity = 0, buyPrice = 0, lots = {} }, activeShipId = "small_sampan", ships = { small_sampan = { hull = ship.maxHull, shield = ship.maxShield, armor = ship.maxArmor, slots = { "", "", "" } } }, cardInventory = {} }, markets = markets }
 	end
 
 	@ExecSpace("ServerOnly")
@@ -241,7 +271,19 @@ script GreatVoyageProfileStore extends Logic
 		local ok, decoded = pcall(function() return _HttpService:JSONDecode(raw) end)
 		if not ok or type(decoded) ~= "table" then return nil end
 		if _GreatVoyageVoyageData == nil or _GreatVoyageCommodityCatalog == nil then return nil end
-		if self:ValidateProfile(decoded, _GreatVoyageVoyageData:GetShipCatalog(), _GreatVoyageVoyageData:GetShipUpgradeCards(), _GreatVoyageCommodityCatalog:GetAll()) == false then return nil end
+		local shipCatalog = _GreatVoyageVoyageData:GetShipCatalog()
+		local cardCatalog = _GreatVoyageVoyageData:GetShipUpgradeCards()
+		local goodsCatalog = _GreatVoyageCommodityCatalog:GetAll()
+		if decoded.schemaVersion ~= 1 and decoded.schemaVersion ~= self.schemaVersion then return nil end
+		if self:ValidateProfile(decoded, shipCatalog, cardCatalog, goodsCatalog) == false then return nil end
+		if decoded.schemaVersion == 1 then
+			-- 遷移只改記憶體物件；LoadForPlayer 仍保留 DataStorage 回傳的原始 raw 作 CAS 基準。
+			local cargo = decoded.core.cargo
+			cargo.lots = {}
+			if cargo.id ~= "" then table.insert(cargo.lots, { id = cargo.id, quantity = cargo.quantity, buyPrice = cargo.buyPrice }) end
+			decoded.schemaVersion = self.schemaVersion
+			if self:ValidateProfile(decoded, shipCatalog, cardCatalog, goodsCatalog) == false then return nil end
+		end
 		return decoded
 	end
 
@@ -727,10 +769,36 @@ script GreatVoyageProfileStore extends Logic
 	end
 
 	@ExecSpace("ServerOnly")
+	method any EncodeCargoLots(table lots)
+		-- 空 Lua table 型別不明，貨物批次必須明確序列化成 JSON array。
+		if type(lots) ~= "table" then return nil end
+		if next(lots) == nil then return "[]" end
+		local count = 0
+		local highestIndex = 0
+		for index in pairs(lots) do
+			if type(index) ~= "number" or index < 1 or index ~= math.floor(index) then return nil end
+			if index > highestIndex then highestIndex = index end
+			count = count + 1
+		end
+		if count ~= highestIndex then return nil end
+		local ok, raw = pcall(function() return _HttpService:JSONEncode(lots) end)
+		if ok ~= true or type(raw) ~= "string" or string.sub(raw, 1, 1) ~= "[" or string.sub(raw, -1) ~= "]" then return nil end
+		return raw
+	end
+
+	@ExecSpace("ServerOnly")
 	method any EncodeCore(any core)
-		-- Encode the non-empty core object, then append cardInventory explicitly as a JSON object.
-		if type(core) ~= "table" or type(core.cardInventory) ~= "table" then return nil end
-		local objectPart = { money = core.money, cargo = core.cargo, activeShipId = core.activeShipId, ships = core.ships }
+		-- Encode一般欄位後，明確拼接貨艙批次陣列與 cardInventory 物件。
+		if type(core) ~= "table" or type(core.cardInventory) ~= "table" or type(core.cargo) ~= "table" then return nil end
+		local cargo = core.cargo
+		if type(cargo.lots) ~= "table" then return nil end
+		local cargoProjection = { id = cargo.id, quantity = cargo.quantity, buyPrice = cargo.buyPrice }
+		local cargoOk, cargoRaw = pcall(function() return _HttpService:JSONEncode(cargoProjection) end)
+		if cargoOk ~= true or type(cargoRaw) ~= "string" or string.sub(cargoRaw, -1) ~= "}" then return nil end
+		local lotsRaw = self:EncodeCargoLots(cargo.lots)
+		if lotsRaw == nil then return nil end
+		local cargoWithLots = string.sub(cargoRaw, 1, string.len(cargoRaw) - 1) .. ",\"lots\":" .. lotsRaw .. "}"
+		local objectPart = { money = core.money, activeShipId = core.activeShipId, ships = core.ships }
 		local objectOk, raw = pcall(function() return _HttpService:JSONEncode(objectPart) end)
 		if objectOk ~= true or type(raw) ~= "string" or string.sub(raw, -1) ~= "}" then return nil end
 		local cardInventoryRaw = "{}"
@@ -739,7 +807,7 @@ script GreatVoyageProfileStore extends Logic
 			if cardsOk ~= true or type(cardsRaw) ~= "string" or cardsRaw == "" then return nil end
 			cardInventoryRaw = cardsRaw
 		end
-		return string.sub(raw, 1, string.len(raw) - 1) .. ",\"cardInventory\":" .. cardInventoryRaw .. "}"
+		return string.sub(raw, 1, string.len(raw) - 1) .. ",\"cargo\":" .. cargoWithLots .. ",\"cardInventory\":" .. cardInventoryRaw .. "}"
 	end
 
 	@ExecSpace("ServerOnly")

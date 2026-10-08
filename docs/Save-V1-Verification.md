@@ -71,3 +71,8 @@ v7 正確 ID `commodity_forest_54` 的 client-only 貨物 fixture 顯示 12/12�
 正式發布仍須在所有 instance 停止的維護窗口預置 bootstrap gate；production 不無條件寫 OPEN。不明／crashed BUSY 不直接重設，先排除延遲 claim／profile write。Maker-only default gate 已預置回讀，**不構成發布環境已預置證據**。
 
 Environment/config 既有修改保留。所有 UI 經 builder，codeblock 只由 Maker 生成。最終評論必須明示能力缺口，不能把未觀察的 modality 說成通過。
+
+
+## 2026-10-08 11:35 貨艙格式增量
+
+有空位可續買／混裝，帳號 schema2 保留 v1 讀取與原 raw CAS。78 tests/5 subtests、Maker 原生 JSON／table RPC／UI 投影通過；完整範圍、Rabbit 1 fixed/1 rejected 與發布重登限制見 [貨艙驗證](Cargo-Mixed-Verification-20261008.md)。既有 S3 凍結資料不變，不能將其 council 套用為本次增量的 formal Done。

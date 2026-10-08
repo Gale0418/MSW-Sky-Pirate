@@ -1,0 +1,80 @@
+{
+  "date": "2026-10-08",
+  "scope": "混裝貨艙續買修正",
+  "build": {
+    "time": "2026-10-08T11:32:14",
+    "count": 66,
+    "nonInfo": 0
+  },
+  "server": {
+    "count": 9,
+    "markers": [
+      {
+        "time": "2026-10-08T11:26:40",
+        "message": "[VRF][cargo-mixed] native production-body same+mixed buy PASS total=3 free=5"
+      },
+      {
+        "time": "2026-10-08T11:26:40",
+        "message": "[VRF][cargo-mixed] native production-body full rejection PASS unchanged money and quantity"
+      },
+      {
+        "time": "2026-10-08T11:26:40",
+        "message": "[VRF][cargo-mixed] native production-body selected sell PASS other good=2"
+      },
+      {
+        "time": "2026-10-08T11:26:42",
+        "message": "[VRF][cargo-mixed] native logic FIFO+JSON v2+v1 migration PASS cost=350 lots=3 empty=[]"
+      },
+      {
+        "time": "2026-10-08T11:26:42",
+        "message": "[VRF][cargo-mixed] isolation PASS fake state and market only; no DataStorage writes or real wallet changes"
+      }
+    ],
+    "nonInfo": 0
+  },
+  "client": {
+    "count": 39,
+    "markers": [
+      {
+        "time": "2026-10-08T11:33:06",
+        "message": "[VRF][cargo-mixed] client projection backup ready"
+      },
+      {
+        "time": "2026-10-08T11:33:07",
+        "message": "[VRF][cargo-mixed] full cargo table Client RPC dispatched; no server inventory writes"
+      },
+      {
+        "time": "2026-10-08T11:33:35",
+        "message": "[VRF][cargo-mixed] native Server->Client cargo table RPC PASS total=14 lots=2"
+      },
+      {
+        "time": "2026-10-08T11:33:36",
+        "message": "[VRF][cargo-mixed] native merchant sell tab PASS two goods, selected quantity=1"
+      },
+      {
+        "time": "2026-10-08T11:33:37",
+        "message": "[VRF][cargo-mixed] native cabin page 2 PASS both cargo icons, quantity and mixed summary"
+      },
+      {
+        "time": "2026-10-08T11:33:39",
+        "message": "[VRF][cargo-mixed] projection restore PASS no trade RPC, no durable writes"
+      }
+    ],
+    "nonInfo": 0
+  },
+  "isolation": "交易 probe 只操作 fake state/market；Client table RPC 只改投影，測後還原；不發真買賣或寫測試 DataStorage。啟動既有生命週期照常執行。",
+  "diagnostic": "首個 probe 直接 JSONEncode 空表觸發 LEA-3001；改用 production EncodeProfile 後 v2/empty/v1 遷移通過。原始失敗與通過日誌本地保留。",
+  "finalMode": "map01/edit",
+  "limitations": [
+    "未測發布環境真正斷線／重登混裝",
+    "未執行本輪實體滑鼠買賣",
+    "v2 寫入後不得回退只支援 v1 的遊戲版本"
+  ],
+  "localTests": {
+    "passed": 78,
+    "subtests": 5,
+    "syntaxBodies": 417,
+    "catalogRecords": 184,
+    "pricingCases": 624
+  }
+}

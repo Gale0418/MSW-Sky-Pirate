@@ -17,6 +17,99 @@ script GreatVoyageVoyageData extends Logic
 		return portId
 	end
 
+	-- 貨艙契約：quantity 是總件數，id/buyPrice 是首批投影，lots 保存 FIFO 成本批次。
+	method any CopyCargo(any cargo)
+		-- 深拷貝並正規化批次資料；只有缺少 lots 的舊格式才讀 scalar 投影。
+		local lots = {}
+		local sourceLots = nil
+		if cargo ~= nil then sourceLots = cargo.lots end
+		if sourceLots ~= nil then
+			for _, lot in ipairs(sourceLots) do
+				local quantity = lot.quantity or 0
+				local id = lot.id or ""
+				local buyPrice = lot.buyPrice or 0
+				if id ~= "" and quantity >= 1 and quantity == math.floor(quantity) then
+					local previous = lots[#lots]
+					if previous ~= nil and previous.id == id and previous.buyPrice == buyPrice then
+						previous.quantity = previous.quantity + quantity
+					else
+						table.insert(lots, { id = id, quantity = quantity, buyPrice = buyPrice })
+					end
+				end
+			end
+		elseif cargo ~= nil and cargo.id ~= nil and cargo.id ~= "" then
+			local quantity = cargo.quantity or 0
+			if quantity >= 1 and quantity == math.floor(quantity) then
+				lots[1] = { id = cargo.id, quantity = quantity, buyPrice = cargo.buyPrice or 0 }
+			end
+		end
+		local total = 0
+		for _, lot in ipairs(lots) do total = total + lot.quantity end
+		if total == 0 then return { id = "", quantity = 0, buyPrice = 0, lots = {} } end
+		return { id = lots[1].id, quantity = total, buyPrice = lots[1].buyPrice, lots = lots }
+	end
+
+	method table GetCargoGoods(any cargo)
+		-- 按首次出現順序聚合商品數量，buyPrice 保留首批成本投影。
+		local normalized = self:CopyCargo(cargo)
+		local goods = {}
+		local indexes = {}
+		for _, lot in ipairs(normalized.lots) do
+			local index = indexes[lot.id]
+			if index == nil then
+				table.insert(goods, { id = lot.id, quantity = lot.quantity, buyPrice = lot.buyPrice })
+				indexes[lot.id] = #goods
+			else
+				goods[index].quantity = goods[index].quantity + lot.quantity
+			end
+		end
+		return goods
+	end
+
+	method integer GetCargoGoodQuantity(any cargo, string goodId)
+		-- 回傳指定商品在所有成本批次中的總件數。
+		local quantity = 0
+		for _, lot in ipairs(self:CopyCargo(cargo).lots) do
+			if lot.id == goodId then quantity = quantity + lot.quantity end
+		end
+		return quantity
+	end
+
+	method any AddCargo(any cargo, string goodId, integer quantity, integer buyPrice)
+		-- 新增購買批次並只合併相鄰同商品同價格批次，不修改輸入。
+		local nextCargo = self:CopyCargo(cargo)
+		if goodId == "" or quantity < 1 or quantity ~= math.floor(quantity) then return nextCargo end
+		local lastLot = nextCargo.lots[#nextCargo.lots]
+		if lastLot ~= nil and lastLot.id == goodId and lastLot.buyPrice == buyPrice then
+			lastLot.quantity = lastLot.quantity + quantity
+		else
+			table.insert(nextCargo.lots, { id = goodId, quantity = quantity, buyPrice = buyPrice })
+		end
+		return self:CopyCargo(nextCargo)
+	end
+
+	method any RemoveCargo(any cargo, string goodId, integer quantity)
+		-- 依該商品 FIFO 扣除批次並回傳新貨艙與實際成本，不足時回 nil。
+		if goodId == "" or quantity < 1 or quantity ~= math.floor(quantity) then return nil end
+		local normalized = self:CopyCargo(cargo)
+		if self:GetCargoGoodQuantity(normalized, goodId) < quantity then return nil end
+		local remaining = quantity
+		local cost = 0
+		local lots = {}
+		for _, lot in ipairs(normalized.lots) do
+			local keep = lot.quantity
+			if lot.id == goodId and remaining > 0 then
+				local removed = math.min(keep, remaining)
+				keep = keep - removed
+				remaining = remaining - removed
+				cost = cost + removed * lot.buyPrice
+			end
+			if keep > 0 then table.insert(lots, { id = lot.id, quantity = keep, buyPrice = lot.buyPrice }) end
+		end
+		local nextCargo = self:CopyCargo({ lots = lots })
+		return { cargo = nextCargo, cost = cost }
+	end
+
 	method any GetPort(string portId)
 		-- 四個已開放港口沿用既有座標，貨架改由原作商品圖鑑提供。
 		local id = self:NormalizePortId(portId)

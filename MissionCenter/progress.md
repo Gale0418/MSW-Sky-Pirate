@@ -7,9 +7,9 @@
 - Milestone: Next slice
 - Progress bar: [####------] 44%
 - Active tasks:
+  - GV-CARGO-CAPACITY-20261008 空位可續買與混裝貨艙 (Review)
   - GV-SAVE-DATA 版本化帳號快照與市場遷移 (Review)
   - GV-SAVE-LIFE 單一寫入者與登入離線保存 (Review)
-  - GV-SAVE-FLOW 交易、出航與沉船整合 (Review)
   - GV-SAVE-QA 存檔全流程與故障回歸 (Review)
   - GV-CABIN-MONEY 船艙透明金額框與金屬數字 (Review)
 - Blocked by:

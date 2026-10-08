@@ -1,13 +1,14 @@
 <!-- Generated materialized view. Do not edit directly; rebuild from canonical MissionCenter files. -->
 <!-- Deprecated compatibility view: focus.md is generated from tasks.md only and must never be edited or treated as a second lifecycle source. -->
-<!-- mission-center-derived schema=1.0 fingerprint-format=sha256-v2-lf source-fingerprint=56c5e8a66e19cb3ac609b93f08757939863e9facdad6968b4dcd83b7ae42072a -->
+<!-- mission-center-derived schema=1.0 fingerprint-format=sha256-v2-lf source-fingerprint=a34a2a1c2d729497674ebd6dc33eb5290d304e3d1e222ebe3dbc8ee123462584 -->
 # P0 Focus
 
 - Source of truth: `tasks.md`
-- Unfinished P0: 20
+- Unfinished P0: 21
 
 | ID | Title | Status | Next action | Depends on | Verification |
 | --- | --- | --- | --- | --- | --- |
+| GV-CARGO-CAPACITY-20261008 | 空位可續買與混裝貨艙 | Review | 已完成受影響本地與 Maker 隔離驗證；發布時補真帳號混裝保存／重登，回退需保留 v2 reader。 | GV-SAVE-DATA | ST-GV-CARGO-MIXED-20261008；78 tests/5 subtests、Native table RPC、商會選賣及船艙第二頁；Rabbit 1 fixed/1 rejected |
 | GV-SAVE-V1 | 完整帳號永久存檔 V1 | Review | S3 limited：已知 10 項完成處置；補正式 bootstrap 閘門預置、跨 WorldInstance CAS 與實際斷線保存證據；參照 S3 ledger。 |  | 對應子任務的存讀、故障與 Maker 證據 |
 | GV-SAVE-DATA | 版本化帳號快照與市場遷移 | Review | S3 limited：已知 10 項完成處置；補正式 bootstrap 閘門預置、跨 WorldInstance CAS 與實際斷線保存證據；參照 S3 ledger。 |  | 金錢、貨物成本、五船船況、三槽及卡數守恆；壞檔／未來版本拒絕覆寫 |
 | GV-SAVE-LIFE | 單一寫入者與登入離線保存 | Review | S3 limited：已知 10 項完成處置；補正式 bootstrap 閘門預置、跨 WorldInstance CAS 與實際斷線保存證據；參照 S3 ledger。 | GV-SAVE-DATA | 寫入失敗／延遲／快速重登不清掉未存更新；載入失敗不發初始資產 |
