@@ -2,6 +2,18 @@
 
 2026-10-08。對應任務 GV-SAVE-QA／GV-SAVE-LIFE，維持 Review。
 
+## 目前修正：單一正常遊戲版直接建檔
+
+17:53 使用者仍卡同步中，且完全沒有 Maintenance 訊息；使用者要求撤除多版本維護流程，直接修復目前首次上線。已移除自訂全世界 gate、claim/release 及普通載入的維護鎖。舊 helper 僅保留空 Logic 宣告供 Maker 既有 entry 相容，不執行任何維護、計時或 storage 操作。
+
+LoadForPlayer 使用 UserDataStorage(ProfileCode)：既有資料嚴格解碼／載入；首讀 confirmed missing（code0+nil 或 NotFound1000002+nil）才遷移舊市場、建立並驗證預設資料。送 Set 前再讀一次，若已有 profile 改為載入且不覆寫；仍 confirmed missing 才送一次 Set，必須精確回讀相同 payload 才 ready。讀取錯誤／矛盾資料不建檔；Set 結果未知在同 instance 帳號快取內不重送，晚到 exact payload 可恢復。後續保存仍用原始 raw CAS。這是直接初始化，沒有宣稱 missing-key Set 為跨 instance 原子 create-if-absent。
+
+Maker 實際 Refresh／Play：66 build Info、42 runtime Info，均 0 Warning／Error。QA prefix 的新 key 建檔 firstCreate=true、實際保存 saved=true、清快取後重讀 reloaded=true；既有正常 profile revision27 載入；真 client 船艙 shipPanelReady=true、金額10,600、貨艙1/8、空位7、船體100/100，版本 v2026.10.08.3。已 Stop 回 edit。[去識別化原生回執](reviews/2026-10-08/published-save/direct-first-create/maker-receipt.json)。
+
+**發布步驟只剩一份正常版：**從已 Refresh 的 Maker 按發布／更新世界一次，完成後回大廳重登；購買商品、等背景保存再重登確認金額與貨物。正式環境尚未由工具發布或驗證，保留 Review。下方 gate／Maintenance 初始化步驟皆為已撤下方案的歷史紀錄，不適用目前版本。
+
+## 歷史診斷紀錄（目前方案已取代）
+
 ## 已觀察
 
 使用者確認 12:58 截圖來自正式伺服器：金額為 —、三層船況 0/0、貨艙同步中、底部顯示連線暫時忙碌。附帶兩行 [CLIENT] merchant closed／ShipUI opened 是一般操作紀錄，不包含存檔失敗原因。這些 placeholder 表示尚未取得可用的伺服器資產投影，不能推論存檔已遺失或被清空。

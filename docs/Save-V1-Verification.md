@@ -6,7 +6,7 @@
 
 S3 四席驗收（安全、玩家流程、視覺與獨立仲裁）及正式 Rust 的八筆紀錄驗證已完成，結果為 **limited**：十項已知問題中八項修正、兩項以反證駁回，零項 deferred；八項任務仍維持 Review。凍結快照為 `GV-SAVE-V1-S3`，revision `d47966e67d57fb284e77efe71de81879b074fb8c6fe533068847f8549e51d7c9`。本文下方的 S3 pending 敘述是凍結輸入文件當時狀態；本段與 MissionCenter/closeout.md 更新完成後的狀態，未改寫既有證據。
 
-發布環境 bootstrap gate 預置、獨立 World instance CAS、Native timeout 與實際拔網斷線仍未驗；Git 上傳僅保存 checkpoint，不表示 Maker 已發布本版。原生貨艙、還原船艙與商會畫面已保存為可隨 Git 檢視的圖片：
+發布環境首次建檔／保存重登、獨立 World instance CAS、Native timeout 與實際拔網斷線仍未驗；Git 上傳僅保存 checkpoint，不表示 Maker 已發布本版。原生貨艙、還原船艙與商會畫面已保存為可隨 Git 檢視的圖片：
 
 ![十二件滿載貨架](images/save-v1/cargo.png)
 
@@ -21,7 +21,7 @@ S3 四席驗收（安全、玩家流程、視覺與獨立仲裁）及正式 Rust
 
 - 版本化帳號快照保存金錢、貨物數量及成本、所有船的三層船況、使用中船、卡片庫存與三槽，以及四港個人市場／BOSS 庫存。舊市場完整分頁讀入並保留舊鍵。
 - ProfileCode 載入／綁定閘門、dirty generation、30 秒背景 Async、單一 writer、既有鍵 CAS 與未知回執讀回；壞檔／未來版本拒絕覆寫，暫時讀取失敗退避重試，timeout 讀回例外不永久卡住 saving。
-- 首次建檔需要維護預置全域 GVSaveV1Bootstrap/gate=OPEN。CAS 取得唯一 BUSY token 後重讀帳號，只做一次初始 Set，精確确认才釋放。未知 claim／Set 回執只讀回、不重送；crashed owner 不自動接管。既有帳號不受 bootstrap gate 影響。
+- 歷史初始化方案（18:13已撤除）：首次建檔需要維護預置全域 GVSaveV1Bootstrap/gate=OPEN。CAS 取得唯一 BUSY token 後重讀帳號，只做一次初始 Set，精確确认才釋放。未知 claim／Set 回執只讀回、不重送；crashed owner 不自動接管。既有帳號不受 bootstrap gate 影響。
 - 出航前保存安全快照；抵港／沉船先保存結算。航行重登回出發港，保留已存資產，不重播戰鬥／獎勵；沉船清貨與損毀不因重登復原。連線中取消航程還原時保留最高 ship／economy revision。
 - 出航配對請求序號與 targeted Client RPC；成功才關地圖，失敗保留地圖可重試。Native 保留參數 targetUserId 不列入宣告，只在呼叫末尾路由。
 - 船艙與商會共同排列「袋 → 金屬數字 → 幣」，千分位、基線一致，裝飾不攔截輸入。袋沿用 `GoldCoinPouch_v2`；S2 歷史使用 coin v2，S3 所有金額（包含 0）使用使用者提供且 byte-identical 的直立 `GoldMapleCoin_v1.png`（SHA-256 `d75219c45cc5a122c3444197b2faa0fb0efccafe9af01ad7837b29ab649e419b`，RUID `eb464db009c04b028b6a97f5bcf68713`），共 14 個 UI 節點，S3 舊 coin v2 引用數量為 0。
@@ -62,13 +62,13 @@ v7 正確 ID `commodity_forest_54` 的 client-only 貨物 fixture 顯示 12/12�
 
 該次 normal bucket 為 48 Info／0 Warning／0 Error（包含錯誤 ID 診斷）；build bucket 為 72 Info／0 Warning／0 Error，時間 08:06，是既有 script build，不是此次 UI 變更的新 build。港口 T0 production repair cost 0 曾成功；海上 disabled fixture 被 server projection 覆寫，結果 inconclusive。獨立 S3 council review pending。
 
-既有鍵 CAS 證據 .builder-work/save-v1/native-cas-existing-key.json：Global／User各8個 UpdateAsync，均1 code0 winner、7 code2000000，回讀唯一winner。只驗單一 server_main 請求並發，沒有獨立 World instances 宣稱。不存在鍵 Update 不提供 create-if-absent；改用維護預置 gate。Sortable Increase 反例8次都1／最後1，已否決作鎖並保留原始證據。
+既有鍵 CAS 證據 .builder-work/save-v1/native-cas-existing-key.json：Global／User各8個 UpdateAsync，均1 code0 winner、7 code2000000，回讀唯一winner。只驗單一 server_main 請求並發，沒有獨立 World instances 宣稱。不存在鍵 Update 不提供 create-if-absent；當時改用維護預置 gate，18:13已撤除該方案。Sortable Increase 反例8次都1／最後1，已否決作鎖並保留原始證據。
 
 ## 驗證界線與發布前置
 
 離線用 production CaptureProfileForLeave，另實際 Stop／Play 冷啟讀回；未拔網路。抵港 fixture 跳過空戰推進末秒；沉船 fixture hull=0後走 production 結算。音效資源與成功回執 SoundService 呼叫已驗，未人工聆聽。標準 UI 實體滑鼠點按不在覆蓋，使用 production handlers／真正 RPC。
 
-正式發布仍須在所有 instance 停止的維護窗口預置 bootstrap gate；production 不無條件寫 OPEN。不明／crashed BUSY 不直接重設，先排除延遲 claim／profile write。Maker-only default gate 已預置回讀，**不構成發布環境已預置證據**。
+歷史 gate 方案（目前不適用）：正式發布曾要求在所有 instance 停止的維護窗口預置 bootstrap gate；production 不無條件寫 OPEN。不明／crashed BUSY 不直接重設，先排除延遲 claim／profile write。Maker-only default gate 已預置回讀，**不構成發布環境已預置證據**。
 
 Environment/config 既有修改保留。所有 UI 經 builder，codeblock 只由 Maker 生成。最終評論必須明示能力缺口，不能把未觀察的 modality 說成通過。
 
@@ -81,3 +81,8 @@ Environment/config 既有修改保留。所有 UI 經 builder，codeblock 只由
 ## 2026-10-08 正式服首次建檔診斷增量
 
 上游 GitHub skill 與本地一致，指出 GetAndWait 的不存在 key 回 1000002；修正首讀／重讀與建檔前取消的契約處理，維持 exact payload code0 ack。缺 gate 明確提示 setup 並以原30秒節奏重試；loading 不保留預覽／卡槽／假船況。90 tests／13 subtests、167 body syntax通過；詳細來源、反證及正式核驗界線見 [診斷文件](Published-Save-Diagnosis-20261008.md)。Maker refresh 實際回報 not running，未驗 Native／正式DB，Save仍Review；本次增量不改S3凍結證據。
+
+
+## 2026-10-08 18:13：撤除 bootstrap gate，直接首次建檔
+
+目前單一正常版 v2026.10.08.3： confirmed missing 才直接建立，Set 前重新讀取，exact payload 回讀後才 ready；既有存檔與後續 raw CAS 保留。沒有維護版、全域 gate 或 OPEN 回執前置；空 helper 僅保留 Maker entry 相容。80 tests／10 subtests 通過，Maker 原生新建、實際保存、清快取重讀、正常帳號載入和真 client 船艙 ready 通過；66 build Info／42 runtime Info、0 Warning/Error，已 Stop。未宣稱正式服完成或缺鍵 Set 跨 instance 原子建立。詳見 [目前診斷](Published-Save-Diagnosis-20261008.md) 與 [原生回執](reviews/2026-10-08/published-save/direct-first-create/maker-receipt.json)。

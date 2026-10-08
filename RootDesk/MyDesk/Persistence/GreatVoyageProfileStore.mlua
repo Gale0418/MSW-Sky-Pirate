@@ -7,14 +7,12 @@ script GreatVoyageProfileStore extends Logic
 	property table openPorts = { "forest", "sky", "ludus", "nihal" }
 	property string storagePrefix = "GVSaveV1"
 	property string legacyMarketPrefix = "GVMarketV1"
-	property string bootstrapGateKey = "gate"
 	property integer schemaVersion = 2
 	property integer notFoundCode = 1000002
 	property integer compareFailedCode = 2000000
 	property integer maxPayloadBytes = 48000
 	property number flushIntervalSeconds = 30
 	property integer flushTimerId = 0
-	property boolean firstCreateSetVerified = true
 	property string clientLoadStatus = "loading"
 
 	@ExecSpace("ServerOnly")
@@ -396,186 +394,13 @@ script GreatVoyageProfileStore extends Logic
 		end
 	end
 
-	@ExecSpace("ServerOnly")
-	method string ClassifyGateValue(any value, any account)
-		-- 僅輸出值的分類，避免把鎖的 token 或原始資料寫進日誌。
-		if value == nil then return "nil" end
-		if type(value) ~= "string" then return "other" end
-		if value == "" then return "empty" end
-		if value == "OPEN" then return "open" end
-		if account ~= nil and account.bootstrapGateValue ~= nil and value == account.bootstrapGateValue then return "owner" end
-		if string.sub(value, 1, 5) == "BUSY:" then return "busy" end
-		return "other"
-	end
 
-	@ExecSpace("ServerOnly")
-	method boolean ClaimBootstrapGate(any account)
-		-- Claim only the maintainer-preprovisioned global OPEN gate; an unknown claim never writes a profile.
-		if account == nil then return false end
-		account.bootstrapGateErrorCode = nil
-		account.bootstrapGateValueKind = "nil"
-		if account.bootstrapGateToken == nil then
-			account.bootstrapGatePhase = "token"
-			local tokenOk, token = pcall(function() return _UtilLogic:NewGuid() end)
-			if tokenOk ~= true or type(token) ~= "string" or token == "" then
-				account.bootstrapGateState = "unavailable"
-				account.bootstrapGateErrorCode = tokenOk == true and "invalid-token" or "throw"
-				return false
-			end
-			account.bootstrapGateToken = token
-			account.bootstrapGateValue = "BUSY:" .. token
-		end
-		if account.bootstrapGateStorage == nil then
-			account.bootstrapGatePhase = "handle"
-			local storageName = self.storagePrefix == "GVSaveV1" and "GVSaveV1Bootstrap" or self.storagePrefix .. "Bootstrap"
-			local storageOk, gateStorage = pcall(function() return _DataStorageService:GetGlobalDataStorage(storageName) end)
-			if storageOk ~= true or gateStorage == nil then
-				account.bootstrapGateState = "unavailable"
-				account.bootstrapGateErrorCode = storageOk == true and "unavailable" or "throw"
-				return false
-			end
-			account.bootstrapGateStorage = gateStorage
-		end
-		local gateStorage = account.bootstrapGateStorage
-		account.bootstrapGatePhase = "read"
-		local readOk, readCode, current = pcall(function() return gateStorage:GetAndWait(self.bootstrapGateKey) end)
-		account.bootstrapGateValueKind = self:ClassifyGateValue(current, account)
-		if readOk ~= true then
-			account.bootstrapGateState = "uncertain"
-			account.bootstrapGateErrorCode = "throw"
-			account.bootstrapGateValueKind = "nil"
-			return false
-		end
-		if account.bootstrapClaimAttempted == true then
-			if readCode == 0 and current == account.bootstrapGateValue then
-				account.bootstrapGateState = "held"
-				account.bootstrapGateErrorCode = nil
-				account.bootstrapGateValueKind = "owner"
-				account.bootstrapClaimAttempted = nil
-				return true
-			end
-			account.bootstrapGatePhase = "prior-claim"
-			account.bootstrapGateState = "uncertain"
-			account.bootstrapGateErrorCode = readCode == nil and "unknown" or readCode
-			return false
-		end
-		local confirmedMissing = current == nil and (readCode == 0 or readCode == self.notFoundCode)
-		if confirmedMissing then
-			account.bootstrapGateState = "missing"
-			account.bootstrapGateErrorCode = readCode
-			account.bootstrapGateValueKind = "nil"
-			return false
-		end
-		if readCode ~= 0 then
-			account.bootstrapGateState = "uncertain"
-			account.bootstrapGateErrorCode = readCode
-			return false
-		end
-		if current == account.bootstrapGateValue then
-			account.bootstrapGateState = "held"
-			account.bootstrapGateErrorCode = nil
-			account.bootstrapGateValueKind = "owner"
-			account.bootstrapClaimAttempted = nil
-			return true
-		end
-		if current == nil then
-			account.bootstrapGateState = "uncertain"
-			account.bootstrapGateErrorCode = readCode
-			return false
-		end
-		if current ~= "OPEN" then
-			account.bootstrapGateState = "busy"
-			account.bootstrapGateErrorCode = readCode
-			return false
-		end
-		account.bootstrapClaimAttempted = true
-		account.bootstrapGatePhase = "cas"
-		local updateOk, updateCode, updated = pcall(function()
-			return gateStorage:UpdateAndWait(self.bootstrapGateKey, "OPEN", account.bootstrapGateValue)
-		end)
-		if updateOk == true and updateCode == 0 and updated == account.bootstrapGateValue then
-			account.bootstrapGateState = "held"
-			account.bootstrapGateErrorCode = nil
-			account.bootstrapGateValueKind = "owner"
-			account.bootstrapClaimAttempted = nil
-			return true
-		end
-		if updateOk == true and updateCode == self.compareFailedCode then
-			account.bootstrapClaimAttempted = nil
-			account.bootstrapGateState = "busy"
-			account.bootstrapGateErrorCode = updateCode
-			account.bootstrapGateValueKind = self:ClassifyGateValue(updated, account)
-			return false
-		end
-		account.bootstrapGatePhase = "reconcile"
-		local reconcileOk, reconcileCode, observed = pcall(function() return gateStorage:GetAndWait(self.bootstrapGateKey) end)
-		account.bootstrapGateValueKind = self:ClassifyGateValue(observed, account)
-		if reconcileOk == true and reconcileCode == 0 and observed == account.bootstrapGateValue then
-			account.bootstrapGateState = "held"
-			account.bootstrapGateErrorCode = nil
-			account.bootstrapGateValueKind = "owner"
-			account.bootstrapClaimAttempted = nil
-			return true
-		end
-		account.bootstrapGateState = "uncertain"
-		account.bootstrapGateErrorCode = reconcileOk == true and reconcileCode or "throw"
-		if reconcileOk ~= true then account.bootstrapGateValueKind = "nil" end
-		return false
-	end
 
-	@ExecSpace("ServerOnly")
-	method boolean ReleaseBootstrapGate(any account)
-		-- Release by exact owner CAS only; a readback failure keeps the owner token and gate state.
-		if account == nil or type(account.bootstrapGateToken) ~= "string" then return false end
-		if account.bootstrapGateStorage == nil then
-			local storageName = self.storagePrefix == "GVSaveV1" and "GVSaveV1Bootstrap" or self.storagePrefix .. "Bootstrap"
-			local storageOk, gateStorage = pcall(function() return _DataStorageService:GetGlobalDataStorage(storageName) end)
-			if storageOk ~= true or gateStorage == nil then account.bootstrapGateState = "uncertain" return false end
-			account.bootstrapGateStorage = gateStorage
-		end
-		local gateStorage = account.bootstrapGateStorage
-		local ownerValue = "BUSY:" .. account.bootstrapGateToken
-		local updateOk, updateCode, updated = pcall(function()
-			return gateStorage:UpdateAndWait(self.bootstrapGateKey, ownerValue, "OPEN")
-		end)
-		local released = updateOk == true and updateCode == 0 and updated == "OPEN"
-		if released ~= true then
-			local readOk, readCode, current = pcall(function() return gateStorage:GetAndWait(self.bootstrapGateKey) end)
-			released = readOk == true and readCode == 0 and current == "OPEN"
-			if released ~= true then
-				account.bootstrapGateState = readOk == true and readCode == 0 and current == ownerValue and "held" or "uncertain"
-				return false
-			end
-		end
-		account.bootstrapGateStorage = nil
-		account.bootstrapGateToken = nil
-		account.bootstrapGateValue = nil
-		account.bootstrapGateState = nil
-		account.bootstrapClaimAttempted = nil
-		account.bootstrapSetAttempted = nil
-		account.bootstrapPayload = nil
-		return true
-	end
 
-	@ExecSpace("ServerOnly")
-	method boolean ReleaseBootstrapGateBeforeWrite(any account)
-		-- A pre-Set abort may release only after an exact profile read; it never clears a possibly written record.
-		if account == nil or account.bootstrapSetAttempted == true or account.bootstrapGateToken == nil then return false end
-		local readOk, readCode, currentRaw = pcall(function() return account.storage:GetAndWait(self:GetProfileKey(account.profileCode)) end)
-		local confirmedNotFound = readOk == true and readCode == self.notFoundCode and currentRaw == nil
-		if readOk ~= true or (readCode ~= 0 and confirmedNotFound ~= true) then return false end
-		if currentRaw ~= nil and type(currentRaw) ~= "string" then return false end
-		return self:ReleaseBootstrapGate(account)
-	end
 
 	@ExecSpace("ServerOnly")
 	method any LoadForPlayer(string playerId)
-		-- ProfileCode owns the single account writer; new profiles require the preprovisioned global CAS gate.
-		-- 維護版只預置 global gate，阻止一般載入與首建搶先 claim。
-		if _GreatVoyageSaveMaintenance ~= nil and _GreatVoyageSaveMaintenance.enabled == true then
-			self:SetPlayerLoadStatus(playerId, "setup")
-			return nil
-		end
+		-- ProfileCode 的單一 writer 直接讀帳號存檔；只有確認缺值才首次建檔。
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		if player == nil or player.PlayerComponent == nil then return nil end
 		local profileCode = player.PlayerComponent.ProfileCode
@@ -631,117 +456,65 @@ script GreatVoyageProfileStore extends Logic
 		local profile = nil
 		local profileRaw = nil
 		if raw ~= nil then
-			if account.bootstrapSetAttempted == true and (account.bootstrapGateToken == nil or raw ~= account.bootstrapPayload) then
+			if account.bootstrapSetAttempted == true and (type(account.bootstrapPayload) ~= "string" or raw ~= account.bootstrapPayload) then
 				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
-				log_warning("[SaveV1] bootstrap payload mismatch blocked")
+				log_warning("[SaveV1] initial payload mismatch blocked")
 				return nil
 			end
 			local decodeOk, decoded = pcall(function() return self:DecodeProfile(raw) end)
 			if decodeOk ~= true or decoded == nil then
-				if account.bootstrapGateToken ~= nil and account.bootstrapSetAttempted ~= true then self:ReleaseBootstrapGate(account) end
 				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
 				log_warning("[SaveV1] invalid profile blocked")
 				return nil
 			end
-			if account.bootstrapGateToken ~= nil and self:ReleaseBootstrapGate(account) ~= true then
-				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
-				log_warning("[SaveV1] bootstrap gate release unresolved")
-				return nil
-			end
 			profile = decoded
 			profileRaw = raw
-		elseif raw == nil then
-			if account.bootstrapSetAttempted == true and (account.bootstrapGateToken == nil or type(account.bootstrapPayload) ~= "string") then
+		else
+			-- Set 結果未知時只等待精確 payload 出現，絕不再發第二次 Set。
+			if account.bootstrapSetAttempted == true then
+				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
+				log_warning("[SaveV1] initial Set remains ambiguous; no resend")
+				return nil
+			end
+			local migrationOk, markets, migrationStatus = pcall(function() return self:LoadLegacyMarkets(account.storage) end)
+			if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return nil end
+			if self:IsSameBoundProfile(playerId, profileCode) == false then account.loading = false account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30 return nil end
+			if migrationOk ~= true or markets == nil then
+				local terminal = migrationOk == true and migrationStatus == "blocked"
+				self:SetLoadFailure(playerId, profileCode, account, loadSequence, terminal and "blocked" or "retry", terminal)
+				log_warning("[SaveV1] legacy migration failed closed")
+				return nil
+			end
+			local createdProfile = self:CreateInitialProfile(markets)
+			if createdProfile == nil or self:ValidateProfile(createdProfile, _GreatVoyageVoyageData:GetShipCatalog(), _GreatVoyageVoyageData:GetShipUpgradeCards(), _GreatVoyageCommodityCatalog:GetAll()) == false then
 				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
 				return nil
 			end
-			if self:ClaimBootstrapGate(account) ~= true then
-				local failureStatus = account.bootstrapGateState == "missing" and "setup" or "retry"
-				self:SetLoadFailure(playerId, profileCode, account, loadSequence, failureStatus, false)
-				if account.bootstrapGateState == "missing" then
-					local storageName = self.storagePrefix == "GVSaveV1" and "GVSaveV1Bootstrap" or self.storagePrefix .. "Bootstrap"
-					log_warning("[SaveV1] " .. storageName .. " gate 未預置; state=missing code=" .. tostring(account.bootstrapGateErrorCode or "unknown") .. " phase=" .. tostring(account.bootstrapGatePhase or "unknown") .. " valueKind=" .. tostring(account.bootstrapGateValueKind or "nil"))
-				else
-					log_warning("[SaveV1] bootstrap gate claim failed state=" .. tostring(account.bootstrapGateState or "unknown") .. " code=" .. tostring(account.bootstrapGateErrorCode or "unknown") .. " phase=" .. tostring(account.bootstrapGatePhase or "unknown") .. " valueKind=" .. tostring(account.bootstrapGateValueKind or "nil"))
-				end
+			local payload = self:EncodeProfile(createdProfile)
+			if payload == nil or string.len(payload) > self.maxPayloadBytes then
+				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
+				log_warning("[SaveV1] new profile payload unavailable")
 				return nil
 			end
-			if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return nil end
-			if self:IsSameBoundProfile(playerId, profileCode) == false then
-				account.loading = false
-				account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30
-				if account.bootstrapSetAttempted ~= true then self:ReleaseBootstrapGateBeforeWrite(account) end
-				return nil
-			end
+			-- 舊資料遷移等待結束後再讀一次，已有存檔就讀入，不覆寫。
 			local recheckOk, recheckCode, recheckRaw = pcall(function() return account.storage:GetAndWait(self:GetProfileKey(profileCode)) end)
 			if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return nil end
-			if self:IsSameBoundProfile(playerId, profileCode) == false then
-				account.loading = false
-				account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30
-				if recheckOk == true and (recheckCode == 0 or (recheckCode == self.notFoundCode and recheckRaw == nil)) and account.bootstrapSetAttempted ~= true then self:ReleaseBootstrapGate(account) end
-				return nil
-			end
-			local recheckNotFound = recheckOk == true and recheckCode == self.notFoundCode
-			if recheckOk ~= true or (recheckCode ~= 0 and recheckNotFound ~= true) then
+			if self:IsSameBoundProfile(playerId, profileCode) == false then account.loading = false account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30 return nil end
+			local confirmedAbsent = recheckOk == true and (recheckCode == 0 or recheckCode == self.notFoundCode) and recheckRaw == nil
+			if recheckOk ~= true or (recheckCode ~= 0 and confirmedAbsent ~= true) then
 				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
-				return nil
-			end
-			if recheckNotFound and recheckRaw ~= nil then
-				self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
-				log_warning("[SaveV1] profile recheck returned NotFound with data; retry code=" .. tostring(recheckCode))
+				log_warning("[SaveV1] profile recheck failed; no initial write")
 				return nil
 			end
 			if recheckRaw ~= nil then
-				if account.bootstrapSetAttempted == true and recheckRaw ~= account.bootstrapPayload then
-					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
-					log_warning("[SaveV1] bootstrap payload mismatch blocked")
-					return nil
-				end
 				local decodeOk, decoded = pcall(function() return self:DecodeProfile(recheckRaw) end)
 				if decodeOk ~= true or decoded == nil then
-					if account.bootstrapSetAttempted ~= true then self:ReleaseBootstrapGate(account) end
 					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
-					log_warning("[SaveV1] invalid profile blocked")
-					return nil
-				end
-				if self:ReleaseBootstrapGate(account) ~= true then
-					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
-					log_warning("[SaveV1] bootstrap gate release unresolved")
 					return nil
 				end
 				profile = decoded
 				profileRaw = recheckRaw
 			else
-				if account.bootstrapSetAttempted == true then
-					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
-					log_warning("[SaveV1] initial Set remains ambiguous; gate retained without retrying Set")
-					return nil
-				end
-				local createdProfile = nil
-				local migrationOk, markets, migrationStatus = pcall(function() return self:LoadLegacyMarkets(account.storage) end)
-				if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return nil end
-				if self:IsSameBoundProfile(playerId, profileCode) == false then account.loading = false account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30 self:ReleaseBootstrapGateBeforeWrite(account) return nil end
-				if migrationOk ~= true then self:ReleaseBootstrapGateBeforeWrite(account) self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false) log_warning("[SaveV1] legacy read raised; retry scheduled") return nil end
-				if markets == nil then
-					local terminal = migrationStatus == "blocked"
-					self:ReleaseBootstrapGateBeforeWrite(account)
-					self:SetLoadFailure(playerId, profileCode, account, loadSequence, terminal and "blocked" or "retry", terminal)
-					log_warning("[SaveV1] legacy migration failed closed")
-					return nil
-				end
-				createdProfile = self:CreateInitialProfile(markets)
-				if createdProfile == nil or self:ValidateProfile(createdProfile, _GreatVoyageVoyageData:GetShipCatalog(), _GreatVoyageVoyageData:GetShipUpgradeCards(), _GreatVoyageCommodityCatalog:GetAll()) == false then
-					self:ReleaseBootstrapGateBeforeWrite(account)
-					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
-					return nil
-				end
-				local payload = self:EncodeProfile(createdProfile)
-				if payload == nil or string.len(payload) > self.maxPayloadBytes or self.firstCreateSetVerified ~= true then
-					self:ReleaseBootstrapGateBeforeWrite(account)
-					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
-					log_warning("[SaveV1] new profile create path unavailable")
-					return nil
-				end
 				account.bootstrapSetAttempted = true
 				account.bootstrapPayload = payload
 				local setOk, setCode = pcall(function() return account.storage:SetAndWait(self:GetProfileKey(profileCode), payload) end)
@@ -752,20 +525,13 @@ script GreatVoyageProfileStore extends Logic
 				if self:IsSameBoundProfile(playerId, profileCode) == false then account.loading = false account.nextRetryAt = _UtilLogic.ServerElapsedSeconds + 30 return nil end
 				if verifyOk ~= true or verifyCode ~= 0 or verifyRaw ~= payload then
 					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
-					log_warning("[SaveV1] initial Set unresolved; gate retained code=" .. tostring(setOk == true and setCode or "throw"))
-					return nil
-				end
-				if self:ReleaseBootstrapGate(account) ~= true then
-					self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
-					log_warning("[SaveV1] bootstrap gate release unresolved after exact Set readback")
+					log_warning("[SaveV1] initial Set unresolved; no resend code=" .. tostring(setOk == true and setCode or "throw"))
 					return nil
 				end
 				profile = createdProfile
 				profileRaw = payload
+				log("[VRF][SaveV1] first profile created; exact readback confirmed")
 			end
-		else
-			self:SetLoadFailure(playerId, profileCode, account, loadSequence, "retry", false)
-			return nil
 		end
 		if profile == nil or profileRaw == nil then
 			self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true)
@@ -781,13 +547,15 @@ script GreatVoyageProfileStore extends Logic
 		end
 		account.lastCoreSignature = self:EncodeCore(account.profile.core)
 		if account.lastCoreSignature == nil then self:SetLoadFailure(playerId, profileCode, account, loadSequence, "blocked", true) return nil end
+		account.bootstrapSetAttempted = nil
+		account.bootstrapPayload = nil
 		account.loading = false
 		account.ready = true
 		account.loadFailureStatus = nil
 		account.nextRetryAt = nil
 		self.profileByUser[playerId] = profileCode
 		self:SetPlayerLoadStatus(playerId, "ready")
-		log("[SaveV1] loaded profile=" .. profileCode .. " revision=" .. tostring(account.profile.revision))
+		log("[SaveV1] loaded revision=" .. tostring(account.profile.revision))
 		return account.profile
 	end
 	@ExecSpace("ServerOnly")

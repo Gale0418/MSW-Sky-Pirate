@@ -82,3 +82,13 @@
 - Review：CodeRabbit 首輪只實際收到三個 tracked 檔、1 minor；script-mode 測試發現順序已查證修正，直接執行57 tests全部通過；第二輪已將兩個新檔納入 staging，五檔複查 complete／exit0／0 issues；本時段兩輪，未第三輪。
 - Unfinished：使用者從已 Refresh Maker 發布維護版、重登取得 exact OPEN 回執後，停用維護 helper 並發布一般版，再驗正式交易／重登。
 - Evidence：[去識別化 Maker 回執](../docs/reviews/2026-10-08/published-save/maintenance-1657/maker-receipt.json)、[正式服診斷與操作](../docs/Published-Save-Diagnosis-20261008.md)。
+
+
+### 2026-10-08 18:18 — GV-SAVE-QA：單一正常版直接建檔
+
+- Timestamp：2026-10-08T18:18:27+08:00
+- Change：主人要求直接修、不要多版本；撤除 bootstrap gate 與維護載入鎖，helper僅空 Logic 相容 entry。v2026.10.08.3 只需發布正常版一次，不再要求 Maintenance／OPEN 回執。confirmed missing 才直建、遷移後重讀、exact Set 回讀才 ready；既有存檔 raw CAS 保留，未知首次 Set 在同 instance 快取內不重送。
+- Reason：17:53 正式服仍同步中且完全無 Maintenance 訊息；前次維護流程增加登入阻塞，已撤下而非繼續要求初始化門。
+- Impact：80 tests／10 subtests通過；Maker 66 build Info／42 runtime Info、0Warning/Error，隔離原生新key建檔／保存／清快取重讀、既有revision27、真 client 船艙10,600／1/8空位7／船體100/100皆 positive，已Stop。正式發布後交易保存重登仍待，保留Review；不宣稱缺鍵Set跨instance原子建立。
+- Review：CodeRabbit本輪五檔單次review_completed／0 issues；本小時第三次，未追加重審，大素材／Native API／產生檔／無關UI排除。README、診斷與兩份存檔文件同步目前方案。
+- Evidence：[審查与原生回執](../docs/reviews/2026-10-08/published-save/direct-first-create/review-summary.md)。

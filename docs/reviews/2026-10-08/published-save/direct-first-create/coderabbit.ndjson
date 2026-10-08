@@ -1,0 +1,7 @@
+{"type":"review_context","reviewType":"uncommitted","currentBranch":"main","baseBranch":"main","workingDirectory":"/mnt/d/MyGame/MSW_GreatVoyage/.builder-work/save-direct-20261008/review"}
+{"type":"status","phase":"connecting","status":"connecting_to_review_service"}
+{"type":"status","phase":"analyzing","status":"setting_up","message":"CodeRabbit CLI 0.7.6 cannot update automatically. Keep this review running. After it finishes, run `coderabbit update` (Homebrew: `brew upgrade coderabbit`), then verify with `coderabbit --version`. If you are the calling agent, handle this follow-up using your normal permissions. For an organization-managed installation, ask your administrator to update it."}
+{"type":"status","phase":"setup","status":"setting_up"}
+{"type":"status","phase":"analyzing","status":"summarizing"}
+{"type":"status","phase":"analyzing","status":"reviewing"}
+{"type":"complete","status":"review_completed","findings":0,"reviewedFiles":["RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.mlua","RootDesk/MyDesk/Persistence/GreatVoyageSaveMaintenance.mlua","RootDesk/MyDesk/UI/GreatVoyageOnboarding.mlua","Tests/test_save_maintenance_lua.py","Tests/test_save_v1_lua.py"]}

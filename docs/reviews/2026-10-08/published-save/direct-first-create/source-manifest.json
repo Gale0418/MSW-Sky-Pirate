@@ -1,0 +1,30 @@
+{
+  "baseline": "7213f4699762aa6f04fd424e5b54eaa6551b105e",
+  "reviewed": [
+    {
+      "path": "RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.mlua",
+      "bytes": 47557,
+      "sha256": "b81413f2b05647de8c47ce0a9fac309ae3404d51bca41961a3c97bc7cbc3b934"
+    },
+    {
+      "path": "RootDesk/MyDesk/Persistence/GreatVoyageSaveMaintenance.mlua",
+      "bytes": 162,
+      "sha256": "6c1d1ecb533993ca5169b97b1b7e08e597b5b3bbae591556b7f23f37a5371f15"
+    },
+    {
+      "path": "RootDesk/MyDesk/UI/GreatVoyageOnboarding.mlua",
+      "bytes": 4784,
+      "sha256": "028db04a9f9fd5720e3513be6c5ac4cb46543e849bce00e46bc48744717752d8"
+    },
+    {
+      "path": "Tests/test_save_v1_lua.py",
+      "bytes": 47371,
+      "sha256": "d27a9cdade5610409cc98c2fd70ee59491864f42f02428ca07d6bd63bf51f192"
+    },
+    {
+      "path": "Tests/test_save_maintenance_lua.py",
+      "bytes": 11169,
+      "sha256": "8ee4d9c5607afc3856cfee9497947fc53d0de1b8d79c23ba461de90fe31aae43"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-10-08T18:13:45+08:00",
+  "buildVersion": "v2026.10.08.3",
+  "scope": "Maker only; isolated QA-prefixed UserDataStorage using production method bodies; compiled singleton existing profile and real client ship panel",
+  "build": {
+    "count": 66,
+    "warnings": 0,
+    "errors": 0
+  },
+  "runtime": {
+    "count": 42,
+    "warnings": 0,
+    "errors": 0
+  },
+  "markers": [
+    {
+      "time": "2026-10-08T18:06:29",
+      "server": true,
+      "message": "[SaveV1] loaded revision=27"
+    },
+    {
+      "time": "2026-10-08T18:11:31",
+      "server": true,
+      "message": "[VRF][SaveV1] first profile created; exact readback confirmed"
+    },
+    {
+      "time": "2026-10-08T18:11:31",
+      "server": true,
+      "message": "[SaveV1] loaded revision=1"
+    },
+    {
+      "time": "2026-10-08T18:11:31",
+      "server": true,
+      "message": "[VRF][DirectSaveNative] firstCreate=true status=ready"
+    },
+    {
+      "time": "2026-10-08T18:11:32",
+      "server": true,
+      "message": "[SaveV1] loaded revision=1"
+    },
+    {
+      "time": "2026-10-08T18:11:32",
+      "server": true,
+      "message": "[VRF][DirectSaveNative] saved=true reloaded=true status=ready"
+    },
+    {
+      "time": "2026-10-08T18:12:00",
+      "server": false,
+      "message": "[VRF][DirectSaveNative] client build=v2026.10.08.3 load=ready"
+    },
+    {
+      "time": "2026-10-08T18:13:35",
+      "server": false,
+      "message": "[VRF][DirectSaveNative] shipPanelReady=true wallet=10,600 capacity=1 / 8　·　空位 7 hull=100 / 100"
+    }
+  ],
+  "mode": "stopped/edit",
+  "formalPublished": false
+}

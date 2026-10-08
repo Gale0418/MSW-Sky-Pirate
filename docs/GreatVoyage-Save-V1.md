@@ -2,7 +2,7 @@
 
 2026-10-08 主人核准草案後進入實作；任務狀態以 MissionCenter/tasks.md 為準。
 
-最新 checkpoint：S3四席評論與Rust八筆驗證完成，outcome為limited，八筆任務保留Review。下文S3 pending屬凍結輸入當時紀錄；後續Git審查4項有效問題已修、複查0 issues，詳見[本輪紀錄](CodeRabbit-Review-20261008.md)。正式bootstrap預置、跨World instance與真斷線驗證仍待完成。
+最新 checkpoint：S3四席評論與Rust八筆驗證完成，outcome為limited，八筆任務保留Review。下文S3 pending屬凍結輸入當時紀錄；後續Git審查4項有效問題已修、複查0 issues，詳見[本輪紀錄](CodeRabbit-Review-20261008.md)。正式首次建檔／保存重登、跨World instance與真斷線驗證仍待完成。
 
 - ✅ E1：版本化帳號快照：金錢、貨物數量／成本、所有船況、使用中船、未裝卡與三槽、個人市場壓力／大巴商品補貨；遷移既有市場且不刪舊鍵。
 - ✅ E2：載入完成閘門、單一寫入者、dirty generation、定時背景保存、出航前確認、抵港／沉船／UserLeaveEvent 保存。
@@ -20,6 +20,11 @@
 
 保留既有 UI／地圖／戰鬥行為與 Environment/config。無 Maker 正面證據不得標實機通過；單一 Maker 無法證明真實跨 instance 競態。模擬專家觀點屬決策分析，與獨立審查證據分開。
 
-v7 Native 截圖：12/12 貨艙 `maker_play_20261008_085509_379.png`、商會 `maker_play_20261008_085547_531.png`、還原船艙／維修 `maker_play_20261008_085634_940.png`。Normal 48 Info／0 Warning／0 Error；build 72 Info／0 Warning／0 Error 為08:06既有script build，並非此次UI變更的新build。錯誤商品ID探針已在收據標為rejected diagnostic。獨立 S3 council review、Published gate prerequisite仍pending；跨World instance race仍unknown。
+v7 Native 截圖：12/12 貨艙 `maker_play_20261008_085509_379.png`、商會 `maker_play_20261008_085547_531.png`、還原船艙／維修 `maker_play_20261008_085634_940.png`。Normal 48 Info／0 Warning／0 Error；build 72 Info／0 Warning／0 Error 為08:06既有script build，並非此次UI變更的新build。錯誤商品ID探針已在收據標為rejected diagnostic。該凍結 checkpoint 的獨立 S3 council review仍pending；Published gate prerequisite 已由18:13直接建檔方案撤除；跨World instance race仍unknown。
 
 以上代表實作與本地驗證；正式生命週期仍為 Review。[完整驗證與限制](Save-V1-Verification.md)。
+
+
+## 2026-10-08 18:13：撤除 bootstrap gate，直接首次建檔
+
+目前單一正常版 v2026.10.08.3： confirmed missing 才直接建立，Set 前重新讀取，exact payload 回讀後才 ready；既有存檔與後續 raw CAS 保留。沒有維護版、全域 gate 或 OPEN 回執前置；空 helper 僅保留 Maker entry 相容。80 tests／10 subtests 通過，Maker 原生新建、實際保存、清快取重讀、正常帳號載入和真 client 船艙 ready 通過；66 build Info／42 runtime Info、0 Warning/Error，已 Stop。未宣稱正式服完成或缺鍵 Set 跨 instance 原子建立。詳見 [目前診斷](Published-Save-Diagnosis-20261008.md) 與 [原生回執](reviews/2026-10-08/published-save/direct-first-create/maker-receipt.json)。
