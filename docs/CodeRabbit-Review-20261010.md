@@ -34,4 +34,4 @@
 
 ## 上傳回執
 
-README、MissionCenter 與本紀錄於提交前更新。遠端 commit 與 main 同步結果以後續 GitHub／git ls-remote 回查為準；不以本文件預先宣稱推送完成。
+README、MissionCenter 與本紀錄於提交前更新。87 檔 checkpoint [`bca479f`](https://github.com/Gale0418/MSW-Sky-Pirate/commit/bca479f2d3c3de688932470b3ae439d4e15fa346) 已一般推送 origin/main（exit 0）；git ls-remote 與 GitHub connector 確認同一 SHA，當時工作樹乾淨。未新增遊戲分支／PR、未 force push。此回執另以文件提交保存，詳見 [上傳回執](reviews/2026-10-10/git-checkpoint/push-receipt.json)。
