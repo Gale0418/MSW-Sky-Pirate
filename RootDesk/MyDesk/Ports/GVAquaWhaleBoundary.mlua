@@ -1,0 +1,107 @@
+@Component
+script GVAquaWhaleBoundary extends Component
+
+-- Only recover the local player while this component's map is active.
+property number leftBoundary = -2.2
+property number rightBoundary = 3.45
+-- Tune this if the player's transform origin is not at the feet.
+property number playerFootOffset = 0
+property number surfaceTolerance = 0.05
+property number surfaceLift = 0.05
+property number recoveryLogCooldown = 0
+property table surfacePoints = {}
+
+@ExecSpace("ClientOnly")
+method void OnBeginPlay()
+	-- Cache the official whale foothold curve in world coordinates once.
+	self.surfacePoints = {
+		{x = -2.47, y = 0.05},
+		{x = -2.47, y = -0.06},
+		{x = -2.22, y = 0.08},
+		{x = -1.71, y = 0.18},
+		{x = -1.23, y = 0.20},
+		{x = -0.32, y = 0.13},
+		{x = 0.24, y = 0.05},
+		{x = 0.87, y = -0.12},
+		{x = 1.56, y = -0.38},
+		{x = 1.85, y = -0.48},
+		{x = 2.16, y = -0.64},
+		{x = 2.71, y = -1.02},
+		{x = 2.86, y = -1.10},
+		{x = 3.00, y = -1.10},
+		{x = 3.22, y = -0.71},
+		{x = 3.48, y = -0.40},
+		{x = 3.65, y = -0.30},
+		{x = 3.76, y = -0.29},
+		{x = 3.76, y = -0.23}
+	}
+	self.recoveryLogCooldown = 0
+	log("[VRF][GVAquaWhaleBoundary] active x=" .. tostring(self.leftBoundary) .. ".." .. tostring(self.rightBoundary) .. " points=" .. tostring(#self.surfacePoints))
+end
+
+@ExecSpace("ClientOnly")
+method void OnUpdate(number delta)
+	-- Guard just the local player; do not retain state across map transitions.
+	self.recoveryLogCooldown = math.max(0, self.recoveryLogCooldown - delta)
+	local localPlayer = _UserService.LocalPlayer
+	if localPlayer == nil or not isvalid(localPlayer) then
+		return
+	end
+	local currentMap = self.Entity
+	if currentMap == nil or localPlayer.CurrentMap ~= currentMap then
+		return
+	end
+
+	local body = localPlayer.RigidbodyComponent
+	local transform = localPlayer.TransformComponent
+	if body == nil or transform == nil then
+		return
+	end
+	local position = transform.WorldPosition
+	if position == nil then
+		return
+	end
+
+	local safeX = math.max(self.leftBoundary, math.min(self.rightBoundary, position.x))
+	local xClamped = math.abs(safeX - position.x) > 0.001
+	if xClamped then
+		body:SetWorldPosition(Vector2(safeX, position.y))
+		body.MoveVelocity = Vector2(0, body.MoveVelocity.y)
+		body:PositionReset()
+	end
+
+	local surfaceY = self:GetWhaleSurfaceY(safeX)
+	local footY = position.y + self.playerFootOffset
+	if footY < surfaceY - self.surfaceTolerance then
+		local recoveryY = surfaceY + self.surfaceLift - self.playerFootOffset
+		body:SetWorldPosition(Vector2(safeX, recoveryY))
+		body:SetForce(Vector2(0, 0))
+		body.MoveVelocity = Vector2(0, 0)
+		body:PositionReset()
+		if self.recoveryLogCooldown <= 0 then
+			log("[VRF][GVAquaWhaleBoundary] recovered local player to whale surface x=" .. tostring(safeX) .. " y=" .. tostring(recoveryY))
+			self.recoveryLogCooldown = 2
+		end
+	end
+end
+
+@ExecSpace("ClientOnly")
+method number GetWhaleSurfaceY(number x)
+	-- Interpolate the nearest official foothold segment, skipping vertical edges.
+	for index = 1, #self.surfacePoints - 1 do
+		local pointA = self.surfacePoints[index]
+		local pointB = self.surfacePoints[index + 1]
+		local segmentX = pointB.x - pointA.x
+		if math.abs(segmentX) > 0.0001 then
+			local minX = math.min(pointA.x, pointB.x)
+			local maxX = math.max(pointA.x, pointB.x)
+			if x >= minX and x <= maxX then
+				local ratio = (x - pointA.x) / segmentX
+				return pointA.y + (pointB.y - pointA.y) * ratio
+			end
+		end
+	end
+	-- Both configured limits are inside this cached curve's covered X range.
+	return 0
+end
+end

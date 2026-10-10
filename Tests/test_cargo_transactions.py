@@ -33,13 +33,14 @@ data.goods = {
 }
 function data:GetPort(portId) return { goods={self.goods.apple, self.goods.pear} } end
 function data:GetGoodById(goodId) return self.goods[goodId] end
-market = { remaining=100, saleUnitPrice=25, applied={}, consumed=0 }
+market = { remaining=100, saleUnitPrice=25, applied={}, consumed=0, entries={}, syncOk=true }
+feedbackCalls = {}
 afterMarketRead = function() end
 _GreatVoyageVoyageData = data
 _GreatVoyagePlayerMarket = {
     GetMarket=function(self, playerId, portId) afterMarketRead(); return market end,
     GetNow=function(self) return 1 end,
-    MarkDirty=function(self, playerId, portId, goodId) market.lastDirtyGood=goodId end,
+    MarkDirty=function(self, playerId, portId, goodId) market.lastDirtyGood=goodId; return market.syncOk end,
     PublishMarket=function(self, playerId, portId) end
 }
 _GreatVoyageMarketPricing = {
@@ -47,12 +48,23 @@ _GreatVoyageMarketPricing = {
     ConsumeBossStock=function(self, entries, profileCode, goodId, quantity, now)
         market.remaining = market.remaining - quantity
         market.consumed = market.consumed + quantity
+        local record = entries[goodId] or { pressure=0, at=0, cycle=-1, bought=0 }
+        record.cycle = math.floor(now / 10800)
+        record.bought = record.bought + quantity
+        entries[goodId] = record
+        market.entries = entries
+        return true
     end,
     GetSaleQuote=function(self, entries, portId, goodId, quantity, now)
         return { valid=true, unitPrice=market.saleUnitPrice, total=market.saleUnitPrice*quantity }
     end,
     ApplySale=function(self, entries, goodId, quote)
         table.insert(market.applied, {id=goodId, total=quote.total})
+        local record = entries[goodId] or { pressure=0, at=0, cycle=-1, bought=0 }
+        record.pressure = 0.5
+        record.at = 1
+        entries[goodId] = record
+        market.entries = entries
     end
 }
 _UserService = {
@@ -78,7 +90,7 @@ function state:CompleteEconomyRequest(playerId, target, message)
     target.lastMessage = message
 end
 function state:CompleteShipRequest(playerId, target, message) end
-function state:ReceiveTransactionFeedback(...) end
+function state:ReceiveTransactionFeedback(...) table.insert(feedbackCalls, {...}) end
 function state:PreviewDirectRoute(origin, destination) return nil end
 """
 
@@ -112,6 +124,21 @@ class CargoProductionMethodTests(unittest.TestCase):
                          [("apple", 3), ("pear", 1)])
         self.assertEqual(lua.globals().state.testState.money, 950)
         self.assertEqual(lua.globals().market.consumed, 4)
+
+    def test_boss_buy_sync_failure_rolls_back_money_cargo_and_market_row(self):
+        lua = self.make_lua(("BuyGood",))
+        lua.execute("""market.syncOk=false; market.entries.apple={pressure=0.25,at=99,cycle=0,bought=2}""")
+        lua.execute("""state:BuyGood("apple", 1)""")
+        market = lua.globals().market
+        state = lua.globals().state.testState
+        self.assertEqual(state.money, 1000)
+        self.assertEqual(state.cargo.quantity, 0)
+        self.assertEqual(market.entries.apple.pressure, 0.25)
+        self.assertEqual(market.entries.apple.at, 99)
+        self.assertEqual(market.entries.apple.cycle, 0)
+        self.assertEqual(market.entries.apple.bought, 2)
+        self.assertEqual(len(lua.globals().feedbackCalls), 0)
+        self.assertNotIn("server buy", "\n".join(lua.globals().logs[i] for i in range(1, len(lua.globals().logs) + 1)))
 
     def test_full_capacity_rejects_without_changing_money_or_stock(self):
         lua = self.make_lua(("BuyGood",))
@@ -173,6 +200,25 @@ class CargoProductionMethodTests(unittest.TestCase):
         self.assertEqual([(cargo.lots[i].id, cargo.lots[i].quantity, cargo.lots[i].buyPrice)
                           for i in range(1, 3)], [("pear", 1, 30), ("apple", 1, 20)])
         self.assertIn("profit=35", "\n".join(lua.globals().logs[i] for i in range(1, len(lua.globals().logs) + 1)))
+
+    def test_sell_sync_failure_rolls_back_money_cargo_and_market_row(self):
+        lua = self.make_lua(("SellCargoInternal",))
+        lua.execute("""
+            state.testState.cargo=data:AddCargo(nil, "apple", 2, 10)
+            market.entries.apple={pressure=0.25,at=99,cycle=0,bought=2}
+            market.syncOk=false
+            state:SellCargoInternal("u", "apple", 1, false)
+        """)
+        state = lua.globals().state.testState
+        record = lua.globals().market.entries.apple
+        self.assertEqual(state.money, 1000)
+        self.assertEqual(state.cargo.quantity, 2)
+        self.assertEqual(record.pressure, 0.25)
+        self.assertEqual(record.at, 99)
+        self.assertEqual(record.cycle, 0)
+        self.assertEqual(record.bought, 2)
+        self.assertEqual(len(lua.globals().feedbackCalls), 0)
+        self.assertNotIn("server sell", "\n".join(lua.globals().logs[i] for i in range(1, len(lua.globals().logs) + 1)))
 
     def test_snapshot_copies_lots_and_rejects_old_scalar_revision(self):
         lua = self.make_lua(("ReceiveVoyageSnapshot", "ReceiveCargoInventorySnapshot", "CopyClientSnapshot"))

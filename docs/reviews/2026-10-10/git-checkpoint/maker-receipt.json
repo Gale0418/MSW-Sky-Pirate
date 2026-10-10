@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-10",
+  "type": "maker-checkpoint",
+  "map": "map_aqua_two_palm_trees",
+  "build": {
+    "count": 71,
+    "issues": []
+  },
+  "runtime": {
+    "count": 56,
+    "issues": [],
+    "evidence": [
+      {
+        "time": "2026-10-10T15:32:37",
+        "server": false,
+        "message": "[VRF] world map controller boot"
+      },
+      {
+        "time": "2026-10-10T15:32:37",
+        "server": false,
+        "message": "[VRF] official port pins bound=14"
+      },
+      {
+        "time": "2026-10-10T15:32:37",
+        "server": false,
+        "message": "[VRF] dock camera map=map_aqua_two_palm_trees offset=(0.900, 0.000)"
+      },
+      {
+        "time": "2026-10-10T15:32:37",
+        "server": false,
+        "message": "[VRF][GVAquaWhaleBoundary] active x=-2.2..3.45 points=19"
+      },
+      {
+        "time": "2026-10-10T15:32:37",
+        "server": false,
+        "message": "[VRF] dock ship host ready map=entity/0ed84b11-819f-4dec-bb7c-58998490e010"
+      },
+      {
+        "time": "2026-10-10T15:32:37",
+        "server": true,
+        "message": "[VRF] port transfer destination=rien map=map_rien_port"
+      },
+      {
+        "time": "2026-10-10T15:32:37",
+        "server": false,
+        "message": "[VRF] dock ship host ready map=entity/5f73dc71-a17a-4454-9a2b-70ea2504aebc"
+      },
+      {
+        "time": "2026-10-10T15:32:37",
+        "server": false,
+        "message": "[VRF] dock camera map=map_rien_port offset=(1.200, 0.000)"
+      },
+      {
+        "time": "2026-10-10T15:33:27",
+        "server": true,
+        "message": "[VRF][GitCheckpoint] PASS ports=13 boarding=13 merchants=11 all=185 active=160 retired=25 invalidShelves=0 savePorts=13 FIFO=6000 no-test-storage-write=1"
+      }
+    ]
+  },
+  "limitations": [
+    "Only the read-only probe avoids DataStorage writes; normal game startup loaded the Maker account.",
+    "No published reconnect or cross-instance CAS verification.",
+    "No subjective visual layout or real mouse test in this checkpoint."
+  ],
+  "stopped": true
+}

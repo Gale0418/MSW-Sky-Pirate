@@ -5,6 +5,7 @@ script GreatVoyageProfileStore extends Logic
 	property table profileByUser = {}
 	property table loadStatusByUser = {}
 	property table openPorts = { "forest", "sky", "ludus", "nihal" }
+	property table legacyOpenPorts = { "forest", "sky", "ludus", "nihal" }
 	property string storagePrefix = "GVSaveV1"
 	property string legacyMarketPrefix = "GVMarketV1"
 	property integer schemaVersion = 2
@@ -21,6 +22,7 @@ script GreatVoyageProfileStore extends Logic
 		self.accounts = {}
 		self.profileByUser = {}
 		self.loadStatusByUser = {}
+		self:RefreshOpenPorts()
 		self.flushTimerId = _TimerService:SetTimerRepeat(function()
 			local now = _UtilLogic.ServerElapsedSeconds
 			for profileCode, account in pairs(self.accounts) do
@@ -32,6 +34,36 @@ script GreatVoyageProfileStore extends Logic
 			end
 		end, self.flushIntervalSeconds, self.flushIntervalSeconds)
 		log("[SaveV1] ready single ProfileCode writer interval=" .. tostring(self.flushIntervalSeconds))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void RefreshOpenPorts()
+		-- 使用航路資料的 canonical 港口目錄；目錄尚不可用時保留四港啟動 fallback。
+		if _GreatVoyageVoyageData == nil then return end
+		local ok, portIds = pcall(function() return _GreatVoyageVoyageData:GetPortIds() end)
+		if ok ~= true or type(portIds) ~= "table" then return end
+		local nextPorts = {}
+		local seen = {}
+		local count = 0
+		local highestIndex = 0
+		for index, portId in pairs(portIds) do
+			if type(index) ~= "number" or index < 1 or index ~= math.floor(index) then return end
+			if type(portId) ~= "string" or portId == "" or seen[portId] == true then return end
+			seen[portId] = true
+			nextPorts[index] = portId
+			count = count + 1
+			if index > highestIndex then highestIndex = index end
+		end
+		if count ~= highestIndex then return end
+		if #nextPorts < #self.legacyOpenPorts then return end
+		for _, portId in ipairs(self.legacyOpenPorts) do if seen[portId] ~= true then return end end
+		self.openPorts = nextPorts
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean IsLegacyPort(string portId)
+		for _, legacyPortId in ipairs(self.legacyOpenPorts) do if legacyPortId == portId then return true end end
+		return false
 	end
 
 	@ExecSpace("ServerOnly")
@@ -129,7 +161,7 @@ script GreatVoyageProfileStore extends Logic
 
 	@ExecSpace("ServerOnly")
 	method boolean ValidateProfile(any profile, table shipCatalog, table cardCatalog, table goodsCatalog)
-		-- 嚴格驗證完整核心與四港市場；任何欄位錯誤都拒絕整份帳號。
+		-- 嚴格驗證完整核心與 canonical 港口市場；任何既有欄位錯誤都拒絕整份帳號。
 		if type(profile) ~= "table" or (profile.schemaVersion ~= 1 and profile.schemaVersion ~= self.schemaVersion) or not self:IsIntegerInRange(profile.revision, 1, 2147483647) then return false end
 		if type(profile.safePortId) ~= "string" then return false end
 		local knownPort = false
@@ -202,7 +234,11 @@ script GreatVoyageProfileStore extends Logic
 		if type(profile.markets) ~= "table" then return false end
 		for _, portId in ipairs(self.openPorts) do
 			local market = profile.markets[portId]
-			if type(market) ~= "table" or not self:ValidateMarketEntries(market, portId, goodsCatalog) then return false end
+			if market == nil and not self:IsLegacyPort(portId) then
+				-- 新增港口可由 DecodeProfile 補成空市場；原四港仍必須完整存在。
+			elseif type(market) ~= "table" or not self:ValidateMarketEntries(market, portId, goodsCatalog) then
+				return false
+			end
 		end
 		for portId in pairs(profile.markets) do
 			local validPort = false
@@ -257,7 +293,7 @@ script GreatVoyageProfileStore extends Logic
 
 	@ExecSpace("ServerOnly")
 	method any EmptyMarkets()
-		-- 建立四港空市場結構，未記錄的商品由既有定價邏輯視為預設值。
+		-- 建立所有 canonical 港口的空市場結構，未記錄商品沿用既有預設定價。
 		local markets = {}
 		for _, portId in ipairs(self.openPorts) do markets[portId] = {} end
 		return markets
@@ -273,6 +309,12 @@ script GreatVoyageProfileStore extends Logic
 		local cardCatalog = _GreatVoyageVoyageData:GetShipUpgradeCards()
 		local goodsCatalog = _GreatVoyageCommodityCatalog:GetAll()
 		if decoded.schemaVersion ~= 1 and decoded.schemaVersion ~= self.schemaVersion then return nil end
+		local expandedMarkets = false
+		if type(decoded.markets) == "table" then
+			for _, portId in ipairs(self.openPorts) do
+				if decoded.markets[portId] == nil and not self:IsLegacyPort(portId) then expandedMarkets = true end
+			end
+		end
 		if self:ValidateProfile(decoded, shipCatalog, cardCatalog, goodsCatalog) == false then return nil end
 		if decoded.schemaVersion == 1 then
 			-- 遷移只改記憶體物件；LoadForPlayer 仍保留 DataStorage 回傳的原始 raw 作 CAS 基準。
@@ -282,6 +324,9 @@ script GreatVoyageProfileStore extends Logic
 			decoded.schemaVersion = self.schemaVersion
 			if self:ValidateProfile(decoded, shipCatalog, cardCatalog, goodsCatalog) == false then return nil end
 		end
+		if expandedMarkets and decoded.revision >= 2147483647 then return nil end
+		for _, portId in ipairs(self.openPorts) do if decoded.markets[portId] == nil then decoded.markets[portId] = {} end end
+		decoded._requiresPortExpansionSave = expandedMarkets
 		return decoded
 	end
 
@@ -401,6 +446,7 @@ script GreatVoyageProfileStore extends Logic
 	@ExecSpace("ServerOnly")
 	method any LoadForPlayer(string playerId)
 		-- ProfileCode 的單一 writer 直接讀帳號存檔；只有確認缺值才首次建檔。
+		self:RefreshOpenPorts()
 		local player = _UserService:GetUserEntityByUserId(playerId)
 		if player == nil or player.PlayerComponent == nil then return nil end
 		local profileCode = player.PlayerComponent.ProfileCode
@@ -539,6 +585,12 @@ script GreatVoyageProfileStore extends Logic
 		end
 		account.profile = profile
 		account.acknowledgedRaw = profileRaw
+		if profile._requiresPortExpansionSave == true then
+			-- 保留 raw 作 CAS expected value；以新 revision 將補齊的市場透過既有 flush 持久化。
+			profile._requiresPortExpansionSave = nil
+			profile.revision = profile.revision + 1
+			self:TouchDirty(account)
+		end
 		if self.accounts[profileCode] ~= account or account.loadSequence ~= loadSequence then return nil end
 		if self:IsSameBoundProfile(playerId, profileCode) == false then
 			account.loading = false
@@ -588,14 +640,18 @@ script GreatVoyageProfileStore extends Logic
 
 	@ExecSpace("ServerOnly")
 	method boolean SyncMarket(string playerId, string portId, table entries)
-		-- Project optional runtime market fields to schema defaults before validating a copy.
+		-- 依 UTC Unix 時間衰減市場狀態，清除無壓力且無當期庫存的舊列。
 		local profileCode = self.profileByUser[playerId]
 		local account = self.accounts[profileCode or ""]
 		if account == nil or account.ready ~= true or account.conflicted == true then return false end
 		local isOpenPort = false
 		for _, openPort in ipairs(self.openPorts) do if openPort == portId then isOpenPort = true end end
 		if isOpenPort == false then return false end
-		local nextRows = {}
+		if _GreatVoyagePlayerMarket == nil or _GreatVoyageMarketPricing == nil or _GreatVoyageVoyageData == nil or _GreatVoyageCommodityCatalog == nil then return false end
+		local now = _GreatVoyagePlayerMarket:GetNow()
+		if not self:IsFiniteNumber(now) or now < 0 then return false end
+		local currentCycle = math.floor(now / 10800)
+		local validationRows = {}
 		for goodId, record in pairs(entries or {}) do
 			if type(record) ~= "table" then return false end
 			local pressure = record.pressure
@@ -606,9 +662,36 @@ script GreatVoyageProfileStore extends Logic
 			if at == nil then at = 0 end
 			if cycle == nil then cycle = -1 end
 			if bought == nil then bought = 0 end
-			table.insert(nextRows, { goodId, pressure, at, cycle, bought })
+			table.insert(validationRows, { goodId, pressure, at, cycle, bought })
 		end
-		table.sort(nextRows, function(left, right) return left[1] < right[1] end)
+		table.sort(validationRows, function(left, right) return left[1] < right[1] end)
+		local goodsCatalog = _GreatVoyageCommodityCatalog:GetAll()
+		if self:ValidateMarketEntries(validationRows, portId, goodsCatalog) == false then return false end
+		local nextRows = {}
+		for _, row in ipairs(validationRows) do
+			local goodId = row[1]
+			local good = _GreatVoyageVoyageData:GetGoodById(goodId)
+			if good == nil then return false end
+			local policy = _GreatVoyageMarketPricing:GetPolicy(good)
+			if policy == nil or not self:IsFiniteNumber(policy.recoverySeconds) or policy.recoverySeconds <= 0 then return false end
+			local pressure = row[2]
+			local at = row[3]
+			local elapsed = math.max(0, now - at)
+			pressure = math.max(0, pressure - elapsed / policy.recoverySeconds)
+			local cycle = row[4]
+			local bought = row[5]
+			local currentBought = good.isBoss == true and cycle == currentCycle and bought > 0
+			if pressure > 0 or currentBought then
+				if currentBought then
+					cycle = currentCycle
+				else
+					cycle = -1
+					bought = 0
+				end
+				local normalizedAt = math.max(now, at)
+				table.insert(nextRows, { goodId, pressure, normalizedAt, cycle, bought })
+			end
+		end
 		local current = account.profile.markets[portId]
 		local oldSignature = self:EncodeMarketRows(current)
 		local nextSignature = self:EncodeMarketRows(nextRows)
@@ -618,7 +701,8 @@ script GreatVoyageProfileStore extends Logic
 		for _, openPort in ipairs(self.openPorts) do nextMarkets[openPort] = account.profile.markets[openPort] end
 		nextMarkets[portId] = nextRows
 		local nextProfile = { schemaVersion = account.profile.schemaVersion, revision = account.profile.revision + 1, safePortId = account.profile.safePortId, core = account.profile.core, markets = nextMarkets }
-		if self:ValidateProfile(nextProfile, _GreatVoyageVoyageData:GetShipCatalog(), _GreatVoyageVoyageData:GetShipUpgradeCards(), _GreatVoyageCommodityCatalog:GetAll()) == false then return false end
+		if self:ValidateProfile(nextProfile, _GreatVoyageVoyageData:GetShipCatalog(), _GreatVoyageVoyageData:GetShipUpgradeCards(), goodsCatalog) == false then return false end
+		if self:EncodeProfile(nextProfile) == nil then return false end
 		account.profile = nextProfile
 		self:TouchDirty(account)
 		return true
@@ -684,7 +768,7 @@ script GreatVoyageProfileStore extends Logic
 
 	@ExecSpace("ServerOnly")
 	method any EncodeProfile(any profile)
-		-- Serialize schema objects and the four canonical market arrays without ambiguous empty tables.
+		-- Serialize schema objects and every canonical market array without ambiguous empty tables.
 		if type(profile) ~= "table" or type(profile.markets) ~= "table" then return nil end
 		local header = { schemaVersion = profile.schemaVersion, revision = profile.revision, safePortId = profile.safePortId }
 		local headerOk, headerRaw = pcall(function() return _HttpService:JSONEncode(header) end)

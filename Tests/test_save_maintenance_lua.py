@@ -30,6 +30,8 @@ def make_runtime(reads=None):
         "IsSameBoundProfile",
         "SetPlayerLoadStatus",
         "SetLoadFailure",
+        "IsLegacyPort",
+        "RefreshOpenPorts",
         "LoadForPlayer",
     )
     for name in methods:
@@ -47,6 +49,8 @@ def make_runtime(reads=None):
         "maxPayloadBytes": 50000,
     }.items():
         setattr(store, name, value)
+    store.legacyOpenPorts = lua.table_from(["forest", "sky", "ludus", "nihal"])
+    store.portIds = lua.table_from(["forest", "sky", "ludus", "nihal"])
     store.accounts = lua.table()
     store.profileByUser = lua.table()
     store.loadStatusByUser = lua.table()
@@ -57,7 +61,7 @@ def make_runtime(reads=None):
     lua.globals()._HttpService = lua.eval("{JSONEncode=function(self, value) return 'payload' end}")
     lua.globals()._GreatVoyageSaveMaintenance = lua.table_from({"enabled": False})
     lua.globals()._GreatVoyageVoyageData = lua.eval(
-        "{GetShipCatalog=function() return {} end, GetShipUpgradeCards=function() return {} end}"
+        "{GetShipCatalog=function() return {} end, GetShipUpgradeCards=function() return {} end, GetPortIds=function() return Store.portIds end}"
     )
     lua.globals()._GreatVoyageCommodityCatalog = lua.eval("{GetAll=function() return {} end}")
 
@@ -112,6 +116,17 @@ def make_runtime(reads=None):
 
 
 class DirectFirstCreateLuaTests(unittest.TestCase):
+    def test_refresh_open_ports_uses_canonical_list_and_preserves_fallback_on_invalid_list(self):
+        lua, store, _, _, _ = make_runtime()
+        store.portIds = lua.table_from(["forest", "sky", "ludus", "nihal", "harbor"])
+
+        store.RefreshOpenPorts(store)
+
+        self.assertEqual([store.openPorts[i] for i in range(1, 6)], ["forest", "sky", "ludus", "nihal", "harbor"])
+        store.portIds = lua.table_from(["forest", "sky", "harbor"])
+        store.RefreshOpenPorts(store)
+        self.assertEqual([store.openPorts[i] for i in range(1, 6)], ["forest", "sky", "ludus", "nihal", "harbor"])
+
     def test_confirmed_missing_creates_once_directly(self):
         for first_read in ((0, None), (1000002, None)):
             with self.subTest(first_read=first_read):

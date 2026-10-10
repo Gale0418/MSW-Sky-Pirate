@@ -1,0 +1,4868 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "map://map_rien_port",
+  "ContentType": "x-mod/map",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.10.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Binary",
+    "Entities": [
+      {
+        "id": "5f73dc71-a17a-4454-9a2b-70ea2504aebc",
+        "path": "/maps/map_rien_port",
+        "componentNames": "MOD.Core.MapComponent,MOD.Core.FootholdComponent,MOD.Core.SoundComponent",
+        "jsonString": {
+          "name": "map_rien_port",
+          "path": "/maps/map_rien_port",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 0,
+          "pathConstraints": "//",
+          "revision": 0,
+          "modelId": null,
+          "@components": [
+            {
+              "@type": "MOD.Core.MapComponent",
+              "AirAccelerationXFactor": 1,
+              "AirDecelerationXFactor": 1,
+              "FallSpeedMaxXFactor": 1,
+              "FallSpeedMaxYFactor": 1,
+              "Gravity": 1,
+              "IsInstanceMap": false,
+              "TileMapMode": 0,
+              "WalkAccelerationFactor": 1,
+              "WalkDrag": 1,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.FootholdComponent",
+              "FootholdsByLayer": {
+                "1": [
+                  {
+                    "Length": 1.29000092,
+                    "NextFootholdId": 2,
+                    "PreviousFootholdId": 20,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 1,
+                    "StartPoint": {
+                      "x": 18.51,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 19.8000011,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 3,
+                    "PreviousFootholdId": 1,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 2,
+                    "StartPoint": {
+                      "x": 19.8,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 20.7,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 4,
+                    "PreviousFootholdId": 2,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 3,
+                    "StartPoint": {
+                      "x": 20.6999989,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 21.6,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 5,
+                    "PreviousFootholdId": 3,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 4,
+                    "StartPoint": {
+                      "x": 21.5999985,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 22.5,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 6,
+                    "PreviousFootholdId": 4,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 5,
+                    "StartPoint": {
+                      "x": 22.4999981,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 23.4,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 7,
+                    "PreviousFootholdId": 5,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 6,
+                    "StartPoint": {
+                      "x": 23.4,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 24.3000011,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 8,
+                    "PreviousFootholdId": 6,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 7,
+                    "StartPoint": {
+                      "x": 24.3,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 25.2,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 9,
+                    "PreviousFootholdId": 7,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 8,
+                    "StartPoint": {
+                      "x": 25.1999989,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 26.1,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 10,
+                    "PreviousFootholdId": 8,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 9,
+                    "StartPoint": {
+                      "x": 26.0999985,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 27,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 11,
+                    "PreviousFootholdId": 9,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 10,
+                    "StartPoint": {
+                      "x": 26.9999981,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 27.9,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 12,
+                    "PreviousFootholdId": 10,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 11,
+                    "StartPoint": {
+                      "x": 27.9,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 28.8000011,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 13,
+                    "PreviousFootholdId": 11,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 12,
+                    "StartPoint": {
+                      "x": 28.8,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 29.7,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 14,
+                    "PreviousFootholdId": 12,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 13,
+                    "StartPoint": {
+                      "x": 29.6999989,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 30.6,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 15,
+                    "PreviousFootholdId": 13,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 14,
+                    "StartPoint": {
+                      "x": 30.5999985,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 31.5,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.8999996,
+                    "NextFootholdId": 16,
+                    "PreviousFootholdId": 14,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 15,
+                    "StartPoint": {
+                      "x": 31.4999981,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 32.3999977,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 17,
+                    "PreviousFootholdId": 15,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 16,
+                    "StartPoint": {
+                      "x": 32.3999977,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 33.3,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 18,
+                    "PreviousFootholdId": 16,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 17,
+                    "StartPoint": {
+                      "x": 33.2999954,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 34.1999969,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.9000015,
+                    "NextFootholdId": 19,
+                    "PreviousFootholdId": 17,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 18,
+                    "StartPoint": {
+                      "x": 34.1999969,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 35.1,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 1.2899971,
+                    "NextFootholdId": 21,
+                    "PreviousFootholdId": 18,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 19,
+                    "StartPoint": {
+                      "x": 35.1,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 36.3899956,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.25,
+                    "NextFootholdId": 1,
+                    "PreviousFootholdId": 0,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 20,
+                    "StartPoint": {
+                      "x": 18.51,
+                      "y": -3
+                    },
+                    "EndPoint": {
+                      "x": 18.51,
+                      "y": -2.75
+                    },
+                    "Variance": {
+                      "x": 0,
+                      "y": 1
+                    }
+                  },
+                  {
+                    "Length": 0.25,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 19,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+                    "Id": 21,
+                    "StartPoint": {
+                      "x": 36.3899956,
+                      "y": -2.75
+                    },
+                    "EndPoint": {
+                      "x": 36.3899956,
+                      "y": -3
+                    },
+                    "Variance": {
+                      "x": 0,
+                      "y": -1
+                    }
+                  },
+                  {
+                    "Length": 0.22360611,
+                    "NextFootholdId": 52,
+                    "PreviousFootholdId": 0,
+                    "groupID": 2,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "3c96979c-a773-4457-bcd9-e39d6319e12c",
+                    "Id": 51,
+                    "StartPoint": {
+                      "x": 17.86,
+                      "y": -0.89
+                    },
+                    "EndPoint": {
+                      "x": 17.96,
+                      "y": -0.69
+                    },
+                    "Variance": {
+                      "x": 0.447208136,
+                      "y": 0.894429862
+                    }
+                  },
+                  {
+                    "Length": 1.62049508,
+                    "NextFootholdId": 53,
+                    "PreviousFootholdId": 51,
+                    "groupID": 2,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "3c96979c-a773-4457-bcd9-e39d6319e12c",
+                    "Id": 52,
+                    "StartPoint": {
+                      "x": 17.96,
+                      "y": -0.69
+                    },
+                    "EndPoint": {
+                      "x": 19.44,
+                      "y": -0.03
+                    },
+                    "Variance": {
+                      "x": 0.913302,
+                      "y": 0.407282948
+                    }
+                  },
+                  {
+                    "Length": 3.05999947,
+                    "NextFootholdId": 56,
+                    "PreviousFootholdId": 52,
+                    "groupID": 2,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "3c96979c-a773-4457-bcd9-e39d6319e12c",
+                    "Id": 53,
+                    "StartPoint": {
+                      "x": 19.44,
+                      "y": -0.03
+                    },
+                    "EndPoint": {
+                      "x": 22.5,
+                      "y": -0.03
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 2.93000031,
+                    "NextFootholdId": 55,
+                    "PreviousFootholdId": 0,
+                    "groupID": 3,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "3c96979c-a773-4457-bcd9-e39d6319e12c",
+                    "Id": 54,
+                    "StartPoint": {
+                      "x": 16.33,
+                      "y": -0.88
+                    },
+                    "EndPoint": {
+                      "x": 19.26,
+                      "y": -0.88
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 2.23,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 54,
+                    "groupID": 3,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "3c96979c-a773-4457-bcd9-e39d6319e12c",
+                    "Id": 55,
+                    "StartPoint": {
+                      "x": 19.26,
+                      "y": -0.88
+                    },
+                    "EndPoint": {
+                      "x": 19.26,
+                      "y": -3.11
+                    },
+                    "Variance": {
+                      "x": 0,
+                      "y": -1
+                    }
+                  },
+                  {
+                    "Length": 2.62000084,
+                    "NextFootholdId": 57,
+                    "PreviousFootholdId": 53,
+                    "groupID": 2,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "3c754c16-ab13-47e0-aaef-8cf746a7b23a",
+                    "Id": 56,
+                    "StartPoint": {
+                      "x": 22.48,
+                      "y": -0.03
+                    },
+                    "EndPoint": {
+                      "x": 25.1,
+                      "y": -0.03
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 2.62000084,
+                    "NextFootholdId": 58,
+                    "PreviousFootholdId": 56,
+                    "groupID": 2,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "48434bff-a5a1-4a77-bb6b-d232671f0bf0",
+                    "Id": 57,
+                    "StartPoint": {
+                      "x": 25.07,
+                      "y": -0.03
+                    },
+                    "EndPoint": {
+                      "x": 27.69,
+                      "y": -0.03
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 2,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 57,
+                    "groupID": 2,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer5",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "db47f44d-1e97-4d22-a394-4749c270a422",
+                    "Id": 58,
+                    "StartPoint": {
+                      "x": 27.65,
+                      "y": -0.03
+                    },
+                    "EndPoint": {
+                      "x": 29.65,
+                      "y": -0.03
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  }
+                ],
+                "2": [
+                  {
+                    "Length": 1.7300303,
+                    "NextFootholdId": 23,
+                    "PreviousFootholdId": 0,
+                    "groupID": 4,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "f5f46a45-0128-412a-b620-f8218772b0c0",
+                    "Id": 22,
+                    "StartPoint": {
+                      "x": 21.3,
+                      "y": 2.58
+                    },
+                    "EndPoint": {
+                      "x": 23.03,
+                      "y": 2.57
+                    },
+                    "Variance": {
+                      "x": 0.9999833,
+                      "y": -0.00578024
+                    }
+                  },
+                  {
+                    "Length": 0.77006346,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 22,
+                    "groupID": 4,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "f5f46a45-0128-412a-b620-f8218772b0c0",
+                    "Id": 23,
+                    "StartPoint": {
+                      "x": 23.03,
+                      "y": 2.57
+                    },
+                    "EndPoint": {
+                      "x": 23.8,
+                      "y": 2.56
+                    },
+                    "Variance": {
+                      "x": 0.9999157,
+                      "y": -0.0129859308
+                    }
+                  },
+                  {
+                    "Length": 0.551451862,
+                    "NextFootholdId": 25,
+                    "PreviousFootholdId": 0,
+                    "groupID": 5,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "f5f46a45-0128-412a-b620-f8218772b0c0",
+                    "Id": 24,
+                    "StartPoint": {
+                      "x": 20.69,
+                      "y": 1.6
+                    },
+                    "EndPoint": {
+                      "x": 21.24,
+                      "y": 1.64
+                    },
+                    "Variance": {
+                      "x": 0.997365832,
+                      "y": 0.07253573
+                    }
+                  },
+                  {
+                    "Length": 0.790254056,
+                    "NextFootholdId": 26,
+                    "PreviousFootholdId": 24,
+                    "groupID": 5,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "f5f46a45-0128-412a-b620-f8218772b0c0",
+                    "Id": 25,
+                    "StartPoint": {
+                      "x": 21.24,
+                      "y": 1.64
+                    },
+                    "EndPoint": {
+                      "x": 22.03,
+                      "y": 1.62
+                    },
+                    "Variance": {
+                      "x": 0.9996797,
+                      "y": -0.0253082924
+                    }
+                  },
+                  {
+                    "Length": 0.700284541,
+                    "NextFootholdId": 27,
+                    "PreviousFootholdId": 25,
+                    "groupID": 5,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "f5f46a45-0128-412a-b620-f8218772b0c0",
+                    "Id": 26,
+                    "StartPoint": {
+                      "x": 22.03,
+                      "y": 1.62
+                    },
+                    "EndPoint": {
+                      "x": 22.73,
+                      "y": 1.6
+                    },
+                    "Variance": {
+                      "x": 0.999592066,
+                      "y": -0.0285597928
+                    }
+                  },
+                  {
+                    "Length": 0.420000076,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 26,
+                    "groupID": 5,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "f5f46a45-0128-412a-b620-f8218772b0c0",
+                    "Id": 27,
+                    "StartPoint": {
+                      "x": 22.73,
+                      "y": 1.6
+                    },
+                    "EndPoint": {
+                      "x": 23.15,
+                      "y": 1.6
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.11000061,
+                    "NextFootholdId": 29,
+                    "PreviousFootholdId": 0,
+                    "groupID": 6,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "f5f46a45-0128-412a-b620-f8218772b0c0",
+                    "Id": 28,
+                    "StartPoint": {
+                      "x": 20.72,
+                      "y": 0.56
+                    },
+                    "EndPoint": {
+                      "x": 20.83,
+                      "y": 0.56
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 2.34053421,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 28,
+                    "groupID": 6,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "f5f46a45-0128-412a-b620-f8218772b0c0",
+                    "Id": 29,
+                    "StartPoint": {
+                      "x": 20.83,
+                      "y": 0.56
+                    },
+                    "EndPoint": {
+                      "x": 23.17,
+                      "y": 0.51
+                    },
+                    "Variance": {
+                      "x": 0.999771833,
+                      "y": -0.02136265
+                    }
+                  },
+                  {
+                    "Length": 0.521534741,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 0,
+                    "groupID": 7,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 30,
+                    "StartPoint": {
+                      "x": 26.86,
+                      "y": 0.06
+                    },
+                    "EndPoint": {
+                      "x": 27.38,
+                      "y": 0.02
+                    },
+                    "Variance": {
+                      "x": 0.997054458,
+                      "y": -0.07669671
+                    }
+                  },
+                  {
+                    "Length": 0.521536648,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 0,
+                    "groupID": 8,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 31,
+                    "StartPoint": {
+                      "x": 27,
+                      "y": 0.42
+                    },
+                    "EndPoint": {
+                      "x": 27.52,
+                      "y": 0.38
+                    },
+                    "Variance": {
+                      "x": 0.9970545,
+                      "y": -0.07669642
+                    }
+                  },
+                  {
+                    "Length": 0.520000458,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 0,
+                    "groupID": 9,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 32,
+                    "StartPoint": {
+                      "x": 27.17,
+                      "y": 0.72
+                    },
+                    "EndPoint": {
+                      "x": 27.69,
+                      "y": 0.72
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.520383,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 0,
+                    "groupID": 10,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 33,
+                    "StartPoint": {
+                      "x": 27.29,
+                      "y": 0.99
+                    },
+                    "EndPoint": {
+                      "x": 27.81,
+                      "y": 1.01
+                    },
+                    "Variance": {
+                      "x": 0.9992612,
+                      "y": 0.0384331942
+                    }
+                  },
+                  {
+                    "Length": 0.521536648,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 0,
+                    "groupID": 11,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 34,
+                    "StartPoint": {
+                      "x": 27.42,
+                      "y": 1.22
+                    },
+                    "EndPoint": {
+                      "x": 27.94,
+                      "y": 1.26
+                    },
+                    "Variance": {
+                      "x": 0.9970545,
+                      "y": 0.07669636
+                    }
+                  },
+                  {
+                    "Length": 0.5707886,
+                    "NextFootholdId": 36,
+                    "PreviousFootholdId": 0,
+                    "groupID": 12,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 35,
+                    "StartPoint": {
+                      "x": 26.87,
+                      "y": 1.33
+                    },
+                    "EndPoint": {
+                      "x": 27.44,
+                      "y": 1.36
+                    },
+                    "Variance": {
+                      "x": 0.9986178,
+                      "y": 0.05255881
+                    }
+                  },
+                  {
+                    "Length": 0.340000153,
+                    "NextFootholdId": 37,
+                    "PreviousFootholdId": 35,
+                    "groupID": 12,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 36,
+                    "StartPoint": {
+                      "x": 27.44,
+                      "y": 1.36
+                    },
+                    "EndPoint": {
+                      "x": 27.78,
+                      "y": 1.36
+                    },
+                    "Variance": {
+                      "x": 1,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "Length": 0.12529847,
+                    "NextFootholdId": 38,
+                    "PreviousFootholdId": 36,
+                    "groupID": 12,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 37,
+                    "StartPoint": {
+                      "x": 27.78,
+                      "y": 1.36
+                    },
+                    "EndPoint": {
+                      "x": 27.89,
+                      "y": 1.42
+                    },
+                    "Variance": {
+                      "x": 0.877893448,
+                      "y": 0.478856146
+                    }
+                  },
+                  {
+                    "Length": 0.121656075,
+                    "NextFootholdId": 39,
+                    "PreviousFootholdId": 37,
+                    "groupID": 12,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 38,
+                    "StartPoint": {
+                      "x": 27.89,
+                      "y": 1.42
+                    },
+                    "EndPoint": {
+                      "x": 28.01,
+                      "y": 1.4
+                    },
+                    "Variance": {
+                      "x": 0.9863941,
+                      "y": -0.164397717
+                    }
+                  },
+                  {
+                    "Length": 0.08602297,
+                    "NextFootholdId": 40,
+                    "PreviousFootholdId": 38,
+                    "groupID": 12,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 39,
+                    "StartPoint": {
+                      "x": 28.01,
+                      "y": 1.4
+                    },
+                    "EndPoint": {
+                      "x": 28.08,
+                      "y": 1.35
+                    },
+                    "Variance": {
+                      "x": 0.813732564,
+                      "y": -0.5812395
+                    }
+                  },
+                  {
+                    "Length": 0.101980761,
+                    "NextFootholdId": 41,
+                    "PreviousFootholdId": 39,
+                    "groupID": 12,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 40,
+                    "StartPoint": {
+                      "x": 28.08,
+                      "y": 1.35
+                    },
+                    "EndPoint": {
+                      "x": 28.18,
+                      "y": 1.33
+                    },
+                    "Variance": {
+                      "x": 0.980580866,
+                      "y": -0.19611524
+                    }
+                  },
+                  {
+                    "Length": 0.8836281,
+                    "NextFootholdId": 42,
+                    "PreviousFootholdId": 40,
+                    "groupID": 12,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 41,
+                    "StartPoint": {
+                      "x": 28.18,
+                      "y": 1.33
+                    },
+                    "EndPoint": {
+                      "x": 29.06,
+                      "y": 1.25
+                    },
+                    "Variance": {
+                      "x": 0.9958932,
+                      "y": -0.09053588
+                    }
+                  },
+                  {
+                    "Length": 0.09219559,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 41,
+                    "groupID": 12,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 42,
+                    "StartPoint": {
+                      "x": 29.06,
+                      "y": 1.25
+                    },
+                    "EndPoint": {
+                      "x": 29.15,
+                      "y": 1.23
+                    },
+                    "Variance": {
+                      "x": 0.97618717,
+                      "y": -0.2169299
+                    }
+                  },
+                  {
+                    "Length": 1.04561055,
+                    "NextFootholdId": 44,
+                    "PreviousFootholdId": 0,
+                    "groupID": 13,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 43,
+                    "StartPoint": {
+                      "x": 27.14,
+                      "y": 2.84
+                    },
+                    "EndPoint": {
+                      "x": 28.17,
+                      "y": 3.02
+                    },
+                    "Variance": {
+                      "x": 0.985071063,
+                      "y": 0.172148287
+                    }
+                  },
+                  {
+                    "Length": 0.879318058,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 43,
+                    "groupID": 13,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 44,
+                    "StartPoint": {
+                      "x": 28.17,
+                      "y": 3.02
+                    },
+                    "EndPoint": {
+                      "x": 29.01,
+                      "y": 2.76
+                    },
+                    "Variance": {
+                      "x": 0.9552859,
+                      "y": -0.295683682
+                    }
+                  },
+                  {
+                    "Length": 0.4024927,
+                    "NextFootholdId": 46,
+                    "PreviousFootholdId": 0,
+                    "groupID": 14,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 45,
+                    "StartPoint": {
+                      "x": 26.76,
+                      "y": 4.09
+                    },
+                    "EndPoint": {
+                      "x": 27.12,
+                      "y": 4.27
+                    },
+                    "Variance": {
+                      "x": 0.894427657,
+                      "y": 0.447212636
+                    }
+                  },
+                  {
+                    "Length": 0.502891243,
+                    "NextFootholdId": 47,
+                    "PreviousFootholdId": 45,
+                    "groupID": 14,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 46,
+                    "StartPoint": {
+                      "x": 27.12,
+                      "y": 4.27
+                    },
+                    "EndPoint": {
+                      "x": 27.6,
+                      "y": 4.42
+                    },
+                    "Variance": {
+                      "x": 0.9544798,
+                      "y": 0.2982754
+                    }
+                  },
+                  {
+                    "Length": 0.5346014,
+                    "NextFootholdId": 48,
+                    "PreviousFootholdId": 46,
+                    "groupID": 14,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 47,
+                    "StartPoint": {
+                      "x": 27.6,
+                      "y": 4.42
+                    },
+                    "EndPoint": {
+                      "x": 28.13,
+                      "y": 4.49
+                    },
+                    "Variance": {
+                      "x": 0.9913906,
+                      "y": 0.130938113
+                    }
+                  },
+                  {
+                    "Length": 0.488365978,
+                    "NextFootholdId": 49,
+                    "PreviousFootholdId": 47,
+                    "groupID": 14,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 48,
+                    "StartPoint": {
+                      "x": 28.13,
+                      "y": 4.49
+                    },
+                    "EndPoint": {
+                      "x": 28.61,
+                      "y": 4.4
+                    },
+                    "Variance": {
+                      "x": 0.9828724,
+                      "y": -0.184287354
+                    }
+                  },
+                  {
+                    "Length": 0.499799341,
+                    "NextFootholdId": 50,
+                    "PreviousFootholdId": 48,
+                    "groupID": 14,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 49,
+                    "StartPoint": {
+                      "x": 28.61,
+                      "y": 4.4
+                    },
+                    "EndPoint": {
+                      "x": 29.08,
+                      "y": 4.23
+                    },
+                    "Variance": {
+                      "x": 0.940376043,
+                      "y": -0.340136647
+                    }
+                  },
+                  {
+                    "Length": 0.352278948,
+                    "NextFootholdId": 0,
+                    "PreviousFootholdId": 49,
+                    "groupID": 14,
+                    "layer": 2,
+                    "sortingLayerName": "MapLayer3",
+                    "attribute": {
+                      "walk": 1,
+                      "force": 0,
+                      "drag": 1,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": true,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+                    "Id": 50,
+                    "StartPoint": {
+                      "x": 29.08,
+                      "y": 4.23
+                    },
+                    "EndPoint": {
+                      "x": 29.37,
+                      "y": 4.03
+                    },
+                    "Variance": {
+                      "x": 0.8232139,
+                      "y": -0.5677314
+                    }
+                  }
+                ]
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SoundComponent",
+              "AudioClipRUID": "3dd2569b18b546568d356412c3bab8b5",
+              "Bgm": true,
+              "PlayOnEnable": true,
+              "Volume": 1,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "0c6bd705-cfd0-4cfd-a760-4a916ed6d5c0",
+        "path": "/maps/map_rien_port/Background",
+        "componentNames": "MOD.Core.BackgroundComponent",
+        "jsonString": {
+          "name": "Background",
+          "path": "/maps/map_rien_port/Background",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 0,
+          "pathConstraints": "///",
+          "revision": 0,
+          "modelId": null,
+          "@components": [
+            {
+              "@type": "MOD.Core.BackgroundComponent",
+              "SolidColor": {
+                "r": 0.5019608,
+                "g": 0.5019608,
+                "b": 0.5019608,
+                "a": 0.7058824
+              },
+              "TemplateRUID": "8a236b4a670947d5934b5c497acfdc20",
+              "Type": 1,
+              "WebUrl": "",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "b97c77a1-21b2-4fe2-abde-3ae26b478ca9",
+        "path": "/maps/map_rien_port/MapleMapLayer",
+        "componentNames": "MOD.Core.MapLayerComponent",
+        "jsonString": {
+          "name": "MapleMapLayer",
+          "path": "/maps/map_rien_port/MapleMapLayer",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 1,
+          "pathConstraints": "///",
+          "revision": 0,
+          "origin": {
+            "type": "Model",
+            "entry_id": "maplemaplayer",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "maplemaplayer",
+          "@components": [
+            {
+              "@type": "MOD.Core.MapLayerComponent",
+              "IsVisible": true,
+              "LayerSortOrder": 0,
+              "Locked": false,
+              "MapLayerName": "Layer1",
+              "Thumbnail": "",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "49ade376-0e5f-4a1b-9189-a738fa5107bf",
+        "path": "/maps/map_rien_port/TileMap",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.TileMapComponent",
+        "jsonString": {
+          "name": "TileMap",
+          "path": "/maps/map_rien_port/TileMap",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 2,
+          "pathConstraints": "///",
+          "revision": 0,
+          "origin": {
+            "type": "Model",
+            "entry_id": "tilemap",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "tilemap",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "Position": {
+                "x": -0.225,
+                "y": -0.15,
+                "z": 1000
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "ZRotation": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TileMapComponent",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "FootholdDrag": 1,
+              "FootholdForce": 0,
+              "FootholdWalkSpeedFactor": 1,
+              "IgnoreMapLayerCheck": false,
+              "IsOddGridPosition": false,
+              "OrderInLayer": 1,
+              "SortingLayer": "MapLayer0",
+              "TileMapVersion": 1,
+              "TileSetRUID": {
+                "DataId": "9dfea3808bbd49a5877d8624df21b1c7"
+              },
+              "Tiles": [],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "cd61b96c-1d7b-4a1f-90b7-8a3481ade31c",
+        "path": "/maps/map_rien_port/MapleMapLayer_1",
+        "componentNames": "MOD.Core.MapLayerComponent",
+        "jsonString": {
+          "name": "MapleMapLayer_1",
+          "path": "/maps/map_rien_port/MapleMapLayer_1",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 3,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "maplemaplayer",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "maplemaplayer",
+          "@components": [
+            {
+              "@type": "MOD.Core.MapLayerComponent",
+              "IsVisible": true,
+              "LayerSortOrder": 1,
+              "Locked": false,
+              "MapLayerName": "Layer2",
+              "Thumbnail": "",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "a7e1d5dc-001e-4c71-a9b3-61ab75a226f4",
+        "path": "/maps/map_rien_port/TileMap_1",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.TileMapComponent",
+        "jsonString": {
+          "name": "TileMap_1",
+          "path": "/maps/map_rien_port/TileMap_1",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 4,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "tilemap",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "tilemap",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 0.225,
+                "y": 0.15,
+                "z": 1000
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TileMapComponent",
+              "IsOddGridPosition": true,
+              "SortingLayer": "MapLayer1",
+              "TileMapVersion": 1,
+              "TileSetRUID": {
+                "DataId": "9dfea3808bbd49a5877d8624df21b1c7"
+              },
+              "Tiles": [],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "aa6597d3-b97d-43d4-aeac-c5c032e0868f",
+        "path": "/maps/map_rien_port/MapleMapLayer_2",
+        "componentNames": "MOD.Core.MapLayerComponent",
+        "jsonString": {
+          "name": "MapleMapLayer_2",
+          "path": "/maps/map_rien_port/MapleMapLayer_2",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 5,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "maplemaplayer",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "maplemaplayer",
+          "@components": [
+            {
+              "@type": "MOD.Core.MapLayerComponent",
+              "IsVisible": true,
+              "LayerSortOrder": 2,
+              "Locked": false,
+              "MapLayerName": "Layer3",
+              "Thumbnail": "",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "1990bbcf-cbbd-425e-912d-de48dc56e299",
+        "path": "/maps/map_rien_port/TileMap_2",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.TileMapComponent",
+        "jsonString": {
+          "name": "TileMap_2",
+          "path": "/maps/map_rien_port/TileMap_2",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 6,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "tilemap",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "tilemap",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": -0.225,
+                "y": -0.15,
+                "z": 1000
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TileMapComponent",
+              "IsOddGridPosition": false,
+              "SortingLayer": "MapLayer2",
+              "TileMapVersion": 1,
+              "TileSetRUID": {
+                "DataId": "9dfea3808bbd49a5877d8624df21b1c7"
+              },
+              "Tiles": [],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "6d132941-328c-4a1d-9733-61a8d09e0d27",
+        "path": "/maps/map_rien_port/MapleMapLayer_3",
+        "componentNames": "MOD.Core.MapLayerComponent",
+        "jsonString": {
+          "name": "MapleMapLayer_3",
+          "path": "/maps/map_rien_port/MapleMapLayer_3",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 7,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "maplemaplayer",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "maplemaplayer",
+          "@components": [
+            {
+              "@type": "MOD.Core.MapLayerComponent",
+              "IsVisible": true,
+              "LayerSortOrder": 3,
+              "Locked": false,
+              "MapLayerName": "Layer4",
+              "Thumbnail": "",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "0d80f6e5-26be-4fc4-a6ef-24a90922991e",
+        "path": "/maps/map_rien_port/TileMap_3",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.TileMapComponent",
+        "jsonString": {
+          "name": "TileMap_3",
+          "path": "/maps/map_rien_port/TileMap_3",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 8,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "tilemap",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "tilemap",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 0.225,
+                "y": 0.15,
+                "z": 1000
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TileMapComponent",
+              "IsOddGridPosition": true,
+              "SortingLayer": "MapLayer3",
+              "TileMapVersion": 1,
+              "TileSetRUID": {
+                "DataId": "9dfea3808bbd49a5877d8624df21b1c7"
+              },
+              "Tiles": [],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "4a1f81d8-dda0-4d3a-bb52-8c32461c666c",
+        "path": "/maps/map_rien_port/MapleMapLayer_4",
+        "componentNames": "MOD.Core.MapLayerComponent",
+        "jsonString": {
+          "name": "MapleMapLayer_4",
+          "path": "/maps/map_rien_port/MapleMapLayer_4",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 9,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "maplemaplayer",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "maplemaplayer",
+          "@components": [
+            {
+              "@type": "MOD.Core.MapLayerComponent",
+              "IsVisible": true,
+              "LayerSortOrder": 4,
+              "Locked": false,
+              "MapLayerName": "Layer5",
+              "Thumbnail": "",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "9582eb88-0a97-4f65-9775-dd1d78852940",
+        "path": "/maps/map_rien_port/TileMap_4",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.TileMapComponent",
+        "jsonString": {
+          "name": "TileMap_4",
+          "path": "/maps/map_rien_port/TileMap_4",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 10,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "tilemap",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "tilemap",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": -0.225,
+                "y": -0.15,
+                "z": 1000
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TileMapComponent",
+              "IsOddGridPosition": false,
+              "SortingLayer": "MapLayer4",
+              "TileMapVersion": 1,
+              "TileSetRUID": {
+                "DataId": "9dfea3808bbd49a5877d8624df21b1c7"
+              },
+              "Tiles": [],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "60d198d7-3316-4cd8-8e42-8099af83b17b",
+        "path": "/maps/map_rien_port/MapleMapLayer_5",
+        "componentNames": "MOD.Core.MapLayerComponent",
+        "jsonString": {
+          "name": "MapleMapLayer_5",
+          "path": "/maps/map_rien_port/MapleMapLayer_5",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 11,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "maplemaplayer",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "maplemaplayer",
+          "@components": [
+            {
+              "@type": "MOD.Core.MapLayerComponent",
+              "IsVisible": true,
+              "LayerSortOrder": 5,
+              "Locked": false,
+              "MapLayerName": "Layer6",
+              "Thumbnail": "",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "4f95ffb8-84f1-4907-a7cb-8d82a275d7ee",
+        "path": "/maps/map_rien_port/TileMap_5",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.TileMapComponent",
+        "jsonString": {
+          "name": "TileMap_5",
+          "path": "/maps/map_rien_port/TileMap_5",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 12,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "tilemap",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "tilemap",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 0.225,
+                "y": 0.15,
+                "z": 1000
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TileMapComponent",
+              "IsOddGridPosition": true,
+              "SortingLayer": "MapLayer5",
+              "TileMapVersion": 1,
+              "TileSetRUID": {
+                "DataId": "47e2e0af81b7430da76e668b769d3dc5"
+              },
+              "Tiles": [
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 43,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 44,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 45,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 11,
+                  "position": {
+                    "x": 41,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 42,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 47,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 48,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 49,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 50,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 51,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 46,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 52,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 53,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 54,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 55,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 56,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 57,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 58,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 59,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 60,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 61,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 62,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 63,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 64,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 65,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 66,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 67,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 68,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 69,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 70,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 71,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 72,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 73,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 74,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 75,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 76,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 77,
+                    "y": -11
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 78,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 11,
+                  "position": {
+                    "x": 79,
+                    "y": -11
+                  },
+                  "tileIndex": 0
+                }
+              ],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "bb8f5a71-5f1f-4d91-9021-98e0afe02760",
+        "path": "/maps/map_rien_port/MapleMapLayer_6",
+        "componentNames": "MOD.Core.MapLayerComponent",
+        "jsonString": {
+          "name": "MapleMapLayer_6",
+          "path": "/maps/map_rien_port/MapleMapLayer_6",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 13,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "maplemaplayer",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "maplemaplayer",
+          "@components": [
+            {
+              "@type": "MOD.Core.MapLayerComponent",
+              "IsVisible": true,
+              "LayerSortOrder": 6,
+              "Locked": false,
+              "MapLayerName": "Layer7",
+              "Thumbnail": "",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "b88074be-171a-4ff4-b697-afb6a4890ddf",
+        "path": "/maps/map_rien_port/TileMap_6",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.TileMapComponent",
+        "jsonString": {
+          "name": "TileMap_6",
+          "path": "/maps/map_rien_port/TileMap_6",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 14,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "tilemap",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "tilemap",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": -0.225,
+                "y": -0.15,
+                "z": 1000
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TileMapComponent",
+              "IsOddGridPosition": false,
+              "SortingLayer": "MapLayer6",
+              "TileMapVersion": 1,
+              "TileSetRUID": {
+                "DataId": "9dfea3808bbd49a5877d8624df21b1c7"
+              },
+              "Tiles": [],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "a58f4f05-abee-4a56-8ea0-d73ba504c4f4",
+        "path": "/maps/map_rien_port/MapleMapLayer_7",
+        "componentNames": "MOD.Core.MapLayerComponent",
+        "jsonString": {
+          "name": "MapleMapLayer_7",
+          "path": "/maps/map_rien_port/MapleMapLayer_7",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 15,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "maplemaplayer",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "maplemaplayer",
+          "@components": [
+            {
+              "@type": "MOD.Core.MapLayerComponent",
+              "IsVisible": true,
+              "LayerSortOrder": 7,
+              "Locked": false,
+              "MapLayerName": "Layer8",
+              "Thumbnail": "",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "c07aa672-b100-4da7-84e1-42fff6fb91e3",
+        "path": "/maps/map_rien_port/TileMap_7",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.TileMapComponent",
+        "jsonString": {
+          "name": "TileMap_7",
+          "path": "/maps/map_rien_port/TileMap_7",
+          "nameEditable": false,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 16,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "tilemap",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "tilemap",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 0.225,
+                "y": 0.15,
+                "z": 1000
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TileMapComponent",
+              "IsOddGridPosition": true,
+              "SortingLayer": "MapLayer7",
+              "TileMapVersion": 1,
+              "TileSetRUID": {
+                "DataId": "9dfea3808bbd49a5877d8624df21b1c7"
+              },
+              "Tiles": [],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "f57cbf9c-b63a-4406-b08d-4ad0644add28",
+        "path": "/maps/map_rien_port/MapObject",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "jsonString": {
+          "name": "MapObject",
+          "path": "/maps/map_rien_port/MapObject",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 17,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "mapobject",
+            "sub_entity_id": null,
+            "root_entity_id": "f57cbf9c-b63a-4406-b08d-4ad0644add28",
+            "replaced_model_id": null
+          },
+          "modelId": "mapobject",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 24.85,
+                "y": 1.03,
+                "z": 999.998
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer2",
+              "SpriteRUID": "743ef51f15db41bb9a5580ecb60b4428",
+              "StartFrameIndex": 0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "6288d65b-2f2c-4900-b465-70d0f1b18afb",
+        "path": "/maps/map_rien_port/MapObject_1",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "jsonString": {
+          "name": "MapObject_1",
+          "path": "/maps/map_rien_port/MapObject_1",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 18,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "mapobject",
+            "sub_entity_id": null,
+            "root_entity_id": "6288d65b-2f2c-4900-b465-70d0f1b18afb",
+            "replaced_model_id": null
+          },
+          "modelId": "mapobject",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 19.47,
+                "y": 1.06,
+                "z": 999.997
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer2",
+              "SpriteRUID": "d0412afcbd404e60bc1f10ebc6fec3b3",
+              "StartFrameIndex": 0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "d8988b4c-8c64-4b8c-a099-70ecac9f98ef",
+        "path": "/maps/map_rien_port/MapObject_2",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "jsonString": {
+          "name": "MapObject_2",
+          "path": "/maps/map_rien_port/MapObject_2",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 19,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "mapobject",
+            "sub_entity_id": null,
+            "root_entity_id": "d8988b4c-8c64-4b8c-a099-70ecac9f98ef",
+            "replaced_model_id": null
+          },
+          "modelId": "mapobject",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 17.89,
+                "y": 1.74,
+                "z": 1000
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer2",
+              "SpriteRUID": "80dff949bf50494e9079248e4e079ae5",
+              "StartFrameIndex": 0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "8172b872-c3c4-4fa9-aa9e-79887da80140",
+        "path": "/maps/map_rien_port/MapObject_3",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "jsonString": {
+          "name": "MapObject_3",
+          "path": "/maps/map_rien_port/MapObject_3",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 20,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "mapobject",
+            "sub_entity_id": null,
+            "root_entity_id": "8172b872-c3c4-4fa9-aa9e-79887da80140",
+            "replaced_model_id": null
+          },
+          "modelId": "mapobject",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 16.86,
+                "y": -0.72,
+                "z": 999.981
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer2",
+              "SpriteRUID": "6c0cfdae9cd543439256ee2bcbfa30a7",
+              "StartFrameIndex": 0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "f5f46a45-0128-412a-b620-f8218772b0c0",
+        "path": "/maps/map_rien_port/foothold-3534",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.CustomFootholdComponent",
+        "jsonString": {
+          "name": "foothold-3534",
+          "path": "/maps/map_rien_port/foothold-3534",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 21,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "Foothold",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "foothold",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "Position": {
+                "x": 22.35,
+                "y": 1.3,
+                "z": 999.996
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "ZRotation": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer3",
+              "SpriteRUID": "1ecd950ec69e493cb04472c8a605dcfe",
+              "StartFrameIndex": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.CustomFootholdComponent",
+              "edgeLists": [
+                [
+                  {
+                    "x": -1.05,
+                    "y": 1.28
+                  },
+                  {
+                    "x": 0.68,
+                    "y": 1.27
+                  },
+                  {
+                    "x": 1.45,
+                    "y": 1.26
+                  }
+                ],
+                [
+                  {
+                    "x": -1.66,
+                    "y": 0.3
+                  },
+                  {
+                    "x": -1.11,
+                    "y": 0.34
+                  },
+                  {
+                    "x": -0.32,
+                    "y": 0.32
+                  },
+                  {
+                    "x": 0.38,
+                    "y": 0.3
+                  },
+                  {
+                    "x": 0.8,
+                    "y": 0.3
+                  }
+                ],
+                [
+                  {
+                    "x": -1.63,
+                    "y": -0.74
+                  },
+                  {
+                    "x": -1.52,
+                    "y": -0.74
+                  },
+                  {
+                    "x": 0.82,
+                    "y": -0.79
+                  }
+                ]
+              ],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "79e1459a-5fdc-46cc-918e-edc6e30e3556",
+        "path": "/maps/map_rien_port/foothold-3828",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.CustomFootholdComponent",
+        "jsonString": {
+          "name": "foothold-3828",
+          "path": "/maps/map_rien_port/foothold-3828",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 22,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "Foothold",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "foothold",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "Position": {
+                "x": 28.04,
+                "y": 2.72,
+                "z": 999.995
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "ZRotation": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer3",
+              "SpriteRUID": "27cf8821677e46cf8f4d07d1d75716c8",
+              "StartFrameIndex": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.CustomFootholdComponent",
+              "edgeLists": [
+                [
+                  {
+                    "x": -1.18,
+                    "y": -2.66
+                  },
+                  {
+                    "x": -0.66,
+                    "y": -2.7
+                  }
+                ],
+                [
+                  {
+                    "x": -1.04,
+                    "y": -2.3
+                  },
+                  {
+                    "x": -0.52,
+                    "y": -2.34
+                  }
+                ],
+                [
+                  {
+                    "x": -0.87,
+                    "y": -2
+                  },
+                  {
+                    "x": -0.35,
+                    "y": -2
+                  }
+                ],
+                [
+                  {
+                    "x": -0.75,
+                    "y": -1.73
+                  },
+                  {
+                    "x": -0.23,
+                    "y": -1.71
+                  }
+                ],
+                [
+                  {
+                    "x": -0.62,
+                    "y": -1.5
+                  },
+                  {
+                    "x": -0.1,
+                    "y": -1.46
+                  }
+                ],
+                [
+                  {
+                    "x": -1.17,
+                    "y": -1.39
+                  },
+                  {
+                    "x": -0.6,
+                    "y": -1.36
+                  },
+                  {
+                    "x": -0.26,
+                    "y": -1.36
+                  },
+                  {
+                    "x": -0.15,
+                    "y": -1.3
+                  },
+                  {
+                    "x": -0.03,
+                    "y": -1.32
+                  },
+                  {
+                    "x": 0.04,
+                    "y": -1.37
+                  },
+                  {
+                    "x": 0.14,
+                    "y": -1.39
+                  },
+                  {
+                    "x": 1.02,
+                    "y": -1.47
+                  },
+                  {
+                    "x": 1.11,
+                    "y": -1.49
+                  }
+                ],
+                [
+                  {
+                    "x": -0.9,
+                    "y": 0.12
+                  },
+                  {
+                    "x": 0.13,
+                    "y": 0.3
+                  },
+                  {
+                    "x": 0.97,
+                    "y": 0.04
+                  }
+                ],
+                [
+                  {
+                    "x": -1.28,
+                    "y": 1.37
+                  },
+                  {
+                    "x": -0.92,
+                    "y": 1.55
+                  },
+                  {
+                    "x": -0.44,
+                    "y": 1.7
+                  },
+                  {
+                    "x": 0.09,
+                    "y": 1.77
+                  },
+                  {
+                    "x": 0.57,
+                    "y": 1.68
+                  },
+                  {
+                    "x": 1.04,
+                    "y": 1.51
+                  },
+                  {
+                    "x": 1.33,
+                    "y": 1.31
+                  }
+                ]
+              ],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "b8e8742f-9df8-49e6-87d7-7cd84ed6596e",
+        "path": "/maps/map_rien_port/MapObject_4",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "jsonString": {
+          "name": "MapObject_4",
+          "path": "/maps/map_rien_port/MapObject_4",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 23,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "mapobject",
+            "sub_entity_id": null,
+            "root_entity_id": "b8e8742f-9df8-49e6-87d7-7cd84ed6596e",
+            "replaced_model_id": null
+          },
+          "modelId": "mapobject",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 25.82,
+                "y": 0.52,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer3",
+              "SpriteRUID": "2ca5f61dce364416a8557ab6323839e1",
+              "StartFrameIndex": 0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "ab2a1f44-b286-42b5-b728-25cb712c5a8d",
+        "path": "/maps/map_rien_port/Ladder",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.ClimbableSpriteRendererComponent,MOD.Core.ClimbableComponent",
+        "jsonString": {
+          "name": "Ladder",
+          "path": "/maps/map_rien_port/Ladder",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 24,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "ladder",
+            "sub_entity_id": null,
+            "root_entity_id": "ab2a1f44-b286-42b5-b728-25cb712c5a8d",
+            "replaced_model_id": null
+          },
+          "modelId": "ladder",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 28.19,
+                "y": 2.55,
+                "z": 999.994
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ClimbableSpriteRendererComponent",
+              "BodySpriteFlipInfo": {
+                "x": 1,
+                "y": 1
+              },
+              "BodySpriteLocalPos": {
+                "x": 0,
+                "y": -0.01
+              },
+              "FlipX": false,
+              "NeedGizmo": true,
+              "OriginOffset": {
+                "x": 0,
+                "y": 0
+              },
+              "OriginRectSize": {
+                "x": 0.01,
+                "y": 0.01
+              },
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer3",
+              "SpriteRUID": "1b54c23c031342c19bec12ef5986f779",
+              "SpriteRUIDHead": "",
+              "SpriteRUIDTail": "",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ClimbableComponent",
+              "BoxOffset": {
+                "x": 0.005,
+                "y": -0.005
+              },
+              "BoxSize": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "ClimbableAnimationType": 1,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "3699c562-e67d-48dd-8f3c-9ab9bedfa580",
+        "path": "/maps/map_rien_port/Ladder_1",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.ClimbableSpriteRendererComponent,MOD.Core.ClimbableComponent",
+        "jsonString": {
+          "name": "Ladder_1",
+          "path": "/maps/map_rien_port/Ladder_1",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 25,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "ladder",
+            "sub_entity_id": null,
+            "root_entity_id": "3699c562-e67d-48dd-8f3c-9ab9bedfa580",
+            "replaced_model_id": null
+          },
+          "modelId": "ladder",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 28.19,
+                "y": 1.87,
+                "z": 999.993
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ClimbableSpriteRendererComponent",
+              "BodySpriteFlipInfo": {
+                "x": 1,
+                "y": 1
+              },
+              "BodySpriteLocalPos": {
+                "x": 0,
+                "y": -0.01
+              },
+              "FlipX": false,
+              "NeedGizmo": true,
+              "OriginOffset": {
+                "x": 0,
+                "y": 0
+              },
+              "OriginRectSize": {
+                "x": 0.01,
+                "y": 0.01
+              },
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer3",
+              "SpriteRUID": "1b54c23c031342c19bec12ef5986f779",
+              "SpriteRUIDHead": "",
+              "SpriteRUIDTail": "",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ClimbableComponent",
+              "BoxOffset": {
+                "x": 0.005,
+                "y": -0.005
+              },
+              "BoxSize": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "ClimbableAnimationType": 1,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "0d3c4c23-f4ea-4c9b-a9d1-3f88d84042d5",
+        "path": "/maps/map_rien_port/Ladder_2",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.ClimbableSpriteRendererComponent,MOD.Core.ClimbableComponent",
+        "jsonString": {
+          "name": "Ladder_2",
+          "path": "/maps/map_rien_port/Ladder_2",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 26,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "ladder",
+            "sub_entity_id": null,
+            "root_entity_id": "0d3c4c23-f4ea-4c9b-a9d1-3f88d84042d5",
+            "replaced_model_id": null
+          },
+          "modelId": "ladder",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 22.94,
+                "y": 1.16,
+                "z": 999.992
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ClimbableSpriteRendererComponent",
+              "BodySpriteFlipInfo": {
+                "x": 1,
+                "y": 1
+              },
+              "BodySpriteLocalPos": {
+                "x": 0,
+                "y": -0.01
+              },
+              "FlipX": false,
+              "NeedGizmo": true,
+              "OriginOffset": {
+                "x": 0,
+                "y": 0
+              },
+              "OriginRectSize": {
+                "x": 0.01,
+                "y": 0.01
+              },
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer3",
+              "SpriteRUID": "1b54c23c031342c19bec12ef5986f779",
+              "SpriteRUIDHead": "",
+              "SpriteRUIDTail": "",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ClimbableComponent",
+              "BoxOffset": {
+                "x": 0.005,
+                "y": -0.005
+              },
+              "BoxSize": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "ClimbableAnimationType": 1,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "8efaedd4-790c-41b1-85b0-3f1a0106b1dc",
+        "path": "/maps/map_rien_port/Ladder_3",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.ClimbableSpriteRendererComponent,MOD.Core.ClimbableComponent",
+        "jsonString": {
+          "name": "Ladder_3",
+          "path": "/maps/map_rien_port/Ladder_3",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 27,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "ladder",
+            "sub_entity_id": null,
+            "root_entity_id": "8efaedd4-790c-41b1-85b0-3f1a0106b1dc",
+            "replaced_model_id": null
+          },
+          "modelId": "ladder",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 20.85,
+                "y": 1.04,
+                "z": 999.991
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ClimbableSpriteRendererComponent",
+              "BodySpriteFlipInfo": {
+                "x": 1,
+                "y": 1
+              },
+              "BodySpriteLocalPos": {
+                "x": 0,
+                "y": -0.01
+              },
+              "FlipX": false,
+              "NeedGizmo": true,
+              "OriginOffset": {
+                "x": 0,
+                "y": 0
+              },
+              "OriginRectSize": {
+                "x": 0.01,
+                "y": 0.01
+              },
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer3",
+              "SpriteRUID": "1b54c23c031342c19bec12ef5986f779",
+              "SpriteRUIDHead": "",
+              "SpriteRUIDTail": "",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ClimbableComponent",
+              "BoxOffset": {
+                "x": 0.005,
+                "y": -0.005
+              },
+              "BoxSize": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "ClimbableAnimationType": 1,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "51fa8fab-609e-4926-ae6e-b8eba2e329a1",
+        "path": "/maps/map_rien_port/MapObject_5",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "jsonString": {
+          "name": "MapObject_5",
+          "path": "/maps/map_rien_port/MapObject_5",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 28,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "mapobject",
+            "sub_entity_id": null,
+            "root_entity_id": "51fa8fab-609e-4926-ae6e-b8eba2e329a1",
+            "replaced_model_id": null
+          },
+          "modelId": "mapobject",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 30.09,
+                "y": 1,
+                "z": 999.99
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer3",
+              "SpriteRUID": "4b55f218b90347cc917d1d2ca4254960",
+              "StartFrameIndex": 0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "adcf24c9-8c9d-4826-85df-8b56d38ebe22",
+        "path": "/maps/map_rien_port/MapObject_6",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "jsonString": {
+          "name": "MapObject_6",
+          "path": "/maps/map_rien_port/MapObject_6",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 29,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "mapobject",
+            "sub_entity_id": null,
+            "root_entity_id": "adcf24c9-8c9d-4826-85df-8b56d38ebe22",
+            "replaced_model_id": null
+          },
+          "modelId": "mapobject",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 30.1,
+                "y": 1.01,
+                "z": 999.989
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer3",
+              "SpriteRUID": "4b55f218b90347cc917d1d2ca4254960",
+              "StartFrameIndex": 0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "a8abfc5a-7046-4726-ba9a-c7b87419267d",
+        "path": "/maps/map_rien_port/MapObject_7",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "jsonString": {
+          "name": "MapObject_7",
+          "path": "/maps/map_rien_port/MapObject_7",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 30,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "mapobject",
+            "sub_entity_id": null,
+            "root_entity_id": "a8abfc5a-7046-4726-ba9a-c7b87419267d",
+            "replaced_model_id": null
+          },
+          "modelId": "mapobject",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 30.1,
+                "y": 1,
+                "z": 999.988
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer3",
+              "SpriteRUID": "4b55f218b90347cc917d1d2ca4254960",
+              "StartFrameIndex": 0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "3c96979c-a773-4457-bcd9-e39d6319e12c",
+        "path": "/maps/map_rien_port/foothold-2776",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.CustomFootholdComponent",
+        "jsonString": {
+          "name": "foothold-2776",
+          "path": "/maps/map_rien_port/foothold-2776",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 31,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "Foothold",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "foothold",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "Position": {
+                "x": 20.21,
+                "y": -1.78,
+                "z": 999.987
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "ZRotation": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer5",
+              "SpriteRUID": "41ae5bb86d5745b58a157656ef3fe86d",
+              "StartFrameIndex": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.CustomFootholdComponent",
+              "edgeLists": [
+                [
+                  {
+                    "x": -2.35,
+                    "y": 0.89
+                  },
+                  {
+                    "x": -2.25,
+                    "y": 1.09
+                  },
+                  {
+                    "x": -0.77,
+                    "y": 1.75
+                  },
+                  {
+                    "x": 2.29,
+                    "y": 1.75
+                  }
+                ],
+                [
+                  {
+                    "x": -3.88,
+                    "y": 0.9
+                  },
+                  {
+                    "x": -0.95,
+                    "y": 0.9
+                  },
+                  {
+                    "x": -0.95,
+                    "y": -1.33
+                  }
+                ]
+              ],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "3c754c16-ab13-47e0-aaef-8cf746a7b23a",
+        "path": "/maps/map_rien_port/foothold-3597",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.CustomFootholdComponent",
+        "jsonString": {
+          "name": "foothold-3597",
+          "path": "/maps/map_rien_port/foothold-3597",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 32,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "Foothold",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "foothold",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "Position": {
+                "x": 23.78,
+                "y": -1.78,
+                "z": 999.986
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "ZRotation": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer5",
+              "SpriteRUID": "c8c0889fd4964125ac8b3f3bb64307a0",
+              "StartFrameIndex": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.CustomFootholdComponent",
+              "edgeLists": [
+                [
+                  {
+                    "x": -1.3,
+                    "y": 1.75
+                  },
+                  {
+                    "x": 1.32,
+                    "y": 1.75
+                  }
+                ]
+              ],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "48434bff-a5a1-4a77-bb6b-d232671f0bf0",
+        "path": "/maps/map_rien_port/foothold-2635",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.CustomFootholdComponent",
+        "jsonString": {
+          "name": "foothold-2635",
+          "path": "/maps/map_rien_port/foothold-2635",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 33,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "Foothold",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "foothold",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "Position": {
+                "x": 26.37,
+                "y": -1.78,
+                "z": 999.985
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "ZRotation": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer5",
+              "SpriteRUID": "f9c8bb0a5aa34ef3a89046ded639559b",
+              "StartFrameIndex": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.CustomFootholdComponent",
+              "edgeLists": [
+                [
+                  {
+                    "x": -1.3,
+                    "y": 1.75
+                  },
+                  {
+                    "x": 1.32,
+                    "y": 1.75
+                  }
+                ]
+              ],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "db47f44d-1e97-4d22-a394-4749c270a422",
+        "path": "/maps/map_rien_port/foothold-3166",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.CustomFootholdComponent",
+        "jsonString": {
+          "name": "foothold-3166",
+          "path": "/maps/map_rien_port/foothold-3166",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 34,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "Foothold",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "foothold",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "Position": {
+                "x": 28.68,
+                "y": -1.78,
+                "z": 999.984
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "ZRotation": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer5",
+              "SpriteRUID": "ce1ce9db3e8049fc837e026342428ac9",
+              "StartFrameIndex": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.CustomFootholdComponent",
+              "edgeLists": [
+                [
+                  {
+                    "x": -1.03,
+                    "y": 1.75
+                  },
+                  {
+                    "x": 0.97,
+                    "y": 1.75
+                  }
+                ]
+              ],
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "9aa0c5a1-ba0c-4cd5-9187-149d41e95ee3",
+        "path": "/maps/map_rien_port/MapObject_8",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "jsonString": {
+          "name": "MapObject_8",
+          "path": "/maps/map_rien_port/MapObject_8",
+          "nameEditable": true,
+          "enable": false,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 35,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "mapobject",
+            "sub_entity_id": null,
+            "root_entity_id": "9aa0c5a1-ba0c-4cd5-9187-149d41e95ee3",
+            "replaced_model_id": null
+          },
+          "modelId": "mapobject",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 32.5,
+                "y": -1.24,
+                "z": 999.983
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer5",
+              "SpriteRUID": "44c9dafca8594e4c875f5d985e0cc112",
+              "StartFrameIndex": 0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "0f6a1b01-3c07-4a53-a2c8-c1045e1ca235",
+        "path": "/maps/map_rien_port/MapObject_9",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent",
+        "jsonString": {
+          "name": "MapObject_9",
+          "path": "/maps/map_rien_port/MapObject_9",
+          "nameEditable": true,
+          "enable": false,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 36,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "mapobject",
+            "sub_entity_id": null,
+            "root_entity_id": "0f6a1b01-3c07-4a53-a2c8-c1045e1ca235",
+            "replaced_model_id": null
+          },
+          "modelId": "mapobject",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 32.5,
+                "y": -1.24,
+                "z": 999.982
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer5",
+              "SpriteRUID": "1aea04c8f4c147df994088d7da50d830",
+              "StartFrameIndex": 0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "08249283-ccbf-41ef-a76d-fa44744681ca",
+        "path": "/maps/map_rien_port/SpawnLocation",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.SpawnLocationComponent",
+        "jsonString": {
+          "name": "SpawnLocation",
+          "path": "/maps/map_rien_port/SpawnLocation",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 37,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "mapobject",
+            "sub_entity_id": null,
+            "root_entity_id": "08249283-ccbf-41ef-a76d-fa44744681ca",
+            "replaced_model_id": null
+          },
+          "modelId": "mapobject",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 28.6,
+                "y": 0.32,
+                "z": 0
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 2147483647,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer7",
+              "SpriteRUID": "8ef238e0d0ca4bb783aca526cff35d11",
+              "StartFrameIndex": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpawnLocationComponent",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "f2969ebd-6a66-4ad6-b83e-1dc3110ca154",
+        "path": "/maps/map_rien_port/npc-5104",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.StateComponent,MOD.Core.ChatBalloonComponent,MOD.Core.StateAnimationComponent,MOD.Core.NameTagComponent",
+        "jsonString": {
+          "name": "npc-5104",
+          "path": "/maps/map_rien_port/npc-5104",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 39,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "StaticNPC",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "staticnpc",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "Position": {
+                "x": 29.18,
+                "y": 0.05,
+                "z": 999.978
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "ZRotation": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 0,
+              "FlipX": false,
+              "RenderSetting": 1,
+              "SortingLayer": "MapLayer7",
+              "SpriteRUID": "768e91582ef9465b9cac0b078c5fe26b",
+              "StartFrameIndex": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.RigidbodyComponent",
+              "MoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "RealMoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateComponent",
+              "IsLegacy": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ChatBalloonComponent",
+              "ChatBalloonRUID": {
+                "DataId": "7b6bd117bd0446a5bacec8ea6831c997"
+              },
+              "ChatModeEnabled": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateAnimationComponent",
+              "ActionSheet": {
+                "stand": "768e91582ef9465b9cac0b078c5fe26b",
+                "say": "166be829507a427cbc10467cff917e8a"
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.NameTagComponent",
+              "Name": "瑞恩釣魚者",
+              "NameTagRUID": {
+                "DataId": "9bf18287398c44699c20fc5123d1a1ae"
+              },
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "fb5d7831-e794-4da6-bb24-5cfea93bd5e5",
+        "path": "/maps/map_rien_port/npc-4685",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.StateComponent,MOD.Core.ChatBalloonComponent,MOD.Core.StateAnimationComponent,MOD.Core.NameTagComponent",
+        "jsonString": {
+          "name": "npc-4685",
+          "path": "/maps/map_rien_port/npc-4685",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 40,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "StaticNPC",
+            "sub_entity_id": null,
+            "root_entity_id": null,
+            "replaced_model_id": null
+          },
+          "modelId": "staticnpc",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "Position": {
+                "x": 27.66,
+                "y": 1.38,
+                "z": 999.977
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "ZRotation": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "EndFrameIndex": 0,
+              "FlipX": false,
+              "RenderSetting": 1,
+              "SortingLayer": "MapLayer7",
+              "SpriteRUID": "4a60617a995f452991d2f19d8452420c",
+              "StartFrameIndex": 0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.RigidbodyComponent",
+              "MoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "RealMoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateComponent",
+              "IsLegacy": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ChatBalloonComponent",
+              "ChatBalloonRUID": {
+                "DataId": "7b6bd117bd0446a5bacec8ea6831c997"
+              },
+              "ChatModeEnabled": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateAnimationComponent",
+              "ActionSheet": {
+                "stand": "4a60617a995f452991d2f19d8452420c",
+                "say": "a48c577b61b94a3e82e5b77fef08d12b",
+                "eye": "69c22b93a28e405497e58896a1dcb623",
+                "wind": "27e473c505b748f9913251c06c390363",
+                "penguin": "9e27b3dea15f47b3a848a9fea3451b8b"
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.NameTagComponent",
+              "Name": "瑞恩企鵝",
+              "NameTagRUID": {
+                "DataId": "9bf18287398c44699c20fc5123d1a1ae"
+              },
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "10e3dfad-e10c-4c13-97fb-dcbe2cbaf85d",
+        "path": "/maps/map_rien_port/GV_ShipBoardInteractPoint",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.InteractionComponent",
+        "jsonString": {
+          "name": "GV_ShipBoardInteractPoint",
+          "path": "/maps/map_rien_port/GV_ShipBoardInteractPoint",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 42,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "gvportboardingmarker",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 28.2,
+                "y": -0.03,
+                "z": 0
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.InteractionComponent",
+              "Enable": true,
+              "ActionName": "登上專屬飛空船",
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 1.2,
+                "y": 1.2
+              },
+              "IsLegacy": false,
+              "ShowActionInfo": true
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "gvportboardingmarker",
+            "sub_entity_id": null,
+            "root_entity_id": "10e3dfad-e10c-4c13-97fb-dcbe2cbaf85d",
+            "replaced_model_id": null
+          }
+        }
+      },
+      {
+        "id": "0d3664aa-3dcb-40d4-853b-96265d69b78f",
+        "path": "/maps/map_rien_port/GV_PlayerShip",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,script.GVShipVisualClient",
+        "jsonString": {
+          "name": "GV_PlayerShip",
+          "path": "/maps/map_rien_port/GV_PlayerShip",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 43,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "gvportshiphost",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 32.525,
+                "y": 0.77,
+                "z": 999.9
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "$type": "MOD.Core.MODVector3, MOD.Core",
+                "x": 0.4,
+                "y": 0.4,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "1705e3c5b2c146ac9a699f96fb067408",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": true,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 0,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": false,
+              "SortingLayer": "MapLayer5"
+            },
+            {
+              "@type": "script.GVShipVisualClient",
+              "Enable": true
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "gvportshiphost",
+            "sub_entity_id": null,
+            "root_entity_id": "0d3664aa-3dcb-40d4-853b-96265d69b78f",
+            "replaced_model_id": null
+          }
+        }
+      }
+    ]
+  }
+}

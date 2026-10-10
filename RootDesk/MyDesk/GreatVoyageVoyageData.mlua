@@ -110,20 +110,65 @@ script GreatVoyageVoyageData extends Logic
 		return { cargo = nextCargo, cost = cost }
 	end
 
+	method boolean IsWithinBoardingArea(string portId, Vector2 playerPosition, Vector2 boardingPosition)
+		-- 客戶端提示與伺服器啟航共用範圍；斜坡碼頭使用專屬矩形，其餘維持原半徑。
+		local port = self:GetPort(portId)
+		if port == nil or port.available ~= true then return false end
+		local dx = playerPosition.x - boardingPosition.x
+		local dy = playerPosition.y - boardingPosition.y
+		local halfSize = port.boardingHalfSize
+		if halfSize ~= nil then return math.abs(dx) <= halfSize.x and math.abs(dy) <= halfSize.y end
+		return dx * dx + dy * dy <= 1.5625
+	end
+
+	method table GetPortCatalog()
+		-- 官方港口以實際地點去重；待修地點僅供航圖辨識。
+		if self._T.portCatalog == nil then
+			self._T.portCatalog = {
+				{ id = "forest", displayName = "魔法森林", uiNode = "Forest", position = { x = 0.13, y = 0.66 }, pinOffset = { x = 0, y = 0 }, mapName = "map_forest_port", officialMapId = "104020110", available = true, spawnPosition = { x = 5.5, y = -0.25 }, merchantName = "森林商人．艾琳", sortingLayer = "MapLayer6", features = "巨木與樹屋環繞的森林城鎮。\n魔法氣息濃厚，林間處處藏著驚喜。" },
+				{ id = "sky", displayName = "天空之城", uiNode = "Sky", position = { x = 0.49, y = 0.67 }, pinOffset = { x = 0, y = 0 }, mapName = "map_orbis_port", dockCameraOffset = { x = -1.2, y = 0 }, officialMapId = "200000111", available = true, spawnPosition = { x = -3.8, y = 6.69 }, merchantName = "天空商人．露米", sortingLayer = "MapLayer6", features = "浮在雲端的石造城市。\n高塔與庭園相連，雲海航船在此往來。" },
+				{ id = "ludus", displayName = "玩具城", uiNode = "Ludus", position = { x = 0.42, y = 0.4 }, pinOffset = { x = 0, y = 0 }, mapName = "map_ludus_port", officialMapId = "220000110", available = true, spawnPosition = { x = 0, y = -0.45 }, merchantName = "玩具城商人．奈洛", sortingLayer = "MapLayer6", features = "積木與玩具組成的繽紛城鎮。\n巨大鐘塔與雙島，是醒目的航路地標。" },
+				{ id = "nihal", displayName = "納希沙漠", uiNode = "Nihal", position = { x = 0.6, y = 0.16 }, pinOffset = { x = 0, y = 0 }, mapName = "map_nihal_port", officialMapId = "260000100", available = true, spawnPosition = { x = 0.7, y = -0.45 }, merchantName = "納希商人．沙琳", sortingLayer = "MapLayer6", features = "綿延沙丘間的沙漠城鎮。\n圓頂建築、仙人掌與綠洲點綴金色大地。" },
+				{ id = "maple", displayName = "楓之島港口", uiNode = "Maple", position = { x = 0.23, y = 0.85 }, pinOffset = { x = 0, y = 0 }, mapName = "map_maple_island_port", boardingHalfSize = { x = 1.8, y = 2.0 }, dockCameraOffset = { x = 1.2, y = 1.3 }, officialMapId = "002000100", available = true, spawnPosition = { x = 17.5, y = -3.72 }, merchantName = "npc-3524", sortingLayer = "MapLayer6", features = "新手島上的小小海港。\n木造碼頭連接大海，旅程從這裡展開。" },
+				{ id = "lith", displayName = "維多利亞港", uiNode = "Lith", position = { x = 0.075, y = 0.585 }, pinOffset = { x = -50, y = 0 }, mapName = "map_lith_harbor_port", dockCameraOffset = { x = -1.2, y = 0 }, officialMapId = "104000000", available = true, spawnPosition = { x = -6.1, y = -6.72 }, merchantName = "npc-760", sortingLayer = "MapLayer6", features = "維多利亞島西南岸的海港。\n木棧橋與沿岸聚落迎接往來旅人。" },
+				{ id = "ereve", displayName = "耶雷弗", uiNode = "Ereve", position = { x = 0.29, y = 0.76 }, pinOffset = { x = 40, y = -35 }, mapName = "map_ereve_port", dockCameraOffset = { x = -2, y = 0 }, officialMapId = "130000210", available = true, spawnPosition = { x = -17.9, y = 5.65 }, merchantName = "npc-2000", sortingLayer = "MapLayer6", features = "騎士團所在的天空島嶼。\n天空渡口穿過巨樹與明亮雲海。" },
+				{ id = "rien", displayName = "瑞恩", uiNode = "Rien", position = { x = 0.06, y = 0.43 }, pinOffset = { x = 0, y = 0 }, mapName = "map_rien_port", dockCameraOffset = { x = 1.2, y = 0 }, officialMapId = "140020300", available = true, spawnPosition = { x = 28.6, y = 0.32 }, merchantName = "npc-5104", sortingLayer = "MapLayer6", features = "冰雪島嶼上的企鵝港。\n冰岸、雪地與木造棧橋相伴。" },
+				{ id = "leafre", displayName = "神木村", uiNode = "Leafre", position = { x = 0.31, y = 0.21 }, pinOffset = { x = 0, y = 0 }, mapName = "map_leafre_port", dockCameraOffset = { x = 1.2, y = 0 }, officialMapId = "240000110", available = true, spawnPosition = { x = 13, y = 4.64 }, merchantName = "npc-3659", sortingLayer = "MapLayer6", features = "米納爾森林中的神木村航站。\n巨木與蓊鬱森林圍繞著登船平台。" },
+				{ id = "edelstein", displayName = "埃德爾斯坦", uiNode = "Edelstein", position = { x = 0.84, y = 0.82 }, pinOffset = { x = 0, y = 0 }, mapName = "map_edelstein_port", dockCameraOffset = { x = -1.2, y = 0 }, officialMapId = "310000010", available = true, spawnPosition = { x = -0.7, y = 3.46 }, merchantName = "", sortingLayer = "MapLayer6", features = "工業城鎮的臨時機場。\n金屬設施與山間高地構成港邊景色。" },
+				{ id = "herbtown", displayName = "靈藥幻境", uiNode = "Herbtown", position = { x = 0.88, y = 0.27 }, pinOffset = { x = 0, y = 0 }, mapName = "map_herb_town_port", dockCameraOffset = { x = 1.2, y = 0 }, officialMapId = "251000100", available = true, spawnPosition = { x = 5.45, y = -1.26 }, merchantName = "npc-4224", sortingLayer = "MapLayer6", features = "海灘旁的木造碼頭與船泊。\n原作屬水路海港，本作可停靠飛船。" },
+				{ id = "crimson", displayName = "緋紅天空碼頭", uiNode = "Crimson", position = { x = 0.39, y = 0.23 }, pinOffset = { x = 25, y = -35 }, mapName = "map_crimson_sky_dock", dockCameraOffset = { x = -1.2, y = 0 }, officialMapId = "240080000", available = true, spawnPosition = { x = 1.9, y = 6.67 }, merchantName = "npc-5840", sortingLayer = "MapLayer6", features = "米納爾天空的特殊浮台。\n原作劇情碼頭，周圍是危險的高空。" },
+				{ id = "aqua", displayName = "水世界", uiNode = "Aqua", position = { x = 0.24, y = 0.52 }, pinOffset = { x = 0, y = 0 }, mapName = "map_aqua_two_palm_trees", dockCameraOffset = { x = 0.9, y = 0 }, officialMapId = "230020201", available = true, spawnPosition = { x = -1.95, y = 0.47 }, merchantName = "", sortingLayer = "MapLayer7", features = "浮出海面的鯨魚島。\n棕櫚樹、SOS 旗與茅草屋。" },
+				{ id = "nautilus", displayName = "鯨魚號港口", uiNode = "Nautilus", position = { x = 0.19, y = 0.565 }, pinOffset = { x = 40, y = -25 }, mapName = "", officialMapId = "120000000", available = false, spawnPosition = { x = 0, y = 0 }, merchantName = "", sortingLayer = "MapLayer6", features = "官方匯入素材的船體有缺件。\n港口暫時維修中，尚不能啟航前往。" }
+			}
+		end
+		return self._T.portCatalog
+	end
+
+	method table GetPortIds()
+		-- 可航行及可存檔港口共用此清單，排除待修地點。
+		local ids = {}
+		for _, port in ipairs(self:GetPortCatalog()) do if port.available then table.insert(ids, port.id) end end
+		return ids
+	end
+
+	method table GetMapPortIds()
+		-- 航圖顯示全部已定位的港口，包括明確標示的待修港。
+		local ids = {}
+		for _, port in ipairs(self:GetPortCatalog()) do table.insert(ids, port.id) end
+		return ids
+	end
+
 	method any GetPort(string portId)
-		-- 四個已開放港口沿用既有座標，貨架改由原作商品圖鑑提供。
+		-- 港口定義和官方圖來源集中管理，貨架仍由既有商品圖鑑提供。
 		local id = self:NormalizePortId(portId)
-		local ports = {
-			forest = { id = "forest", displayName = "魔法森林", position = { x = 0.13, y = 0.66 }, mapName = "map_forest_port" },
-			sky = { id = "sky", displayName = "天空之城", position = { x = 0.49, y = 0.67 }, mapName = "map_orbis_port" },
-			ludus = { id = "ludus", displayName = "玩具城", position = { x = 0.42, y = 0.40 }, mapName = "map_ludus_port" },
-			nihal = { id = "nihal", displayName = "納希沙漠", position = { x = 0.60, y = 0.16 }, mapName = "map_nihal_port" }
-		}
-		local port = ports[id]
-		if port == nil then return nil end
-		port.goods = {}
-		if _GreatVoyageCommodityCatalog ~= nil then port.goods = _GreatVoyageCommodityCatalog:GetForPort(id) end
-		return port
+		for _, port in ipairs(self:GetPortCatalog()) do
+			if port.id == id then
+				port.goods = {}
+				if _GreatVoyageCommodityCatalog ~= nil and port.available then port.goods = _GreatVoyageCommodityCatalog:GetForPort(id) end
+				return port
+			end
+		end
+		return nil
 	end
 
 	method any GetShipCatalog()
@@ -133,7 +178,7 @@ script GreatVoyageVoyageData extends Logic
 		local baseArmor = 48
 		local baseCargo = 8
 		return {
-			{ id = "small_sampan", name = "小風帆", tier = 0, price = 0, spriteRuid = "6db8a51bb2024f14b3f22fe5a890a979", description = "新手好夥伴，四港皆可免費維修。", maxHull = 100, maxShield = 20, maxArmor = 40, cargoCapacity = baseCargo, hullMultiplier = 1, cannonMultiplier = 1, durationMultiplier = 1 },
+			{ id = "small_sampan", name = "小風帆", tier = 0, price = 0, spriteRuid = "6db8a51bb2024f14b3f22fe5a890a979", description = "新手好夥伴，各港皆可免費維修。", maxHull = 100, maxShield = 20, maxArmor = 40, cargoCapacity = baseCargo, hullMultiplier = 1, cannonMultiplier = 1, durationMultiplier = 1 },
 			{ id = "forest", name = "森芽號", tier = 1, price = 50000, spriteRuid = "9d3adbd593454f9dbd0fffa1f5eda00e", description = "T1 基礎船體上限 +20%。", maxHull = math.floor(baseHull * 1.2), maxShield = baseShield, maxArmor = baseArmor, cargoCapacity = baseCargo, hullMultiplier = 1.2, cannonMultiplier = 1, durationMultiplier = 1 },
 			{ id = "red", name = "赤帆號", tier = 1, price = 50000, spriteRuid = "55c74934367840d39687eb4b66ae2310", description = "炮擊傷害 +10%。", maxHull = baseHull, maxShield = baseShield, maxArmor = baseArmor, cargoCapacity = baseCargo, hullMultiplier = 1, cannonMultiplier = 1.1, durationMultiplier = 1 },
 			{ id = "gear", name = "齒輪號", tier = 1, price = 50000, spriteRuid = "2e64df1c16764058b235658a8f379b71", description = "航程時間縮短 10%。", maxHull = baseHull, maxShield = baseShield, maxArmor = baseArmor, cargoCapacity = baseCargo, hullMultiplier = 1, cannonMultiplier = 1, durationMultiplier = 0.9 },
@@ -507,6 +552,10 @@ script GreatVoyageVoyageData extends Logic
 			preview.reason = "目的地不能跟目前港口一樣喔！"
 			return preview
 		end
+		if origin.available ~= true or destination.available ~= true then
+			preview.reason = "目的港維修中，暫未開放"
+			return preview
+		end
 		preview.routeId = route.routeId
 		preview.returnRouteId = route.returnRouteId
 		preview.accepted = true
@@ -593,9 +642,9 @@ script GreatVoyageVoyageData extends Logic
 	end
 
 	method any GetCommodityCatalog()
-		-- 圖鑑可檢視未開放港口及待核實資料，不允許圖鑑直接交易。
+		-- 圖鑑僅列現役港口商品；舊貨艙另以 GetGoodById 辨識退役貨物。
 		if _GreatVoyageCommodityCatalog == nil then return {} end
-		return _GreatVoyageCommodityCatalog:GetAll()
+		return _GreatVoyageCommodityCatalog:GetActive()
 	end
 
 end

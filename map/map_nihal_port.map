@@ -6148,7 +6148,7 @@
             },
             {
               "@type": "MOD.Core.NameTagComponent",
-              "Name": "npc-5518",
+              "Name": "沙漠空港管理員",
               "NameTagRUID": {
                 "DataId": "9bf18287398c44699c20fc5123d1a1ae"
               },
@@ -6540,7 +6540,7 @@
               "Position": {
                 "x": 2.5,
                 "y": -2.73,
-                "z": 999.9
+                "z": 0
               },
               "QuaternionRotation": {
                 "x": 0,

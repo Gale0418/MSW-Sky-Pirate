@@ -115,6 +115,8 @@ def make_runtime():
         "ImportLegacyMarketItem",
         "LoadLegacyMarkets",
         "IsSameBoundProfile",
+        "IsLegacyPort",
+        "RefreshOpenPorts",
         "SetPlayerLoadStatus",
         "SetLoadFailure",
         "LoadForPlayer",
@@ -141,13 +143,15 @@ def make_runtime():
     lua.execute("Store.HandleUserLeaveEvent = function(" + handler_args + ")\n" + handler_body + "\nend")
     store = lua.globals().Store
     store.schemaVersion = 2
-    store.maxPayloadBytes = 50000
+    store.maxPayloadBytes = 48000
     store.notFoundCode = 1000002
     store.compareFailedCode = 2000000
     lua.globals()._UtilLogic = lua.table_from({"ServerElapsedSeconds": 0})
     lua.globals()._HttpService = lua.eval("{JSONEncode=function(self, value) return \"new-payload\" end}")
     lua.globals().wait = lambda _seconds: setattr(lua.globals()._UtilLogic, "ServerElapsedSeconds", lua.globals()._UtilLogic.ServerElapsedSeconds + _seconds)
     store.openPorts = lua_value(["forest", "sky", "ludus", "nihal"], lua)
+    store.legacyOpenPorts = lua_value(["forest", "sky", "ludus", "nihal"], lua)
+    store.portIds = lua_value(["forest", "sky", "ludus", "nihal"], lua)
     store.accounts = lua.table()
     store.profileByUser = lua.table()
     store.loadStatusByUser = lua.table()
@@ -203,7 +207,7 @@ class SaveV1LuaTests(unittest.TestCase):
         cls.store.cardCatalog = cls.card_catalog
         cls.store.goodsCatalog = cls.goods_catalog
         cls.lua.globals()._GreatVoyageVoyageData = cls.lua.eval(
-            "{ GetShipCatalog=function() return Store.shipCatalog end, GetShipUpgradeCards=function() return Store.cardCatalog end }"
+            "{ GetShipCatalog=function() return Store.shipCatalog end, GetShipUpgradeCards=function() return Store.cardCatalog end, GetPortIds=function() return Store.portIds end, GetGoodById=function(_,id) return Store:FindById(id,Store.goodsCatalog) end }"
         )
         cls.lua.globals()._GreatVoyageCommodityCatalog = cls.lua.eval(
             "{ GetAll=function() return Store.goodsCatalog end, GetById=function(_, id) return Store:FindById(id, Store.goodsCatalog) end }"
@@ -218,11 +222,14 @@ class SaveV1LuaTests(unittest.TestCase):
         cls.lua.globals()._HttpService = http
 
     def setUp(self):
+        self.store.openPorts = lua_value(["forest", "sky", "ludus", "nihal"], self.lua)
+        self.store.legacyOpenPorts = lua_value(["forest", "sky", "ludus", "nihal"], self.lua)
+        self.store.portIds = lua_value(["forest", "sky", "ludus", "nihal"], self.lua)
         self.lua.globals()._GreatVoyageVoyageData = self.lua.eval(
             "{GetShipCatalog=function() return Store.shipCatalog end, "
             "GetShipUpgradeCards=function() return Store.cardCatalog end, "
             "GetShipById=function(self,id) return Store:FindById(id,Store.shipCatalog) end, "
-            "GetStartingMoney=function() return 12000 end}"
+            "GetStartingMoney=function() return 12000 end, GetPortIds=function() return Store.portIds end, GetGoodById=function(_,id) return Store:FindById(id,Store.goodsCatalog) end}"
         )
         self.lua.globals()._GreatVoyageCommodityCatalog = self.lua.eval(
             "{GetAll=function() return Store.goodsCatalog end, "
@@ -240,6 +247,47 @@ class SaveV1LuaTests(unittest.TestCase):
         profile["schemaVersion"] = 1
         profile["core"]["cargo"] = cargo or {"id": "commodity_a", "quantity": 2, "buyPrice": 1000}
         return profile
+
+    def test_refresh_open_ports_uses_canonical_list_and_preserves_fallback_on_invalid_list(self):
+        self.store.portIds = lua_value(["forest", "sky", "ludus", "nihal", "harbor"], self.lua)
+        self.store.RefreshOpenPorts(self.store)
+        self.assertEqual(python_value(self.store.openPorts), ["forest", "sky", "ludus", "nihal", "harbor"])
+        self.store.portIds = lua_value(["forest", "sky", "harbor"], self.lua)
+        self.store.RefreshOpenPorts(self.store)
+        self.assertEqual(python_value(self.store.openPorts), ["forest", "sky", "ludus", "nihal", "harbor"])
+
+    def test_decode_expands_legacy_four_port_markets_to_current_thirteen(self):
+        current_ports = ["forest", "sky", "ludus", "nihal", "maple", "lith", "ereve", "rien", "leafre", "edelstein", "herbtown", "crimson", "aqua"]
+        self.store.portIds = lua_value(current_ports, self.lua)
+        self.store.RefreshOpenPorts(self.store)
+        raw = json.dumps(base_profile(), ensure_ascii=False, separators=(",", ":"))
+        decoded = self.store.DecodeProfile(self.store, raw)
+        self.assertIsNotNone(decoded)
+        self.assertEqual([len(decoded.markets[port]) for port in current_ports], [0] * 13)
+        self.assertTrue(decoded._requiresPortExpansionSave)
+        missing_legacy = base_profile()
+        del missing_legacy["markets"]["sky"]
+        missing_raw = json.dumps(missing_legacy, ensure_ascii=False, separators=(",", ":"))
+        self.assertIsNone(self.store.DecodeProfile(self.store, missing_raw))
+
+    def test_expanded_market_load_keeps_original_raw_as_cas_acknowledgement(self):
+        current_ports = ["forest", "sky", "ludus", "nihal", "maple", "lith", "ereve", "rien", "leafre", "edelstein", "herbtown", "crimson", "aqua"]
+        raw = json.dumps(base_profile(), ensure_ascii=False, separators=(",", ":"))
+        self.lua.globals().legacyRaw = raw
+        storage = self.lua.eval("{raw=legacyRaw,GetAndWait=function(self,key) return 0,self.raw end, SetAndWait=function(self,key,value) self.raw=value; return 0 end}")
+        self.store.portIds = lua_value(current_ports, self.lua)
+        self.configure_load_runtime(storage)
+        production = self.lua.globals().Store
+        self.store.ValidateProfile = production.ValidateProfile
+        self.store.DecodeProfile = production.DecodeProfile
+        self.store.EncodeCore = production.EncodeCore
+        profile = self.store.LoadForPlayer(self.store, "user-A")
+        account = self.store.accounts["profile-A"]
+        self.assertIsNotNone(profile)
+        self.assertEqual(account.acknowledgedRaw, raw)
+        self.assertEqual(profile.revision, 5)
+        self.assertTrue(account.dirty)
+        self.assertEqual([len(profile.markets[port]) for port in current_ports[4:]], [0] * 9)
 
     def test_profile_round_trip_through_lua_decoder_and_validator(self):
         raw = json.dumps(base_profile(), ensure_ascii=False, separators=(",", ":"))
@@ -426,15 +474,98 @@ class SaveV1LuaTests(unittest.TestCase):
         self.store.accounts["profile-A"].conflicted = True
         self.assertIsNone(self.store.GetProfileForUser(self.store, "user-A"))
 
+    def install_market_time_and_pricing(self, now):
+        self.lua.globals().marketNow = now
+        self.lua.globals()._GreatVoyagePlayerMarket = self.lua.eval("{GetNow=function() return marketNow end}")
+        pricing_path = ROOT / "RootDesk/MyDesk/Economy/GreatVoyageMarketPricing.mlua"
+        parameters, body = extract_method_from_with_params(pricing_path, "GetPolicy")
+        self.lua.execute("Pricing = {}")
+        self.lua.execute(f"Pricing.GetPolicy = function(self, {", ".join(parameters)})\n{body}\nend")
+        self.lua.globals()._GreatVoyageMarketPricing = self.lua.globals().Pricing
+
+    def test_sync_market_prunes_recovered_pressure_and_expired_boss_stock(self):
+        now = 1_800_000_000
+        cycle = now // 10800
+        self.install_market_time_and_pricing(now)
+        goods = GOODS + [
+            {"id": "boss_old", "sourceRow": 56, "verified": True, "originId": "forest", "isBoss": True},
+            {"id": "boss_current", "sourceRow": 57, "verified": True, "originId": "forest", "isBoss": True},
+            {"id": "future_pressure", "sourceRow": 58, "verified": True, "originId": "forest"},
+            {"id": "wrong_market", "sourceRow": 59, "verified": True, "originId": "sky"},
+        ]
+        self.store.goodsCatalog = lua_value(goods, self.lua)
+        account = self.lua.table_from({"profileCode": "profile-A", "ready": True, "conflicted": False, "profile": lua_value(base_profile(), self.lua), "generation": 0, "dirty": False})
+        self.store.accounts["profile-A"] = account
+        self.store.profileByUser["user-A"] = "profile-A"
+        entries = lua_value({
+            "commodity_a": {"pressure": 0.5, "at": now - 7200, "cycle": -1, "bought": 0},
+            "commodity_b": {"pressure": 0.75, "at": now - 1800, "cycle": -1, "bought": 0},
+            "boss_old": {"pressure": 0, "at": now, "cycle": cycle - 1, "bought": 4},
+            "boss_current": {"pressure": 0, "at": now, "cycle": cycle, "bought": 2},
+            "future_pressure": {"pressure": 0.5, "at": now + 3600, "cycle": -1, "bought": 0},
+        }, self.lua)
+        self.lua.globals()._UtilLogic.ServerElapsedSeconds = 25
+        self.assertTrue(self.store.SyncMarket(self.store, "user-A", "forest", entries))
+        rows = {row[1]: row for row in self.store.accounts["profile-A"].profile.markets.forest.values()}
+        self.assertNotIn("commodity_a", rows)
+        self.assertNotIn("boss_old", rows)
+        self.assertAlmostEqual(rows["commodity_b"][2], 0.5)
+        self.assertEqual(rows["commodity_b"][3], now)
+        self.assertEqual(rows["boss_current"][2], 0)
+        self.assertEqual(rows["boss_current"][4], cycle)
+        self.assertEqual(rows["boss_current"][5], 2)
+        self.assertEqual(rows["future_pressure"][2], 0.5)
+        self.assertEqual(rows["future_pressure"][3], now + 3600)
+        original_profile = python_value(account.profile)
+        original_revision = account.profile.revision
+        dirty_before = account.dirty
+        generation_before = account.generation
+        invalid = lua_value({"wrong_market": {"pressure": 0.5, "at": now - 7200, "cycle": -1, "bought": 0}}, self.lua)
+        self.assertFalse(self.store.SyncMarket(self.store, "user-A", "forest", invalid))
+        self.assertEqual(account.profile.revision, original_revision)
+        self.assertEqual(python_value(account.profile), original_profile)
+        self.assertEqual(account.dirty, dirty_before)
+        self.assertEqual(account.generation, generation_before)
+
+    def test_sync_market_rejects_oversized_payload_without_mutating_profile(self):
+        now = 1_800_000_000
+        cycle = now // 10800
+        self.install_market_time_and_pricing(now)
+        count = 1200
+        large_goods = [
+            {"id": f"boss_good_{index:04d}_xxxxxxxxxxxxxxxx", "sourceRow": index, "verified": True, "originId": "forest", "isBoss": True}
+            for index in range(count)
+        ]
+        self.store.goodsCatalog = lua_value(GOODS + large_goods, self.lua)
+        oversized_candidate = lua_value(base_profile(), self.lua)
+        oversized_candidate.markets.forest = lua_value([[good["id"], 0, now, cycle, 1] for good in large_goods], self.lua)
+        self.assertIsNone(self.store.EncodeProfile(self.store, oversized_candidate))
+        account = self.lua.table_from({"profileCode": "profile-A", "ready": True, "conflicted": False, "profile": lua_value(base_profile(), self.lua), "generation": 8, "dirty": False})
+        original_profile = python_value(account.profile)
+        original_revision = account.profile.revision
+        self.store.accounts["profile-A"] = account
+        self.store.profileByUser["user-A"] = "profile-A"
+        entries = lua_value({good["id"]: {"pressure": 0, "at": now, "cycle": cycle, "bought": 1} for good in large_goods}, self.lua)
+        self.lua.globals()._UtilLogic.ServerElapsedSeconds = 25
+        self.assertFalse(self.store.SyncMarket(self.store, "user-A", "forest", entries))
+        self.assertEqual(python_value(account.profile), original_profile)
+        self.assertEqual(account.profile.revision, original_revision)
+        self.assertFalse(account.dirty)
+        self.assertEqual(account.generation, 8)
+
     def test_sync_market_projects_optional_runtime_fields_and_keeps_account_ready(self):
+        now = 1_800_000_000
+        cycle = now // 10800
+        self.install_market_time_and_pricing(now)
+        self.store.goodsCatalog = lua_value([dict(good, isBoss=True) if good["id"] == "commodity_b" else good for good in GOODS], self.lua)
         profile = lua_value(base_profile(), self.lua)
         account = self.lua.table_from({"profileCode": "profile-A", "ready": True, "conflicted": False, "profile": profile, "generation": 0, "dirty": False})
         self.store.accounts["profile-A"] = account
         self.store.profileByUser["user-A"] = "profile-A"
         entries = lua_value(
             {
-                "commodity_a": {"pressure": 0.35, "at": 1790000000},
-                "commodity_b": {"cycle": 3, "bought": 2},
+                "commodity_a": {"pressure": 0.35, "at": now},
+                "commodity_b": {"at": now, "cycle": cycle, "bought": 2},
             },
             self.lua,
         )
@@ -446,8 +577,8 @@ class SaveV1LuaTests(unittest.TestCase):
         self.assertEqual(account.profile.markets.forest[1][5], 0)
         self.assertEqual(account.profile.markets.forest[2][1], "commodity_b")
         self.assertEqual(account.profile.markets.forest[2][2], 0)
-        self.assertEqual(account.profile.markets.forest[2][3], 0)
-        self.assertEqual(account.profile.markets.forest[2][4], 3)
+        self.assertEqual(account.profile.markets.forest[2][3], now)
+        self.assertEqual(account.profile.markets.forest[2][4], cycle)
         self.assertEqual(account.profile.markets.forest[2][5], 2)
         self.assertTrue(account.dirty)
 
@@ -988,17 +1119,34 @@ class SaveV1LuaTests(unittest.TestCase):
             self.lua.eval("function()\n" + body + "\nend")
 
     def test_max_market_payload_bytes_are_measured_in_lua_utf8(self):
-        profile = base_profile()
-        for port in ("forest", "sky", "ludus", "nihal"):
-            profile["markets"][port] = [
-                [f"commodity_{port}_{index:03d}", 0.5, 1790000000, 120, 10]
-                for index in range(156)
-            ]
-        raw = self.store.EncodeProfile(self.store, lua_value(profile, self.lua))
-        self.assertIsNotNone(raw)
-        byte_count = len(raw.encode("utf-8"))
-        self.assertLess(byte_count, 50000)
-        print(f"max-fixture records=624 utf8-bytes={byte_count} credit-at-4000={byte_count / 4000:.2f}")
+        ports = (
+            "forest", "sky", "ludus", "nihal", "maple", "lith", "ereve",
+            "rien", "leafre", "edelstein", "herbtown", "crimson", "aqua",
+        )
+        self.store.openPorts = lua_value(ports, self.lua)
+        self.lua.globals()._HttpService.JSONEncode = lambda _service, value: json.dumps(
+            python_value(value), ensure_ascii=False, separators=(",", ":")
+        )
+
+        def payload_with_rows(rows_per_port):
+            profile = base_profile()
+            profile["markets"] = {
+                port: [
+                    [f"商品_{port}_{index:03d}", 0.5, 1790000000, 120, 10]
+                    for index in range(rows_per_port)
+                ]
+                for port in ports
+            }
+            return self.store.EncodeProfile(self.store, lua_value(profile, self.lua))
+
+        below_limit = payload_with_rows(40)
+        self.assertIsNotNone(below_limit)
+        below_limit_bytes = len(below_limit.encode("utf-8"))
+        self.assertLessEqual(below_limit_bytes, 48000)
+
+        over_limit = payload_with_rows(100)
+        self.assertIsNone(over_limit)
+        print(f"max-fixture ports=13 below-limit-utf8-bytes={below_limit_bytes}; over-limit rows-per-port=100")
 
 
 

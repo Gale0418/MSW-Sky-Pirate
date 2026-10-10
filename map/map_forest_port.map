@@ -459,7 +459,7 @@
                     "PreviousFootholdId": 0,
                     "groupID": 10,
                     "layer": 3,
-                    "sortingLayerName": "MapLayer6",
+                    "sortingLayerName": "MapLayer0",
                     "attribute": {
                       "walk": 1,
                       "force": 0,
@@ -472,12 +472,12 @@
                     "OwnerId": "0ee76e45-48ee-4ff1-aa18-ba9917191af5",
                     "Id": 12,
                     "StartPoint": {
-                      "x": 14.1431,
-                      "y": 1.7553
+                      "x": 12.275,
+                      "y": 1.75527786
                     },
                     "EndPoint": {
-                      "x": 18.0231,
-                      "y": 1.7553
+                      "x": 16.155,
+                      "y": 1.75527786
                     },
                     "Variance": {
                       "x": 1,
@@ -4268,7 +4268,7 @@
                 "z": 0
               },
               "Position": {
-                "x": 16.263092,
+                "x": 14.035,
                 "y": 2.11727786,
                 "z": 999.9
               },
@@ -4296,7 +4296,7 @@
               "OrderInLayer": 0,
               "PlayRate": 1,
               "RenderSetting": 0,
-              "SortingLayer": "MapLayer6",
+              "SortingLayer": "MapLayer0",
               "SpriteRUID": "",
               "StartFrameIndex": 0,
               "Color": {
@@ -4430,8 +4430,8 @@
               },
               "Position": {
                 "x": 14.1,
-                "y": 1.4,
-                "z": 999.9
+                "y": 1.75527786,
+                "z": 0
               },
               "QuaternionRotation": {
                 "x": 0,

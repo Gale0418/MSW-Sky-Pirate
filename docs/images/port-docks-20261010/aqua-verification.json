@@ -1,0 +1,50 @@
+{
+  "map": "map_aqua_two_palm_trees",
+  "officialMapId": "230020201",
+  "shipPosition": {
+    "x": -3.23,
+    "y": 1.12
+  },
+  "cameraOffset": {
+    "x": 0.9,
+    "y": 0
+  },
+  "walkingRange": {
+    "minX": -2.2,
+    "maxX": 3.45
+  },
+  "portalsRemoved": 12,
+  "seaLaddersDisabled": 5,
+  "seaFootholdsRemoved": 16,
+  "visualAudit": "PASS",
+  "runtimeChecks": [
+    "[VRF][GVAquaWhaleBoundary] active x=-2.2..3.45 points=19",
+    "[VRF][GVAquaWhaleBoundary] active x=-2.2..3.45 points=19",
+    "[VRF][Aqua] map=map_aqua_two_palm_trees pos=(-2.025, 0.119, 0.000) grounded=true",
+    "[VRF][Aqua] nearShip=true",
+    "[VRF][GVAquaWhaleBoundary] recovered local player to whale surface x=-2.2 y=0.13392156862745",
+    "[VRF][Aqua] left limit=(-2.200, 0.134, 0.000) PASS=true",
+    "[VRF][Aqua] right limit=(3.450, -0.335, 0.000) PASS=true",
+    "[VRF][Aqua] sea recovery=(1.508, -0.359, 0.000) PASS=true",
+    "[VRF][Aqua] camera zoom=nil offset=(1.950, 0.000)",
+    "[VRF][Aqua] routes accepted=true/true",
+    "[VRF][Aqua] temporary dock framing offset=.9",
+    "[VRF][GVAquaWhaleBoundary] recovered local player to whale surface x=-2.2 y=0.13392156862745",
+    "[VRF][Aqua] real left walk=(-2.201, 0.085, 0.000)",
+    "[VRF][Aqua] real right walk=(3.450, -0.434, 0.000)",
+    "[VRF][Aqua] server nearShip=true",
+    "[VRF][Aqua] jump=true higher=true",
+    "[VRF][Aqua] downJump=false pos=(-1.994, 0.125, 0.000) grounded=true",
+    "[VRF][Aqua] post jump settled=(-1.994, 0.125, 0.000)",
+    "[VRF][Aqua] left map guard scoped map=map_forest_port pos=(5.500, -0.389, 0.000)"
+  ],
+  "runtimeErrors": [],
+  "screenshot": "aqua.png",
+  "npcName": "鯨魚島居民",
+  "previewRUID": "1c4637f40ce348a1a90f9eeda8cc7e28",
+  "uiStaticLint": "PASS",
+  "finalUI": "aqua-route.png",
+  "finalRuntimeErrors": 0,
+  "finalBuildErrors": 0,
+  "uiVisualAudit": "PASS"
+}

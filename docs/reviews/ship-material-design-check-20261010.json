@@ -1,0 +1,309 @@
+{
+  "date": "2026-10-10",
+  "type": "static-design",
+  "t5CashPrice": 2147483647,
+  "availablePorts": 13,
+  "recipes": [
+    {
+      "tier": 2,
+      "cash": 500000,
+      "materialCost": 80000,
+      "totalCashEquivalent": 580000,
+      "cargoUnits": 26,
+      "materials": [
+        {
+          "id": "commodity_forest_415",
+          "name": "可用木材",
+          "port": "forest",
+          "unit": "箱",
+          "quantity": 12,
+          "oldPrice": 3000,
+          "proposedPrice": 2000
+        },
+        {
+          "id": "commodity_forest_58",
+          "name": "綠水靈液體",
+          "port": "forest",
+          "unit": "箱",
+          "quantity": 4,
+          "oldPrice": 3000,
+          "proposedPrice": 1000
+        },
+        {
+          "id": "commodity_forest_59",
+          "name": "肥肥的緞帶",
+          "port": "lith",
+          "unit": "箱",
+          "quantity": 6,
+          "oldPrice": 3500,
+          "proposedPrice": 2000
+        },
+        {
+          "id": "commodity_ludus_220",
+          "name": "齒輪",
+          "port": "ludus",
+          "unit": "箱",
+          "quantity": 4,
+          "oldPrice": 24000,
+          "proposedPrice": 10000
+        }
+      ],
+      "customCores": []
+    },
+    {
+      "tier": 3,
+      "cash": 5000000,
+      "materialCost": 404000,
+      "totalCashEquivalent": 5404000,
+      "cargoUnits": 50,
+      "materials": [
+        {
+          "id": "commodity_forest_415",
+          "name": "可用木材",
+          "port": "forest",
+          "unit": "箱",
+          "quantity": 24,
+          "oldPrice": 3000,
+          "proposedPrice": 2000
+        },
+        {
+          "id": "commodity_forest_59",
+          "name": "肥肥的緞帶",
+          "port": "lith",
+          "unit": "箱",
+          "quantity": 8,
+          "oldPrice": 3500,
+          "proposedPrice": 2000
+        },
+        {
+          "id": "commodity_ludus_220",
+          "name": "齒輪",
+          "port": "ludus",
+          "unit": "箱",
+          "quantity": 8,
+          "oldPrice": 24000,
+          "proposedPrice": 10000
+        },
+        {
+          "id": "commodity_sky_135",
+          "name": "星光精靈星星碎片",
+          "port": "sky",
+          "unit": "箱",
+          "quantity": 6,
+          "oldPrice": 14800,
+          "proposedPrice": 10000
+        },
+        {
+          "id": "commodity_edelstein_385",
+          "name": "特殊能源核心 A 級",
+          "port": "edelstein",
+          "unit": "箱",
+          "quantity": 4,
+          "oldPrice": 45000,
+          "proposedPrice": 50000
+        }
+      ],
+      "customCores": [
+        {
+          "id": "wind_core",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "tier": 4,
+      "cash": 200000000,
+      "materialCost": 6186000,
+      "totalCashEquivalent": 206186000,
+      "cargoUnits": 96,
+      "materials": [
+        {
+          "id": "commodity_forest_415",
+          "name": "可用木材",
+          "port": "forest",
+          "unit": "箱",
+          "quantity": 48,
+          "oldPrice": 3000,
+          "proposedPrice": 2000
+        },
+        {
+          "id": "commodity_ludus_220",
+          "name": "齒輪",
+          "port": "ludus",
+          "unit": "箱",
+          "quantity": 12,
+          "oldPrice": 24000,
+          "proposedPrice": 10000
+        },
+        {
+          "id": "commodity_sky_135",
+          "name": "星光精靈星星碎片",
+          "port": "sky",
+          "unit": "箱",
+          "quantity": 12,
+          "oldPrice": 14800,
+          "proposedPrice": 10000
+        },
+        {
+          "id": "commodity_leafre_360",
+          "name": "冰凍能量",
+          "port": "crimson",
+          "unit": "箱",
+          "quantity": 4,
+          "oldPrice": 48000,
+          "proposedPrice": 50000
+        },
+        {
+          "id": "commodity_leafre_361",
+          "name": "燃燒能量",
+          "port": "crimson",
+          "unit": "箱",
+          "quantity": 4,
+          "oldPrice": 48000,
+          "proposedPrice": 50000
+        },
+        {
+          "id": "commodity_edelstein_386",
+          "name": "特殊能源核心 S 級",
+          "port": "edelstein",
+          "unit": "件",
+          "quantity": 6,
+          "oldPrice": 350000,
+          "proposedPrice": 500000
+        },
+        {
+          "id": "commodity_ludus_237",
+          "name": "黑暗塔奇昂",
+          "port": "ludus",
+          "unit": "件",
+          "quantity": 4,
+          "oldPrice": 250000,
+          "proposedPrice": 500000
+        },
+        {
+          "id": "commodity_leafre_363",
+          "name": "反魔法石碎片",
+          "port": "crimson",
+          "unit": "箱",
+          "quantity": 6,
+          "oldPrice": 60000,
+          "proposedPrice": 75000
+        }
+      ],
+      "customCores": [
+        {
+          "id": "balrog_core",
+          "quantity": 3
+        },
+        {
+          "id": "wind_core",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "tier": 5,
+      "cash": 2147483647,
+      "materialCost": 12332000,
+      "totalCashEquivalent": 2159815647,
+      "cargoUnits": 188,
+      "materials": [
+        {
+          "id": "commodity_forest_415",
+          "name": "可用木材",
+          "port": "forest",
+          "unit": "箱",
+          "quantity": 96,
+          "oldPrice": 3000,
+          "proposedPrice": 2000
+        },
+        {
+          "id": "commodity_ludus_220",
+          "name": "齒輪",
+          "port": "ludus",
+          "unit": "箱",
+          "quantity": 20,
+          "oldPrice": 24000,
+          "proposedPrice": 10000
+        },
+        {
+          "id": "commodity_sky_135",
+          "name": "星光精靈星星碎片",
+          "port": "sky",
+          "unit": "箱",
+          "quantity": 24,
+          "oldPrice": 14800,
+          "proposedPrice": 10000
+        },
+        {
+          "id": "commodity_leafre_360",
+          "name": "冰凍能量",
+          "port": "crimson",
+          "unit": "箱",
+          "quantity": 8,
+          "oldPrice": 48000,
+          "proposedPrice": 50000
+        },
+        {
+          "id": "commodity_leafre_361",
+          "name": "燃燒能量",
+          "port": "crimson",
+          "unit": "箱",
+          "quantity": 8,
+          "oldPrice": 48000,
+          "proposedPrice": 50000
+        },
+        {
+          "id": "commodity_edelstein_386",
+          "name": "特殊能源核心 S 級",
+          "port": "edelstein",
+          "unit": "件",
+          "quantity": 12,
+          "oldPrice": 350000,
+          "proposedPrice": 500000
+        },
+        {
+          "id": "commodity_ludus_237",
+          "name": "黑暗塔奇昂",
+          "port": "ludus",
+          "unit": "件",
+          "quantity": 8,
+          "oldPrice": 250000,
+          "proposedPrice": 500000
+        },
+        {
+          "id": "commodity_leafre_363",
+          "name": "反魔法石碎片",
+          "port": "crimson",
+          "unit": "箱",
+          "quantity": 12,
+          "oldPrice": 60000,
+          "proposedPrice": 75000
+        }
+      ],
+      "customCores": [
+        {
+          "id": "dragonica_core",
+          "quantity": 3
+        },
+        {
+          "id": "balrog_core",
+          "quantity": 5
+        },
+        {
+          "id": "black_heaven_core",
+          "quantity": 1
+        }
+      ]
+    }
+  ],
+  "checks": [
+    "13 個現役港口",
+    "全部配方商品 ID 已核實且未退役",
+    "配方數量與價格均為正整數",
+    "逐級材料乘算合計一致",
+    "T5 金幣費與使用者指定相等",
+    "全部金額在 Node 安全整數範圍（不代表 MSW 型別驗證）"
+  ],
+  "runtimeVerified": false
+}

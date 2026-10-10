@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-10",
+  "type": "maker-post-review-market-fix",
+  "map": "map_aqua_two_palm_trees",
+  "build": {
+    "count": 73,
+    "issues": []
+  },
+  "runtime": {
+    "count": 45,
+    "issues": [],
+    "evidence": [
+      {
+        "time": "2026-10-10T15:53:09",
+        "server": true,
+        "message": "[VRF][RabbitMarketFix] PASS ports=13 expiredPruned=2 liveRows=2 bossBought=2 sizeGuard=1 unchangedOnReject=1 MarkDirtyFalseThenTrue=1 no-test-storage-write=1"
+      },
+      {
+        "time": "2026-10-10T15:53:09",
+        "server": true,
+        "message": "[VRF][RabbitMarketFix] cleanup PASS"
+      }
+    ]
+  },
+  "limitations": [
+    "Size-guard rejection used a temporary 1-byte limit on a disposable in-memory fixture; production 48,000-byte coverage is in the Python/Lua test.",
+    "No DataStorage writes in the probe; normal startup loaded the existing Maker account.",
+    "Buy/sell rollback has production-body tests, not real mouse or published-server verification."
+  ],
+  "stopped": true
+}

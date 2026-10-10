@@ -37,9 +37,10 @@ script GVShipVisualClient extends Component
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
+		-- 建立本地船視覺；港口泊位仍由地圖錨點管理。
 		local map = self.Entity.CurrentMap
 		self:RefreshLocalMapState()
-		log("[GVShipVisual] client controller ready map=" .. tostring(map))
+		log("[VRF] dock ship host ready map=" .. tostring(map))
 	end
 
 	@ExecSpace("ClientOnly")
@@ -275,17 +276,16 @@ script GVShipVisualClient extends Component
 
 	@ExecSpace("ClientOnly")
 	method boolean GetMapFlipX()
-		local map = self.Entity.CurrentMap
-		if map == nil then return false end
-		return map.Name == "map_forest_port" or map.Name == "map_nihal_port"
+		-- 每港泊位的朝向由地圖船錨點設定，讓新港可直接在 Maker 調整。
+		local renderer = self.Entity.SpriteRendererComponent
+		return renderer ~= nil and renderer.FlipX
 	end
 
 	@ExecSpace("ClientOnly")
 	method string GetMapSortingLayer()
-		local map = self.Entity.CurrentMap
-		if map == nil then return "MapLayer6" end
-		if map.Name == "map_ludus_port" then return "MapLayer4" end
-		if map.Name == "map_nihal_port" then return "MapLayer1" end
+		-- 船身、引擎與前舷共用各港船錨點的圖層。
+		local renderer = self.Entity.SpriteRendererComponent
+		if renderer ~= nil and renderer.SortingLayer ~= "" then return renderer.SortingLayer end
 		return "MapLayer6"
 	end
 

@@ -959,30 +959,21 @@ script GreatVoyageVoyageState extends Logic
 	end
 
 	method string GetPortIdFromMap(string mapName)
-		if mapName == "map_forest_port" then return "forest" end
-		if mapName == "map_orbis_port" then return "sky" end
-		if mapName == "map_ludus_port" then return "ludus" end
-		if mapName == "map_nihal_port" then return "nihal" end
+		-- 航行、商店與重登回港共用同一份可用港口對照。
+		for _, port in ipairs(_GreatVoyageVoyageData:GetPortCatalog()) do
+			if port.available and port.mapName == mapName then return port.id end
+		end
 		return ""
 	end
 
 	@ExecSpace("ServerOnly")
 	method void MovePlayerToPort(string playerId, string portId)
+		-- 依官方港口的安全落點移動，未知或待修港禁止默認傳送。
 		local player = _UserService:GetUserEntityByUserId(playerId)
-		if player == nil or player.PlayerComponent == nil then return end
-		local targetMap = "map_orbis_port"
-		local targetPosition = Vector2(0, 0)
-		if portId == "forest" then
-			targetMap = "map_forest_port"
-			targetPosition = Vector2(5.5, -0.25)
-		elseif portId == "ludus" then
-			targetMap = "map_ludus_port"
-			targetPosition = Vector2(0, -0.45)
-		elseif portId == "nihal" then
-			targetMap = "map_nihal_port"
-			targetPosition = Vector2(0.7, -0.45)
-		end
-		player.PlayerComponent:MoveToMapPosition(targetMap, targetPosition)
+		local port = _GreatVoyageVoyageData:GetPort(portId)
+		if player == nil or player.PlayerComponent == nil or port == nil or port.available ~= true then return end
+		player.PlayerComponent:MoveToMapPosition(port.mapName, Vector2(port.spawnPosition.x, port.spawnPosition.y))
+		log("[VRF] port transfer destination=" .. port.id .. " map=" .. port.mapName)
 	end
 
 	method boolean IsNearOwnShip(Entity player, string portId)
@@ -994,9 +985,7 @@ script GreatVoyageVoyageState extends Logic
 		if boardingPoint == nil or boardingPoint.TransformComponent == nil then return false end
 		local playerPosition = player.TransformComponent.WorldPosition
 		local boardingPosition = boardingPoint.TransformComponent.WorldPosition
-		local dx = playerPosition.x - boardingPosition.x
-		local dy = playerPosition.y - boardingPosition.y
-		return math.sqrt(dx * dx + dy * dy) <= 1.25
+		return _GreatVoyageVoyageData:IsWithinBoardingArea(portId, Vector2(playerPosition.x, playerPosition.y), Vector2(boardingPosition.x, boardingPosition.y))
 	end
 
 	@ExecSpace("Server")
@@ -1399,11 +1388,10 @@ script GreatVoyageVoyageState extends Logic
 	end
 
 	method string GetShopMerchantPath(string portId)
-		if portId == "forest" then return "/maps/map_forest_port/森林商人．艾琳" end
-		if portId == "sky" then return "/maps/map_orbis_port/天空商人．露米" end
-		if portId == "ludus" then return "/maps/map_ludus_port/玩具城商人．奈洛" end
-		if portId == "nihal" then return "/maps/map_nihal_port/納希商人．沙琳" end
-		return ""
+		-- 商人路徑隨港口目錄擴充，仍由 Server 驗證距離。
+		local port = _GreatVoyageVoyageData:GetPort(portId)
+		if port == nil or port.available ~= true or port.merchantName == "" then return "" end
+		return "/maps/" .. port.mapName .. "/" .. port.merchantName
 	end
 
 	method boolean IsAtShop(Entity player, string portId)
@@ -1488,12 +1476,22 @@ script GreatVoyageVoyageState extends Logic
 		local total = good.price * quantity
 		if total > 2147483647 then self:CompleteEconomyRequest(playerId, state, "總金額太龐大，超出金幣上限囉！") return end
 		if state.money < total then self:CompleteEconomyRequest(playerId, state, "金幣不足，需要 " .. tostring(total) .. " G。") return end
+		if good.isBoss == true then
+			local previousEntry = market.entries[good.id]
+			local previousEntryCopy = nil
+			if previousEntry ~= nil then
+				previousEntryCopy = {}
+				for key, value in pairs(previousEntry) do previousEntryCopy[key] = value end
+			end
+			local consumed = _GreatVoyageMarketPricing:ConsumeBossStock(market.entries, market.profileCode, good.id, quantity, now)
+			if consumed ~= true or _GreatVoyagePlayerMarket:MarkDirty(playerId, portId, good.id) ~= true then
+				market.entries[good.id] = previousEntryCopy
+				self:CompleteEconomyRequest(playerId, state, "市場存檔同步失敗，交易已取消。")
+				return
+			end
+		end
 		state.money = state.money - total
 		state.cargo = cargoData:AddCargo(state.cargo, good.id, quantity, good.price)
-		if good.isBoss == true then
-			_GreatVoyageMarketPricing:ConsumeBossStock(market.entries, market.profileCode, good.id, quantity, now)
-			_GreatVoyagePlayerMarket:MarkDirty(playerId, portId, good.id)
-		end
 		self:CompleteEconomyRequest(playerId, state, "買入 " .. good.displayName .. " ×" .. tostring(quantity) .. "，花費 " .. tostring(total) .. " G。")
 		self:ReceiveTransactionFeedback("goods_buy", goodId, state.economyRevision, playerId)
 		log("[VoyageState] server buy player=" .. playerId .. " port=" .. portId .. " good=" .. good.id .. " qty=" .. tostring(quantity) .. " total=" .. tostring(total))
@@ -1559,13 +1557,23 @@ script GreatVoyageVoyageState extends Logic
 		local removal = cargoData:RemoveCargo(state.cargo, goodId, quantity)
 		if removal == nil then self:CompleteEconomyRequest(playerId, state, "貨艙狀態已變更，請重新交易。") return end
 		local profit = total - removal.cost
+		local previousEntry = market.entries[goodId]
+		local previousEntryCopy = nil
+		if previousEntry ~= nil then
+			previousEntryCopy = {}
+			for key, value in pairs(previousEntry) do previousEntryCopy[key] = value end
+		end
 		_GreatVoyageMarketPricing:ApplySale(market.entries, goodId, quote)
-		_GreatVoyagePlayerMarket:MarkDirty(playerId, portId, goodId)
+		if _GreatVoyagePlayerMarket:MarkDirty(playerId, portId, goodId) ~= true then
+			market.entries[goodId] = previousEntryCopy
+			self:CompleteEconomyRequest(playerId, state, "市場存檔同步失敗，交易已取消。")
+			return
+		end
 		state.money = state.money + total
 		state.cargo = removal.cargo
 		self:CompleteEconomyRequest(playerId, state, "賣出 " .. good.displayName .. " ×" .. tostring(quantity) .. "，收入 " .. tostring(total) .. " G。")
 		self:ReceiveTransactionFeedback("goods_sell", goodId, state.economyRevision, playerId)
-		log("[VoyageState] server sell player=" .. playerId .. " port=" .. portId .. " good=" .. good.id .. " qty=" .. tostring(quantity) .. " remaining=" .. tostring(state.cargo.quantity) .. " revenue=" .. tostring(total) .. " profit=" .. tostring(profit))
+		log("[VoyageState] server sell player=" .. playerId .. " port=" .. portId .. " good=" .. good.id .. " qty=" .. tostring(quantity) .. " remaining=" .. tostring(removal.cargo.quantity) .. " revenue=" .. tostring(total) .. " profit=" .. tostring(profit))
 	end
 
 	@ExecSpace("ServerOnly")
@@ -1690,20 +1698,8 @@ script GreatVoyageVoyageState extends Logic
 				return
 			end
 			log("[VoyageState] arrived player=" .. playerId .. " destination=" .. state.destinationId .. " legacyEvents=disabled")
-			local targetMap = "map_orbis_port"
-			local targetPosition = Vector2(0, 0)
-			if state.destinationId == "forest" then
-				targetMap = "map_forest_port"
-				targetPosition = Vector2(5.5, -0.25)
-			elseif state.destinationId == "ludus" then
-				targetMap = "map_ludus_port"
-				targetPosition = Vector2(0, -0.45)
-			elseif state.destinationId == "nihal" then
-				targetMap = "map_nihal_port"
-				targetPosition = Vector2(0.7, -0.45)
-			end
 			local player = _UserService:GetUserEntityByUserId(playerId)
-			if self.voyageByPlayer[playerId] == state and player ~= nil and player.PlayerComponent ~= nil and player.PlayerComponent.ProfileCode == state.profileCode and player.CurrentMapName == "map_airship_deck" and state.status == "arrived" then player.PlayerComponent:MoveToMapPosition(targetMap, targetPosition) end
+			if self.voyageByPlayer[playerId] == state and player ~= nil and player.PlayerComponent ~= nil and player.PlayerComponent.ProfileCode == state.profileCode and player.CurrentMapName == "map_airship_deck" and state.status == "arrived" then self:MovePlayerToPort(playerId, state.destinationId) end
 		else
 			state.lastReason = "飛船穩定前進中！"
 		end

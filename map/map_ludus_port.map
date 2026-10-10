@@ -2852,7 +2852,7 @@
           "name": "MapObject_22",
           "path": "/maps/map_ludus_port/MapObject_22",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": false,
           "displayOrder": 27,
@@ -6914,84 +6914,6 @@
         }
       },
       {
-        "id": "a4ac7bad-2abe-432d-be53-2ab6a3e8078e",
-        "path": "/maps/map_ludus_port/Portal_1",
-        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.PortalComponent,MOD.Core.TagComponent",
-        "jsonString": {
-          "name": "Portal_1",
-          "path": "/maps/map_ludus_port/Portal_1",
-          "nameEditable": true,
-          "enable": true,
-          "visible": false,
-          "localize": false,
-          "displayOrder": 57,
-          "pathConstraints": "///",
-          "revision": 1,
-          "origin": {
-            "type": "Model",
-            "entry_id": "portal",
-            "sub_entity_id": null,
-            "root_entity_id": "a4ac7bad-2abe-432d-be53-2ab6a3e8078e",
-            "replaced_model_id": null
-          },
-          "modelId": "portal",
-          "@components": [
-            {
-              "@type": "MOD.Core.TransformComponent",
-              "Rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "Position": {
-                "x": 1.6,
-                "y": 5.13,
-                "z": 999.958
-              },
-              "QuaternionRotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "w": 1
-              },
-              "ZRotation": 0,
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.SpriteRendererComponent",
-              "ActionSheet": {},
-              "EndFrameIndex": 2147483647,
-              "RenderSetting": 0,
-              "SortingLayer": "MapLayer7",
-              "SpriteRUID": "edd691cd6ce2417c81f1aee6b6ebedd3",
-              "StartFrameIndex": 0,
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.PortalComponent",
-              "BoxOffset": {
-                "x": 0.0149999857,
-                "y": 0.63
-              },
-              "BoxSize": {
-                "x": 1.01,
-                "y": 1.42
-              },
-              "IsLegacy": false,
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.TagComponent",
-              "Tags": [
-                "MODRespawnArea"
-              ],
-              "Enable": true
-            }
-          ],
-          "@version": 1
-        }
-      },
-      {
         "id": "dd7f1d37-ffec-4c0c-9087-0b28ed2c7b9c",
         "path": "/maps/map_ludus_port/npc-1273",
         "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.StateComponent,MOD.Core.ChatBalloonComponent,MOD.Core.StateAnimationComponent,MOD.Core.NameTagComponent",
@@ -7086,7 +7008,7 @@
             },
             {
               "@type": "MOD.Core.NameTagComponent",
-              "Name": "npc-1273",
+              "Name": "剪票員",
               "NameTagRUID": {
                 "DataId": "9bf18287398c44699c20fc5123d1a1ae"
               },
@@ -7332,7 +7254,7 @@
                 "z": 0
               },
               "Position": {
-                "x": 6.3,
+                "x": 5.59,
                 "y": 2.1,
                 "z": 999.9
               },
@@ -7360,7 +7282,7 @@
               "OrderInLayer": 0,
               "PlayRate": 1,
               "RenderSetting": 0,
-              "SortingLayer": "MapLayer4",
+              "SortingLayer": "MapLayer1",
               "SpriteRUID": "",
               "StartFrameIndex": 0,
               "Color": {
@@ -7478,7 +7400,7 @@
               "Position": {
                 "x": 4.9,
                 "y": 1.4,
-                "z": 999.9
+                "z": 0
               },
               "QuaternionRotation": {
                 "x": 0,

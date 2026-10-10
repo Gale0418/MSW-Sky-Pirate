@@ -1,6 +1,6 @@
 # Daily Log
 
-- Last organized: 2026-10-08
+- Last organized: 2026-10-10
 
 ## 2026-08-14
 - 完成 MissionCenter 0.3.1 契約遷移與歷史 Done 驗證債務正規化；未補造 Pass。
@@ -92,3 +92,10 @@
 - Impact：80 tests／10 subtests通過；Maker 66 build Info／42 runtime Info、0Warning/Error，隔離原生新key建檔／保存／清快取重讀、既有revision27、真 client 船艙10,600／1/8空位7／船體100/100皆 positive，已Stop。正式發布後交易保存重登仍待，保留Review；不宣稱缺鍵Set跨instance原子建立。
 - Review：CodeRabbit本輪五檔單次review_completed／0 issues；本小時第三次，未追加重審，大素材／Native API／產生檔／無關UI排除。README、診斷與兩份存檔文件同步目前方案。
 - Evidence：[審查与原生回執](../docs/reviews/2026-10-08/published-save/direct-first-create/review-summary.md)。
+
+
+## 2026-10-10
+
+- 15:30｜依主人授權準備直接保存／推送 main，不建立遊戲分支或 PR。README 更新 13 港／15 地圖、185 商品中 160 現役／25 退役，以及 21 億造船與材料規劃的實作界線。全量本地測試發現舊 LoadForPlayer fixture 未注入 RefreshOpenPorts，正在以 production 方法補驗。將把全部現有與較早的 mLua／Lua／Python 測試送 CodeRabbit；大型地圖、UI、圖片、Native API、產生檔及私有證據排除，不湊假 150 檔。實際審查結果及推送回執稍後補入，既有 Review／Blocked 與未發布驗收狀態維持。
+
+- 15:56｜main 保存前驗證完成：CodeRabbit完整32檔提出1 Major issue，先production-body重現再修過期市場列／48KB換入前檢查；追到caller補MarkDirty結果、買賣同步失敗取消與單列復原。5檔差異連同關聯程式9檔複審0 issues，兩輪exit0／review_completed；本時段共2次，未湊假150檔。88 tests＋10 subtests、十三港UTF-8大小界線與diff check通過。修正後Maker正向prune／stock／拒絕不換帳號／MarkDirty false→true／cleanup，build73／runtime45全Info、0Warning/Error，已stop。README與[審查紀錄](../docs/CodeRabbit-Review-20261010.md)同步；正式重登與跨instance待驗、M1／Save既有狀態不前進。

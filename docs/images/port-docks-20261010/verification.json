@@ -1,0 +1,480 @@
+{
+  "ground": [
+    "[VRF] berth final port=forest landing=true board=true near=true x=14.10000038147 y=1.7562779188156",
+    "[VRF] berth final port=sky landing=true board=true near=true x=-4.1999998092651 y=6.3410000801086",
+    "[VRF] berth final port=ludus landing=true board=true near=true x=4.9000000953674 y=1.4010000228882",
+    "[VRF] berth final port=nihal landing=true board=true near=true x=2.5 y=-2.489000082016",
+    "[VRF] berth final port=maple landing=true board=true near=true x=17.89999961853 y=-4.0690002441406",
+    "[VRF] berth final port=lith landing=true board=true near=true x=-6.9000000953674 y=-7.0690002441406",
+    "[VRF] berth final port=ereve landing=true board=true near=true x=-17.597372055054 y=5.2814917564392",
+    "[VRF] berth final port=rien landing=true board=true near=true x=28.200000762939 y=-0.028999999165535",
+    "[VRF] berth final port=leafre landing=true board=true near=true x=13.60000038147 y=4.2909998893738",
+    "[VRF] berth final port=edelstein landing=true board=true near=true x=-0.60000002384186 y=3.1109998226166",
+    "[VRF] berth final port=herbtown landing=true board=true near=true x=6.0999999046326 y=-1.6089999675751",
+    "[VRF] berth final port=crimson landing=true board=true near=true x=-6.1001935005188 y=-0.79696017503738",
+    "[VRF] berth final complete"
+  ],
+  "visual": [
+    "[VRF] berth visual final port=forest action=open_map opened=true renderers=true oldCleared=true",
+    "[VRF] berth visual final port=sky action=open_map opened=true renderers=true oldCleared=true",
+    "[VRF] berth visual final port=ludus action=open_map opened=true renderers=true oldCleared=true",
+    "[VRF] berth visual final port=nihal action=open_map opened=true renderers=true oldCleared=true",
+    "[VRF] berth visual final port=maple action=open_map opened=true renderers=true oldCleared=true",
+    "[VRF] berth visual final port=lith action=open_map opened=true renderers=true oldCleared=true",
+    "[VRF] berth visual final port=ereve action=open_map opened=true renderers=true oldCleared=true",
+    "[VRF] berth visual final port=rien action=open_map opened=true renderers=true oldCleared=true",
+    "[VRF] berth visual final port=leafre action=open_map opened=true renderers=true oldCleared=true",
+    "[VRF] berth visual final port=edelstein action=open_map opened=true renderers=true oldCleared=true",
+    "[VRF] berth visual final port=herbtown action=open_map opened=true renderers=true oldCleared=true",
+    "[VRF] berth visual final port=crimson action=open_map opened=true renderers=true oldCleared=true"
+  ],
+  "keyboardAndCamera": [
+    "[VRF] actual E opened=true",
+    "[VRF] ordinary camera final restored confine=true offset=(0.000, 0.000) savedCleared=true"
+  ],
+  "buildErrors": 0,
+  "diffCheckExit": 0,
+  "latestBerths": {
+    "maple": {
+      "ship": [
+        20.08,
+        -1.138
+      ],
+      "layer": "MapLayer0",
+      "foregroundDeckLayer": "MapLayer1",
+      "camera": [
+        1.2,
+        1.3
+      ],
+      "photo": "maker_play_20261010_070259_764.png",
+      "independentVisual": "PASS"
+    },
+    "crimson": {
+      "ship": [
+        -2.5,
+        7.1
+      ],
+      "board": [
+        1.5,
+        6.31
+      ],
+      "spawn": [
+        1.9,
+        6.67
+      ],
+      "photo": "maker_play_20261010_070834_887.png",
+      "independentVisual": "PASS",
+      "runtime": [
+        "[VRF] maple raised landing=true board=true y=-4.0690002441406",
+        "[VRF] maple raised action=open_map opened=true shipY=-1.1380000114441 offset=(1.200, 0.800)",
+        "[VRF] maple raised photo ready",
+        "[VRF] maple final raised ground=true",
+        "[VRF] maple final raised action=open_map offset=(1.200, 1.300)",
+        "[VRF] maple final raised ready",
+        "[VRF] maple deck foreground shipLayer=MapLayer0 deckLayer=MapLayer1",
+        "[VRF] maple deck foreground photo ready",
+        "[VRF] crimson upper berth landing=true board=true x=1.4993560314178 y=6.2952723503113",
+        "[VRF] crimson upper berth action=open_map opened=true hull=true engine=true front=true",
+        "[VRF] crimson upper berth photo ready"
+      ]
+    }
+  },
+  "portalCleanup": {
+    "removed": 12,
+    "maps": [
+      {
+        "map": "map_forest_port",
+        "portals": 0,
+        "spawn": true,
+        "board": true,
+        "ship": true
+      },
+      {
+        "map": "map_orbis_port",
+        "portals": 0,
+        "spawn": true,
+        "board": true,
+        "ship": true
+      },
+      {
+        "map": "map_ludus_port",
+        "portals": 0,
+        "spawn": true,
+        "board": true,
+        "ship": true
+      },
+      {
+        "map": "map_nihal_port",
+        "portals": 0,
+        "spawn": true,
+        "board": true,
+        "ship": true
+      },
+      {
+        "map": "map_maple_island_port",
+        "portals": 0,
+        "spawn": true,
+        "board": true,
+        "ship": true
+      },
+      {
+        "map": "map_lith_harbor_port",
+        "portals": 0,
+        "spawn": true,
+        "board": true,
+        "ship": true
+      },
+      {
+        "map": "map_ereve_port",
+        "portals": 0,
+        "spawn": true,
+        "board": true,
+        "ship": true
+      },
+      {
+        "map": "map_rien_port",
+        "portals": 0,
+        "spawn": true,
+        "board": true,
+        "ship": true
+      },
+      {
+        "map": "map_leafre_port",
+        "portals": 0,
+        "spawn": true,
+        "board": true,
+        "ship": true
+      },
+      {
+        "map": "map_edelstein_port",
+        "portals": 0,
+        "spawn": true,
+        "board": true,
+        "ship": true
+      },
+      {
+        "map": "map_herb_town_port",
+        "portals": 0,
+        "spawn": true,
+        "board": true,
+        "ship": true
+      },
+      {
+        "map": "map_crimson_sky_dock",
+        "portals": 0,
+        "spawn": true,
+        "board": true,
+        "ship": true
+      }
+    ]
+  },
+  "npcCleanup": {
+    "changed": [
+      {
+        "map": "map_forest_port",
+        "changed": []
+      },
+      {
+        "map": "map_orbis_port",
+        "changed": []
+      },
+      {
+        "map": "map_ludus_port",
+        "changed": [
+          {
+            "entity": "npc-1273",
+            "name": "剪票員"
+          }
+        ]
+      },
+      {
+        "map": "map_nihal_port",
+        "changed": [
+          {
+            "entity": "npc-5518",
+            "name": "沙漠空港管理員"
+          }
+        ]
+      },
+      {
+        "map": "map_maple_island_port",
+        "changed": [
+          {
+            "entity": "npc-3524",
+            "name": "楓之島船長"
+          }
+        ]
+      },
+      {
+        "map": "map_lith_harbor_port",
+        "changed": [
+          {
+            "entity": "npc-1001",
+            "name": "獨眼海盜船長"
+          },
+          {
+            "entity": "npc-1272",
+            "name": "屠龍手會計小姐"
+          },
+          {
+            "entity": "npc-1674",
+            "name": "整形外科醫生"
+          },
+          {
+            "entity": "npc-2089",
+            "name": "港口居民"
+          },
+          {
+            "entity": "npc-2172",
+            "name": "副官 Mr.潘喬"
+          },
+          {
+            "entity": "npc-2234",
+            "name": "船員廚師"
+          },
+          {
+            "entity": "npc-3031",
+            "name": "約翰"
+          },
+          {
+            "entity": "npc-3539",
+            "name": "維多利亞計程車"
+          },
+          {
+            "entity": "npc-3638",
+            "name": "維多利亞船長"
+          },
+          {
+            "entity": "npc-3937",
+            "name": "占卜師"
+          },
+          {
+            "entity": "npc-4053",
+            "name": "達利額"
+          },
+          {
+            "entity": "npc-4405",
+            "name": "楓之谷營運員"
+          },
+          {
+            "entity": "npc-4417",
+            "name": "特奧"
+          },
+          {
+            "entity": "npc-4681",
+            "name": "約翰的箱子"
+          },
+          {
+            "entity": "npc-4761",
+            "name": "智慧爺爺"
+          },
+          {
+            "entity": "npc-5065",
+            "name": "繳納箱"
+          },
+          {
+            "entity": "npc-5126",
+            "name": "戴利"
+          },
+          {
+            "entity": "npc-5274",
+            "name": "送貨員"
+          },
+          {
+            "entity": "npc-5721",
+            "name": "噗洛"
+          },
+          {
+            "entity": "npc-5862",
+            "removed": "原生傳送物件"
+          },
+          {
+            "entity": "npc-5875",
+            "name": "理髮師"
+          },
+          {
+            "entity": "npc-5883",
+            "name": "倉庫老闆 金先生"
+          },
+          {
+            "entity": "npc-760",
+            "name": "維多利亞富商"
+          }
+        ]
+      },
+      {
+        "map": "map_ereve_port",
+        "changed": [
+          {
+            "entity": "npc-1554",
+            "name": "奇盧"
+          },
+          {
+            "entity": "npc-1558",
+            "name": "航海員"
+          },
+          {
+            "entity": "npc-2000",
+            "name": "飛行員"
+          },
+          {
+            "entity": "npc-2493",
+            "name": "耶雷弗矛兵"
+          }
+        ]
+      },
+      {
+        "map": "map_rien_port",
+        "changed": [
+          {
+            "entity": "npc-4685",
+            "name": "瑞恩企鵝"
+          },
+          {
+            "entity": "npc-5104",
+            "name": "瑞恩釣魚者"
+          }
+        ]
+      },
+      {
+        "map": "map_leafre_port",
+        "changed": [
+          {
+            "entity": "npc-3659",
+            "name": "塔咪"
+          },
+          {
+            "entity": "npc-5053",
+            "name": "神木村長老"
+          }
+        ]
+      },
+      {
+        "map": "map_edelstein_port",
+        "changed": [
+          {
+            "entity": "npc-2000",
+            "name": "飛行員"
+          },
+          {
+            "entity": "npc-4303",
+            "name": "雷德拓"
+          }
+        ]
+      },
+      {
+        "map": "map_herb_town_port",
+        "changed": [
+          {
+            "entity": "npc-1048",
+            "name": "怪物公園公車"
+          },
+          {
+            "entity": "npc-1135",
+            "name": "逼逼"
+          },
+          {
+            "entity": "npc-1272",
+            "name": "屠龍手會計小姐"
+          },
+          {
+            "entity": "npc-1674",
+            "name": "整形外科醫生"
+          },
+          {
+            "entity": "npc-1769",
+            "name": "克拉拉"
+          },
+          {
+            "entity": "npc-2172",
+            "name": "副官 Mr.潘喬"
+          },
+          {
+            "entity": "npc-2301",
+            "name": "雜貨商人"
+          },
+          {
+            "entity": "npc-2319",
+            "name": "黑豆"
+          },
+          {
+            "entity": "npc-2405",
+            "name": "花精靈"
+          },
+          {
+            "entity": "npc-2627",
+            "name": "來歷不明的魔法師"
+          },
+          {
+            "entity": "npc-2881",
+            "name": "港口居民"
+          },
+          {
+            "entity": "npc-3466",
+            "name": "記錄員"
+          },
+          {
+            "entity": "npc-3937",
+            "name": "占卜師"
+          },
+          {
+            "entity": "npc-4224",
+            "name": "海豚船長"
+          },
+          {
+            "entity": "npc-5192",
+            "name": "真真"
+          },
+          {
+            "entity": "npc-5862",
+            "removed": "原生傳送物件"
+          },
+          {
+            "entity": "npc-5875",
+            "name": "理髮師"
+          },
+          {
+            "entity": "npc-7760",
+            "name": "桃醫仙"
+          },
+          {
+            "entity": "npc-790",
+            "name": "武陵道場告示"
+          }
+        ]
+      },
+      {
+        "map": "map_crimson_sky_dock",
+        "changed": [
+          {
+            "entity": "npc-2859",
+            "removed": "原生傳送物件"
+          },
+          {
+            "entity": "npc-5840",
+            "name": "瑪塔塔"
+          }
+        ]
+      }
+    ],
+    "namedCount": 54,
+    "numberNamesRemaining": 0,
+    "transportPropsRemoved": 3,
+    "runtime": [
+      "[VRF] port cleanup map=map_forest_port names=1 portals=0",
+      "[VRF] port cleanup map=map_orbis_port names=1 portals=0",
+      "[VRF] port cleanup map=map_ludus_port names=2 portals=0",
+      "[VRF] port cleanup map=map_nihal_port names=2 portals=0",
+      "[VRF] port cleanup map=map_maple_island_port names=1 portals=0",
+      "[VRF] port cleanup map=map_lith_harbor_port names=22 portals=0",
+      "[VRF] port cleanup map=map_ereve_port names=4 portals=0",
+      "[VRF] port cleanup map=map_rien_port names=2 portals=0",
+      "[VRF] port cleanup map=map_leafre_port names=2 portals=0",
+      "[VRF] port cleanup map=map_edelstein_port names=2 portals=0",
+      "[VRF] port cleanup map=map_herb_town_port names=18 portals=0",
+      "[VRF] port cleanup map=map_crimson_sky_dock names=1 portals=0",
+      "[VRF] port cleanup total maps=12 namedNPCs=54 placeholders=0 portals=0 boarding=12"
+    ],
+    "runtimeErrors": 0
+  }
+}

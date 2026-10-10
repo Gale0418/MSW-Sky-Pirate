@@ -1,0 +1,174 @@
+{
+  "files": [
+    {
+      "path": "RootDesk/MyDesk/Economy/GreatVoyageCommodityCatalog.mlua",
+      "bytes": 236342,
+      "sha256": "16d5b9b72d8802af5c81c14dedf583d891878388fae831ab64e01143a32a35b1"
+    },
+    {
+      "path": "RootDesk/MyDesk/Economy/GreatVoyageMarketPricing.mlua",
+      "bytes": 6003,
+      "sha256": "8807b7e046044f90d67051d3ec86bdda8af4bad837ce8e48daee75a1475d780d"
+    },
+    {
+      "path": "RootDesk/MyDesk/Economy/GreatVoyagePlayerMarket.mlua",
+      "bytes": 4990,
+      "sha256": "054ef7ebbc6009dadc80b8a3e35ac90468e323557b2d7cab5bce9d283fc35bf8"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyageBackdropController.mlua",
+      "bytes": 7293,
+      "sha256": "232c58f8d7d80262357298f47abe0690a5e405ee19b585aed5a7c50edcfff5b7"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyageDeckMushroom.mlua",
+      "bytes": 1317,
+      "sha256": "78f30165bcc0bee6bfbb00ede6d7a114b6ff7f9df012b2c1347851ba68b00eca"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyageDeckRaid.mlua",
+      "bytes": 6493,
+      "sha256": "7d9c7558342582a2ff1faea780134ea53e9e23a81c34797d831a1bad85e17ed1"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyagePlayerAttack.mlua",
+      "bytes": 1808,
+      "sha256": "41b12fa0323cefaf396d36460b9815aaafdf4b18ec3a88805e835612bc697702"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyageVoyageData.mlua",
+      "bytes": 41065,
+      "sha256": "64da2c48d389501b67be33784c7b6a40fdd6d8b7741d312f95eae89c15490ba6"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyageVoyageState.mlua",
+      "bytes": 95352,
+      "sha256": "332ee91972032da356e67018252f0909cb092022e44bf138c6cbfe4e7fe99524"
+    },
+    {
+      "path": "RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.mlua",
+      "bytes": 49858,
+      "sha256": "fc4e22f3244dc7412f01a076aa458f5cd99f954ca36af1300fed3e05b8903787"
+    },
+    {
+      "path": "RootDesk/MyDesk/Persistence/GreatVoyageSaveMaintenance.mlua",
+      "bytes": 162,
+      "sha256": "6c1d1ecb533993ca5169b97b1b7e08e597b5b3bbae591556b7f23f37a5371f15"
+    },
+    {
+      "path": "RootDesk/MyDesk/Phase0VoyagePrototype.mlua",
+      "bytes": 12204,
+      "sha256": "e59aebe4268fc4beb136e90e6265bddcfb910e71b1ba06d886ee018888351a9d"
+    },
+    {
+      "path": "RootDesk/MyDesk/Ports/GVAquaWhaleBoundary.mlua",
+      "bytes": 3508,
+      "sha256": "466ba5d033139737513f2c80e4bd0642ced3c0ede8b66b7f86d024de78183920"
+    },
+    {
+      "path": "RootDesk/MyDesk/ShipVisual/GVShipDeckBounds.mlua",
+      "bytes": 7561,
+      "sha256": "466ecb670ac6fb92b044dcfbafd71580cdc38f3ae7d8d326e2fc16dc395f69e9"
+    },
+    {
+      "path": "RootDesk/MyDesk/ShipVisual/GVShipVisualClient.mlua",
+      "bytes": 28749,
+      "sha256": "5cb194f1b76d06ad841aeb3fb9f19d7da7c6a9185a3c401a4cf51cf3d3b2c24c"
+    },
+    {
+      "path": "RootDesk/MyDesk/UI/GreatVoyageAdventureController.mlua",
+      "bytes": 195688,
+      "sha256": "3504c516388044af53bca6a9c8ba48e9f68db7281408720f26d9596d3bfb7ff5"
+    },
+    {
+      "path": "RootDesk/MyDesk/UI/GreatVoyageHUDController.mlua",
+      "bytes": 5796,
+      "sha256": "c32975cc3f2243234ae7c88a3865fc65b83f1d980dc6cb1a503f2304345a7b44"
+    },
+    {
+      "path": "RootDesk/MyDesk/UI/GreatVoyageOnboarding.mlua",
+      "bytes": 4784,
+      "sha256": "028db04a9f9fd5720e3513be6c5ac4cb46543e849bce00e46bc48744717752d8"
+    },
+    {
+      "path": "RootDesk/MyDesk/UI/GreatVoyageRouteDeskController.mlua",
+      "bytes": 7470,
+      "sha256": "86864672256c07411bf3c2c8cb34b8893123233d0320a7e41e1dfdc9bc9281b6"
+    },
+    {
+      "path": "Scripts/CityTradeManager.lua",
+      "bytes": 2709,
+      "sha256": "b2a289436cd14ffc59eb918038fdc8c2dd572a97b0d3788a2572d0480107282d"
+    },
+    {
+      "path": "Scripts/PlayerInventory.lua",
+      "bytes": 1422,
+      "sha256": "cd7bd5c467ceaddf18433886777adab2cdd594e847616f40172d6e389b930605"
+    },
+    {
+      "path": "Scripts/PriceFluctuation.lua",
+      "bytes": 1154,
+      "sha256": "2da9446acb586ecd69e8f65ac7c47ff486cf27f16ca30e88ac7b3086bf20e82a"
+    },
+    {
+      "path": "Tests/test_cargo_transactions.py",
+      "bytes": 11592,
+      "sha256": "53333e24b16a0ff73e58f6e9b2b10c46a8f98e07fde3a73ada0cdac153284bb7"
+    },
+    {
+      "path": "Tests/test_cargo_ui.py",
+      "bytes": 26144,
+      "sha256": "1736e170e531b23951ff7ab4d2eb7ac54403ddc23b680bf295aa882f1dec5734"
+    },
+    {
+      "path": "Tests/test_git_review_regressions.py",
+      "bytes": 3494,
+      "sha256": "83caaa891219f2aa764b5925df1fd6261bd36aababaed09fb26b649bfb4d8333"
+    },
+    {
+      "path": "Tests/test_save_maintenance_lua.py",
+      "bytes": 12027,
+      "sha256": "02169448a147feac68dad37cdf0ff09556493927b3c95adeb958c7ca72a1ea98"
+    },
+    {
+      "path": "Tests/test_save_v1_lua.py",
+      "bytes": 50865,
+      "sha256": "5d69a1eb52bf56495f44a998ad4572d185d0079f2aa4f13e2821acd57ae4ec4a"
+    },
+    {
+      "path": "Tests/test_transaction_feedback.py",
+      "bytes": 23702,
+      "sha256": "ed988df5356444a8d6687537e283513b5704044255dec37391f3bf6eeb83cf00"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5346,
+      "sha256": "9472dd1e976acf99bdc472f0ba20fd460671eaf481fab2cca99beaa63965c1e1"
+    },
+    {
+      "path": "docs/GreatVoyage-Ship-Materials-20261010.md",
+      "bytes": 17885,
+      "sha256": "d3eaf1022890e6e51b18c54f864978cbd92ae6fb6d7d59e45aaea9ff84cbea44"
+    },
+    {
+      "path": "docs/reviews/all-money-audit-20261010.md",
+      "bytes": 16063,
+      "sha256": "95cd3e4574427445ebaf24a7eccc14d1c1c9620a893c73e6a7830d98a35599de"
+    },
+    {
+      "path": "review-context.md",
+      "bytes": 1968,
+      "sha256": "b79cf78c8c4f9c8b87ae02e9ec36125de619687122d0a258c1fffe3ffd1701f0"
+    }
+  ],
+  "count": 32,
+  "verbatim": true,
+  "excluded": [
+    "Native map/model/UI JSON",
+    "images and binary resources",
+    "generated codeblock/directory metadata",
+    "engine APIs/defaults",
+    "cache and private evidence"
+  ],
+  "base": "isolated main empty commit"
+}

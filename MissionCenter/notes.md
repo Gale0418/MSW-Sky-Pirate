@@ -132,3 +132,23 @@
 - 天空城 MapObject_17 新增 ClimbableComponent；Maker 實測按住 ↑ 後角色 y=-1.429→0.068。
 - 飛行甲板隱藏原版飛船所有 SpriteRenderer、保留碰撞，並以自繪船置中；魔森停用原版船 MapObject_1、移除 npc-5097、保留森林商人．艾琳。
 - 最終 build=0、runtime nonInfo=0；Terra：PASS — 無剩餘批評。證據：MissionCenter/evidence/E8_ship_follow_fix/。
+
+## 2026-10-10 21 億經濟與材料規劃 checkpoint
+
+- 定案：T5 金幣費 2,147,483,647 G，材料另計；船／卡整數價。其餘候選價格以 ../Docs/GreatVoyage-Ship-Materials-20261010.md 為本輪整合規格。
+- 已完成唯讀盤點：19 個 RootDesk mLua 的正式本金／交易／卡片／維修／金額上限、停用本地原型及 UI 投影，見 ../Docs/reviews/all-money-audit-20261010.md。賞金與製造消耗尚未實作。
+- 已完成靜態算術：13 現役港、11 種 verified 未退役材料、T2～T5 配方與單位；收據 ../Docs/reviews/ship-material-design-check-20261010.json。Luna 獨立唯讀複核通過相同範圍，不代表 Maker runtime 通過。
+- 尚待：水世界／工業港商人綁定、必要材料保底、全商品跨港收益矩陣、價格版本／舊批次處理、金額擴容與讀回、分批寄存與原子製造、空域池／權重／賞金 claim、防重掉落。任務／造船 NPC 放後面。
+- MissionCenter/ship-material-task-draft.md 為可檢閱草案，未發布 tasks.md，未修改 lifecycle；本輪沒有改遊戲數值或執行新的 Maker 遊戲驗證。
+
+
+## 2026-10-10｜main 保存與審查 checkpoint
+
+- 使用者授權直接 commit／push origin/main，不另建遊戲分支或 PR；CodeRabbit 可接收本專案程式，限制每小時三次、每次150檔。
+- 審查輸入32檔：19個完整 mLua（含完整185商品literal）、3個舊Lua、6個Python測試、README、材料規格、金錢盤點、審查上下文。未人工拆檔或湊數；地圖／模型／UI／圖片／Native API／產生檔／私有證據先排除。
+- 本地測試補入真實 RefreshOpenPorts／IsLegacyPort，84 tests、10 subtests 通過；補驗4→13港遷移、缺原四港拒絕與舊 raw CAS。沒有因此修改遊戲 production。
+- 同世界 Maker 唯讀探針正向確認13登船點近可遠拒、11商人存在、185全表／160現役、上架無退役品、FIFO成本6000、存檔港口13；build71／runtime56全Info，已stop。此切片未驗正式重登／跨instance／實體鼠鍵／主觀視覺。
+- 13可航行港口不代表13港都可交易；水世界／埃德爾斯坦商人待補。21億T5與新經濟曲線是候選規格，現行錢包與船價不冒稱已替換。Save、M1及相關任務狀態維持既有值。
+- 審查雜湊與Maker回執：[git-checkpoint](../docs/reviews/2026-10-10/git-checkpoint/)。CodeRabbit結果與推送收據待本輪完成後補入。
+
+- 15:56收尾補充：完整32檔Rabbit提出1 Major issue已先重現並修；複審實際9檔0 issues。市場同步清理過期列、先查48KB，再換帳號；交易caller同步失敗取消並復原行情。88 tests＋10 subtests；修正後Native build73／runtime45全Info、fixture cleanup完成。完整[紀錄](../docs/CodeRabbit-Review-20261010.md)。上方84測試與唯讀Native是修正前checkpoint，保留歷史，不代表最後結果。

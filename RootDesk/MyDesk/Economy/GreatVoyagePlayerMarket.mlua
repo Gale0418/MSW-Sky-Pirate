@@ -58,13 +58,13 @@ script GreatVoyagePlayerMarket extends Logic
 	end
 
 	@ExecSpace("ServerOnly")
-	method void MarkDirty(string playerId, string portId, string goodId)
+	method boolean MarkDirty(string playerId, string portId, string goodId)
 		-- 同步整港市場到中央帳號並增加 generation；本邏輯不呼叫任何 DataStorage writer。
 		local profileCode = self.profileByUser[playerId]
 		local account = self.accounts[profileCode or ""]
 		local market = account and account.markets[portId] or nil
-		if market == nil or market.ready ~= true or _GreatVoyageProfileStore == nil then return end
-		_GreatVoyageProfileStore:SyncMarket(playerId, portId, market.entries)
+		if market == nil or market.ready ~= true or _GreatVoyageProfileStore == nil then return false end
+		return _GreatVoyageProfileStore:SyncMarket(playerId, portId, market.entries)
 	end
 
 	@ExecSpace("ServerOnly")

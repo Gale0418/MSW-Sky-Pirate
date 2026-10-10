@@ -1,0 +1,45 @@
+{
+  "build": {
+    "count": 71,
+    "issues": []
+  },
+  "runtime": [
+    {
+      "time": "2026-10-10T08:23:16",
+      "message": "[VRF][Cargo13UI] PASS wood-material=1 retired-clearance=1"
+    },
+    {
+      "time": "2026-10-10T08:25:00",
+      "message": "[VRF][Cargo13] counts all=185 active=160 public=160"
+    },
+    {
+      "time": "2026-10-10T08:25:00",
+      "message": "[VRF][Cargo13] quotes forest=800"
+    },
+    {
+      "time": "2026-10-10T08:25:38",
+      "message": "[VRF][Cargo13Save] raw=true"
+    },
+    {
+      "time": "2026-10-10T08:25:39",
+      "message": "[VRF][Cargo13Save] decoded=true"
+    },
+    {
+      "time": "2026-10-10T08:25:39",
+      "message": "[VRF][Cargo13Save] lots=4 firstCost=123456 lastCost=234567 FIFO=123456 left=3"
+    },
+    {
+      "time": "2026-10-10T08:25:40",
+      "message": "[VRF][Cargo13Save] v1=true preservedCost=6543 no-storage-write=1"
+    },
+    {
+      "time": "2026-10-10T08:26:48",
+      "message": "[VRF][Cargo13Shelves] valid=13 invalid=0 japan=0"
+    },
+    {
+      "time": "2026-10-10T08:27:37",
+      "message": "[VRF][Cargo13Clearance] validQuotes=221 invalid=0"
+    }
+  ],
+  "runtimeIssues": []
+}

@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "directory://6458cc494c5f463ab562f5df714dbca2",
+  "ContentType": "x-mod/directory",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.10.0.0",
+  "StudioVersion": "",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "entry_id": "directory://6458cc494c5f463ab562f5df714dbca2",
+      "name": "Ports",
+      "lock": false,
+      "folding": false,
+      "nameEditable": true
+    }
+  }
+}

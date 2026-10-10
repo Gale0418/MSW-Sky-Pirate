@@ -1,24 +1,17 @@
 <!-- Generated materialized view. Do not edit directly; rebuild from canonical MissionCenter files. -->
-<!-- mission-center-derived schema=1.0 fingerprint-format=sha256-v2-lf source-fingerprint=d098fb022fced726d495ab121ca589a07bd802c5830c1b3c9511210ee9b7b324 -->
+<!-- mission-center-derived schema=1.0 fingerprint-format=sha256-v2-lf source-fingerprint=8543acb9a10edb24077d7e27f9ed7979b58b239b0a4bc446a5f11af1ccc95ff1 -->
 # Mission Brief
 
-- Last organized: 2026-10-08
-- Source fingerprint: `d098fb022fced726d495ab121ca589a07bd802c5830c1b3c9511210ee9b7b324`
+- Last organized: 2026-10-10
+- Source fingerprint: `8543acb9a10edb24077d7e27f9ed7979b58b239b0a4bc446a5f11af1ccc95ff1`
 - Source of truth: `tasks.md`
 - Project: MSW Great Voyage
 - North Star: 楓之谷風格的空中航海冒險；以既有三場景原型為基線，完成 Great Voyage M1 四港、直航多空域航圖、地方商品貿易、甲板遭遇與整合 QA。
 - Cycle: Great Voyage M1
 
-## Today's Summary · 2026-10-08
-- 10:39｜依主人授權直接保存main：CodeRabbit完整23檔（17現有mLua、2測試、3舊原型、1上下文）提出1 major／3 minor，四項確認根因後修正；單次聚焦複查0 issues，兩次review均exit0，未超每小時3次／每次150檔。大型資源／資料literal／產生檔先排除，未湊假檔。[可公開紀錄與原始回應](../docs/CodeRabbit-Review-20261008.md)。
-- 10:39｜保存前驗證53 tests＋5 subtests、409 body syntax、184商品與624交易案例通過；Maker新build10:36:29共72 Info，normal39 Info，0 Warning／Error；隔離market缺省欄位與leave快取正向marker通過、無測試DataStorage寫入，已回map01/edit。Abandon revision本輪未做Native行為／未真斷線；有production-body回歸。S3來源保持凍結，Rabbit為其後delta；Save八筆Review及正式bootstrap／跨instance待辦維持。README與公開UI三張截圖同步保存，推送尚待Git收據。
-- 10:44｜61檔checkpoint `f8ad28eaaf98610e0dbf52781b5f4a5183efcd2e` 已一般推送origin/main，push exit0；git ls-remote與GitHub connector讀main確認同SHA，工作樹乾淨。全程無新增遊戲分支／PR、無force push。此上傳回執另以文件提交保存，Save八筆Review與正式發布限制維持。[提交](https://github.com/Gale0418/MSW-Sky-Pirate/commit/f8ad28eaaf98610e0dbf52781b5f4a5183efcd2e)。
-- 11:35｜GV-CARGO-CAPACITY-20261008：修正買一件後還有空位卻拒買；容量內同種續買／混裝、FIFO成本、指定商品出售、schema2兼容v1及原raw CAS已整合。78 tests＋5 subtests、417語法、184商品／624案例通過；Maker隔離買賣、JSON／v1遷移、真Client table RPC、商會選賣及船艙第二頁正向marker；新build66Info／normal39Info，0Warning/Error，還原投影後stop/map01 edit。Rabbit第三次rolling-hour review十一輸入檔、exit0，2minor中1重現修正、1反證排除；無額外重審。README／公開證據同步，狀態Review；發布真重登、bootstrap／跨instance仍待。[紀錄](../docs/Cargo-Mixed-Verification-20261008.md)。
-- 13:35｜GV-SAVE-QA／GV-SAVE-LIFE：依正式服截圖與GitHub skill完成首次讀取NotFound 1000002、gate後重讀及建檔前取消修正；不清檔、不自動Set OPEN、不擴大Set/CAS ack。補setup持續提示／30秒polling、loading圖片／卡槽／船況與pager清理。90 tests／13 subtests、167 bodies通過；Maker refresh回not running，正式SERVER／DB未核驗。Rabbit三輪2 minor皆查證修正（setup polling／clone test assertion）、第二輪0 issues；第三輪後單一測試斷言已重跑90/13通過，未第4輪；維持Review。[診斷](../docs/Published-Save-Diagnosis-20261008.md)。
-- 15:27｜GV-SAVE-QA／GV-SAVE-LIFE：已收到正式 13:43 missing/code0 與 15:06 uncertain/code0；補初讀 code0＋nil→setup、先前未知 claim 仍 uncertain/no-resend、失敗 phase／去識別化 valueKind。95 tests／24 subtests 通過，兩檔 CodeRabbit 0 issues／exit0（本時段一次）；README與診斷更新。13:51舊版 Maker Refresh/Play 讀既有 revision25與Maker-only OPEN有實際MCP；本次Maker未執行，新增程式native及正式首次保存重登仍待，Review不前進。無正式DB寫入／自動OPEN／counter bootstrap。[診斷與審查](../docs/Published-Save-Diagnosis-20261008.md)。
-- 15:43｜GV-SAVE-QA／GV-SAVE-LIFE：Maker恢復，同世界map01/edit；15:38 Refresh成功、build66Info/0Warning/Error，15:41 server_main 五個假gate診斷案例全pass=true，runtime37Info/0Warning/Error，stop後build66Info，已回edit。正式15:37仍缺phase/valueKind，主人確認操作Maker發布；發布時點／版本未獨立核驗，已請從本次Refresh版再發布並重進。native補驗完成但正式首次建檔、DB維護仍未做，Review保留。[原生回執](../docs/reviews/2026-10-08/published-save/gate-150647/maker-1541-receipt.json)。
-- Timestamp：2026-10-08T15:55:00+08:00
-- [TRUNCATED] 17 additional items require canonical file access.
+## Today's Summary · 2026-10-10
+- 15:30｜依主人授權準備直接保存／推送 main，不建立遊戲分支或 PR。README 更新 13 港／15 地圖、185 商品中 160 現役／25 退役，以及 21 億造船與材料規劃的實作界線。全量本地測試發現舊 LoadForPlayer fixture 未注入 RefreshOpenPorts，正在以 production 方法補驗。將把全部現有與較早的 mLua／Lua／Python 測試送 CodeRabbit；大型地圖、UI、圖片、Native API、產生檔及私有證據排除，不湊假 150 檔。實際審查結果及推送回執稍後補入，既有 Review／Blocked 與未發布驗收狀態維持。
+- 15:56｜main 保存前驗證完成：CodeRabbit完整32檔提出1 Major issue，先production-body重現再修過期市場列／48KB換入前檢查；追到caller補MarkDirty結果、買賣同步失敗取消與單列復原。5檔差異連同關聯程式9檔複審0 issues，兩輪exit0／review_completed；本時段共2次，未湊假150檔。88 tests＋10 subtests、十三港UTF-8大小界線與diff check通過。修正後Maker正向prune／stock／拒絕不換帳號／MarkDirty false→true／cleanup，build73／runtime45全Info、0Warning/Error，已stop。README與[審查紀錄](../docs/CodeRabbit-Review-20261010.md)同步；正式重登與跨instance待驗、M1／Save既有狀態不前進。
 
 ## Relevant Guardrails (0)
 - None
