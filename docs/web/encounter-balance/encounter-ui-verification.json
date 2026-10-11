@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "scope": "Offline execution of review renderer with a minimal DOM fixture; not Chrome or MSW runtime.",
+  "checks": [
+    "巴達雷伊 T1 維多利亞含全空域卡片可抽",
+    "保留來源等級待查並顯示自訂 Lv.28",
+    "全採用清單低難度標記正確"
+  ],
+  "testedAt": "2026-10-11T21:34:55+08:00"
+}

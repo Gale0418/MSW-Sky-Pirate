@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "cases": 22464,
+  "randomSamples": 98000,
+  "userOverride": {
+    "name": "巴達雷伊",
+    "originalLevel": null,
+    "encounterLevel": 28,
+    "area": "__allair"
+  },
+  "adopted": 132,
+  "ready": 129,
+  "sourceAssignments": 300,
+  "excluded": 168,
+  "monteCarlo": {
+    "expectedChance": 0.7725864786349521,
+    "observedChance": 0.7698,
+    "expectedCount": 12.361383658159234,
+    "observedCount": 12.32095
+  },
+  "scope": "Offline algorithm and embedded data; no MSW runtime verification."
+}

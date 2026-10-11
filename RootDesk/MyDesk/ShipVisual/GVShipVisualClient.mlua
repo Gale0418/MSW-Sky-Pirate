@@ -38,6 +38,7 @@ script GVShipVisualClient extends Component
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
 		-- 建立本地船視覺；港口泊位仍由地圖錨點管理。
+		_DamageSkinService:PreloadAsync("3271c3e79bf04ecba9a107d55495970d",function(ok) end)
 		local map = self.Entity.CurrentMap
 		self:RefreshLocalMapState()
 		log("[VRF] dock ship host ready map=" .. tostring(map))
@@ -45,6 +46,7 @@ script GVShipVisualClient extends Component
 
 	@ExecSpace("ClientOnly")
 	method void OnUpdate(number delta)
+		self:UpdateBattleDamageNumbers()
 		self:UpdateBattleVisuals(delta)
 		self.refreshElapsed = self.refreshElapsed + delta
 		if self.refreshElapsed < 0.2 then return end
@@ -299,6 +301,8 @@ script GVShipVisualClient extends Component
 	@ExecSpace("ClientOnly")
 	method void ReleaseLocalViews()
 		self:ReleaseBattleVisuals()
+		for _,entry in ipairs(self._T.damageNumbers or {}) do if isvalid(entry.entity) then entry.entity:Destroy() end end
+		self._T.damageNumbers = {}
 		if self.localHullView ~= nil and isvalid(self.localHullView) then self.localHullView:Destroy() end
 		if self.localEngineView ~= nil and isvalid(self.localEngineView) then self.localEngineView:Destroy() end
 		if self.localForegroundView ~= nil and isvalid(self.localForegroundView) then self.localForegroundView:Destroy() end
@@ -313,15 +317,11 @@ script GVShipVisualClient extends Component
 
 	@ExecSpace("ClientOnly")
 	method string GetBattleAnimationRuid(string enemyId)
-		-- RUIDs verified from official MSW resource packs; these views have no Body or damage authority.
-		if enemyId == "stirge" then return "97be1b527dea4b20b7d1521feec01e64" end
-		if enemyId == "star_pixie" then return "a25f27e01d7446c6910550d595ef08b6" end
-		if enemyId == "bubble_fish" then return "669b0c89c6d84658b9b2e0a34a43a514" end
-		if enemyId == "yellow_plane" then return "2ea57f7287af47c3a718c48bfa4cf5bd" end
-		if enemyId == "kiyo" then return "d261f2a9500943e08e95a2a7988e4259" end
-		return ""
+		-- 全部採用人工分類表已核實的 MSW 動畫，不再只認五種舊怪。
+		local monster = _GreatVoyageEncounterData:GetMonsterById(enemyId)
+		if monster == nil then return "" end
+		return monster.animationRuid
 	end
-
 	@ExecSpace("ClientOnly")
 	method Vector3 GetBattleEnemyPosition()
 		-- Keep the encounter in the left open sky across viewport sizes and camera zooms.
@@ -354,29 +354,142 @@ script GVShipVisualClient extends Component
 	end
 
 	@ExecSpace("ClientOnly")
-	method void LoadBattleEnemyCenter(string animationRuid)
-		-- 素材預載完成後只算一次平均身體中心，避免每幀載入或瞄準腳底錨點。
-		if self._T.enemyCenterCache == nil then self._T.enemyCenterCache = {} end
-		if self._T.enemyCenterCache[animationRuid] ~= nil then return end
-		self._T.enemyCenterCache[animationRuid] = Vector2(0, 0)
-		_ResourceService:PreloadAsync({animationRuid}, function(results)
-			if not isvalid(self.Entity) then return end
-			local clip = _ResourceService:LoadAnimationClipAndWait(animationRuid)
-			if clip == nil or not clip.IsLoadComplete then return end
-			local x, y, count = 0, 0, 0
-			for _, frame in ipairs(clip.Frames:ToTable()) do
-				local sprite = frame.FrameSprite
-				if sprite ~= nil and sprite.IsLoadComplete and sprite.PixelPerUnit > 0 then
-					x = x + (sprite.Width * 0.5 - sprite.PivotPixel.x) / sprite.PixelPerUnit
-					y = y + (sprite.Height * 0.5 - sprite.PivotPixel.y) / sprite.PixelPerUnit
-					count = count + 1
+	method void PreloadBattleMonsterHitAnimations(table wave)
+		-- 只預載當前 airWave 已上場物種，按 RUID 快取請求與成功結果。
+		if wave == nil or wave.enemies == nil then return end
+		if self._T.hitAnimationPreloadRequested == nil then self._T.hitAnimationPreloadRequested = {} end
+		if self._T.preloadedHitAnimationRuids == nil then self._T.preloadedHitAnimationRuids = {} end
+		local requested = self._T.hitAnimationPreloadRequested
+		local loaded = self._T.preloadedHitAnimationRuids
+		local ruidList = {}
+		for _, enemy in ipairs(wave.enemies) do
+			local packId = enemy.id or enemy.packId
+			if packId ~= nil and packId ~= "" then
+				local hitRuid = _GreatVoyageEncounterData:GetMonsterHitAnimationRuid(packId)
+				if hitRuid ~= nil and hitRuid ~= "" and requested[hitRuid] ~= true and loaded[hitRuid] ~= true then
+					requested[hitRuid] = true
+					table.insert(ruidList, hitRuid)
 				end
 			end
-			if count > 0 then self._T.enemyCenterCache[animationRuid] = Vector2(x / count, y / count) end
-			log("[AirBattleVisual] enemy center loaded ruid=" .. animationRuid .. " offset=" .. tostring(self._T.enemyCenterCache[animationRuid]))
-		end)
+		end
+		if #ruidList > 0 then
+			_ResourceService:PreloadAsync(ruidList, function(results)
+				local succeeded = 0
+				for index, ruid in ipairs(ruidList) do
+					if results ~= nil and results[index] == PreloadResultStatus.Success then
+						loaded[ruid] = true
+						succeeded = succeeded+1
+					end
+				end
+				if isvalid(self.Entity) then log("[VRF] wave hit clips preloaded n=" .. tostring(succeeded) .. "/" .. tostring(#ruidList)) end
+			end)
+		end
 	end
 
+	@ExecSpace("ClientOnly")
+	method void StartBattleHitPose(integer uid, string packId, string originalRuid)
+		-- 命中只切換伺服器鎖定 UID；MISS 不會呼叫此方法。
+		if uid == nil or packId == nil or packId == "" then return end
+		local hitRuid = _GreatVoyageEncounterData:GetMonsterHitAnimationRuid(packId)
+		if hitRuid == nil or hitRuid == "" then return end
+		local view = self._T.waveViews and self._T.waveViews[uid] or nil
+		if not isvalid(view) or view.SpriteRendererComponent == nil or view.TransformComponent == nil then return end
+		if self._T.hitPoses == nil then self._T.hitPoses = {} end
+		local pose = self._T.hitPoses[uid]
+		if pose == nil then
+			pose = {packId=packId, hitRuid=hitRuid, originalRuid=originalRuid, remaining=0.3, position=view.TransformComponent.Position}
+			self._T.hitPoses[uid] = pose
+		else
+			pose.packId = packId
+			pose.hitRuid = hitRuid
+			pose.originalRuid = originalRuid
+			pose.remaining = 0.3
+			pose.position = view.TransformComponent.Position
+		end
+		if view.SpriteRendererComponent.SpriteRUID ~= hitRuid then view.SpriteRendererComponent.SpriteRUID = hitRuid end
+		log("[VRF] monster hit pose uid=" .. tostring(uid) .. " pack=" .. packId .. " ruid=" .. hitRuid)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void UpdateBattleHitPoses(number delta, table wave)
+		-- 活體在 pose 後還原主 clip；已離開 roster 的死亡 UID 留到 0.3 秒結束再回收。
+		local poses = self._T.hitPoses
+		if poses == nil or wave == nil or wave.id ~= self.appliedBattleId then return end
+		local active = {}
+		for _, enemy in ipairs((wave and wave.enemies) or {}) do active[enemy.uid] = enemy end
+		for uid, pose in pairs(poses) do
+			local enemy = active[uid]
+			if enemy == nil and pose.isDead ~= true then
+				local view = self._T.waveViews and self._T.waveViews[uid] or nil
+				if isvalid(view) and view.TransformComponent ~= nil then pose.position = view.TransformComponent.Position end
+			end
+			pose.isDead = enemy == nil
+			if enemy ~= nil then pose.originalRuid = enemy.animationRuid or pose.originalRuid end
+			pose.remaining = math.max(0, (pose.remaining or 0)-delta)
+			if pose.remaining <= 0 then
+				local view = self._T.waveViews and self._T.waveViews[uid] or nil
+				if isvalid(view) then
+					if pose.isDead then
+						view:Destroy()
+						self._T.waveViews[uid] = nil
+					else
+						local renderer = view.SpriteRendererComponent
+						if renderer ~= nil and pose.originalRuid ~= nil and renderer.SpriteRUID ~= pose.originalRuid then renderer.SpriteRUID = pose.originalRuid end
+					end
+				end
+				poses[uid] = nil
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void LoadBattleEnemyCenter(string animationRuid)
+		-- 預載完成後快取素材中心；失敗隔秒重試，最多三次，不在每幀同步載入。
+		if animationRuid == nil or animationRuid == "" then return end
+		if self._T.enemyCenterCache == nil then self._T.enemyCenterCache = {} end
+		if self._T.enemyCenterReady == nil then self._T.enemyCenterReady = {} end
+		if self._T.enemyMissRadius == nil then self._T.enemyMissRadius = {} end
+		if self._T.enemyTopOffsetCache == nil then self._T.enemyTopOffsetCache = {} end
+		if self._T.enemyCenterLoads == nil then self._T.enemyCenterLoads = {} end
+		if self._T.enemyCenterReady[animationRuid] then return end
+		local load = self._T.enemyCenterLoads[animationRuid]
+		if load == nil then load = {tries=0, retryAt=0, loading=false} self._T.enemyCenterLoads[animationRuid] = load end
+		if load.loading or load.tries >= 3 or _UtilLogic.ElapsedSeconds < load.retryAt then return end
+		load.loading = true
+		load.tries = load.tries+1
+		self._T.enemyCenterCache[animationRuid] = Vector2(0,0)
+		_ResourceService:PreloadAsync({animationRuid}, function(results)
+			if not isvalid(self.Entity) then load.loading = false return end
+			local clip = _ResourceService:LoadAnimationClipAndWait(animationRuid)
+			local x,y,count,radius,topOffset = 0,0,0,0,0
+			if clip ~= nil and clip.IsLoadComplete then
+				for _, frame in ipairs(clip.Frames:ToTable()) do
+					local sprite = frame.FrameSprite
+					if sprite ~= nil and sprite.IsLoadComplete and sprite.PixelPerUnit > 0 then
+						x = x+(sprite.Width*0.5-sprite.PivotPixel.x)/sprite.PixelPerUnit
+						y = y+(sprite.Height*0.5-sprite.PivotPixel.y)/sprite.PixelPerUnit
+						topOffset = math.max(topOffset,(sprite.Height-sprite.PivotPixel.y)/sprite.PixelPerUnit)
+						local rx = math.max(math.abs(sprite.PivotPixel.x), math.abs(sprite.Width-sprite.PivotPixel.x))/sprite.PixelPerUnit
+						local ry = math.max(math.abs(sprite.PivotPixel.y), math.abs(sprite.Height-sprite.PivotPixel.y))/sprite.PixelPerUnit
+						radius = math.max(radius,math.sqrt(rx*rx+ry*ry))
+						count = count+1
+					end
+				end
+			end
+			load.loading = false
+			if count > 0 then
+				self._T.enemyCenterCache[animationRuid] = Vector2(x/count,y/count)
+				local ox,oy = x/count,y/count
+				self._T.enemyMissRadius[animationRuid] = (radius+math.sqrt(ox*ox+oy*oy))*1.5+0.25
+				self._T.enemyTopOffsetCache[animationRuid] = topOffset*1.5
+				self._T.enemyCenterReady[animationRuid] = true
+				log("[VRF] enemy center ready ruid=" .. animationRuid .. " offset=" .. tostring(self._T.enemyCenterCache[animationRuid]))
+			else
+				load.retryAt = _UtilLogic.ElapsedSeconds+1
+				log_warning("[AirBattleVisual] enemy center load failed ruid=" .. animationRuid .. " attempt=" .. tostring(load.tries))
+			end
+		end)
+	end
 	@ExecSpace("ClientOnly")
 	method Vector3 GetBattleEnemyCenter(Vector3 enemyPosition, string animationRuid)
 		-- 官方敵人朝右翻面，中心 X 偏移也跟著翻面；縮放與實際敵人一致。
@@ -426,48 +539,29 @@ script GVShipVisualClient extends Component
 	end
 
 	@ExecSpace("ClientOnly")
+
 	method void UpdateBattleVisuals(number delta)
-		-- Render server-authorized battle snapshots without changing combat resolution.
+		-- UID 獨立飛行；發射前算攔截點，出膛後固定直線與角度，完全不追蹤。
 		local player = _UserService.LocalPlayer
 		local map = self.Entity.CurrentMap
 		local controller = _GreatVoyageAdventureController
-		local battle = nil
-		if controller ~= nil then battle = controller.clientAirBattle end
-		if not isvalid(player) or not isvalid(map) or player.CurrentMap ~= map or map.Name ~= "map_airship_deck" or battle == nil or battle.phase ~= "active" then
-			if self.appliedBattleId ~= "" then
-				-- 勝利快照可能早於最後一發的視覺收尾，仍補上一次擊殺爆炸。
-				local finalImpact = nil
-				if isvalid(player) and player.CurrentMap == map and battle ~= nil and battle.phase == "won" and battle.id == self.appliedBattleId and (battle.playerShotSequence or 0) > (self._T.lastImpactSequence or 0) then
-					finalImpact = self:GetBattleEnemyCenter(self:GetBattleEnemyPosition(), self:GetBattleAnimationRuid(battle.enemyId))
-				end
-				self:ReleaseBattleVisuals()
-				if finalImpact ~= nil then self:ShowBattleImpact(finalImpact) end
-			end
+		local battle = controller and controller.clientAirBattle or nil
+		if battle ~= nil and battle.phase == "won" and self._T.completedBattleId == battle.id then return end
+		local renderBattle = battle ~= nil and (battle.phase == "active" or battle.phase == "won")
+		if not isvalid(player) or not isvalid(map) or player.CurrentMap ~= map or map.Name ~= "map_airship_deck" or not renderBattle then
+			if self.appliedBattleId ~= "" then self:ReleaseBattleVisuals() end
 			return
 		end
-		local animationRuid = self:GetBattleAnimationRuid(battle.enemyId)
-		if animationRuid == "" then return end
 		if self.appliedBattleId ~= battle.id then
 			self:ReleaseBattleVisuals()
-			self:LoadBattleEnemyCenter(animationRuid)
-			_ResourceService:PreloadAsync({self.impactAnimationRuid}, function(results) end)
-			local enemy = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalAirEnemy", self:GetBattleEnemyPosition(), map)
 			local shot = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalCannonShot", self:GetBattleMuzzlePosition(), map)
 			local enemyShot = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalEnemyShot", self:GetBattleEnemyPosition(), map)
-			self.localBattleEnemy = enemy
 			self.localBattleShot = shot
 			self.localEnemyShot = enemyShot
-			if not isvalid(enemy) or not isvalid(shot) or not isvalid(enemyShot) or enemy.SpriteRendererComponent == nil or shot.SpriteRendererComponent == nil or enemyShot.SpriteRendererComponent == nil or enemy.TransformComponent == nil or shot.TransformComponent == nil or enemyShot.TransformComponent == nil then
+			if not isvalid(shot) or not isvalid(enemyShot) or shot.SpriteRendererComponent == nil or enemyShot.SpriteRendererComponent == nil or shot.TransformComponent == nil or enemyShot.TransformComponent == nil then
 				self:ReleaseBattleVisuals()
 				return
 			end
-			enemy.SpriteRendererComponent.SpriteRUID = animationRuid
-			enemy.SpriteRendererComponent.SortingLayer = self:GetMapSortingLayer()
-			enemy.SpriteRendererComponent.OrderInLayer = 20
-			enemy.SpriteRendererComponent.FlipX = true
-			enemy.SpriteRendererComponent.Enable = true
-			enemy.TransformComponent.Scale = Vector3(1.5, 1.5, 1)
-			-- Official MapleStory cannonball animation: black shell with a flame trail.
 			shot.SpriteRendererComponent.SpriteRUID = self.cannonAnimationRuid
 			shot.SpriteRendererComponent.SortingLayer = self:GetMapSortingLayer()
 			shot.SpriteRendererComponent.OrderInLayer = 21
@@ -479,74 +573,91 @@ script GVShipVisualClient extends Component
 			enemyShot.SpriteRendererComponent.OrderInLayer = 21
 			enemyShot.SpriteRendererComponent.Color = Color(0.4, 0.8, 1, 1)
 			enemyShot.SpriteRendererComponent.Enable = false
-			enemyShot.TransformComponent.Scale = Vector3(2.0, 2.0, 1)
+			enemyShot.TransformComponent.Scale = Vector3(2, 2, 1)
+			_ResourceService:PreloadAsync({self.impactAnimationRuid}, function(results) end)
 			self.appliedBattleId = battle.id
-			self.lastEnemyHp = battle.enemyHp
-			log("[AirBattleVisual] created id=" .. battle.id .. " enemy=" .. battle.enemyId .. " anchor=" .. tostring(self:GetBattleEnemyPosition()) .. " cannon=" .. self.cannonAnimationRuid)
+			log("[VRF] roaming battle created id=" .. battle.id)
 		end
-		if not isvalid(self.localBattleEnemy) or not isvalid(self.localBattleShot) or not isvalid(self.localEnemyShot) then
-			self:ReleaseBattleVisuals()
-			return
-		end
+		if not isvalid(self.localBattleShot) or not isvalid(self.localEnemyShot) then self:ReleaseBattleVisuals() return end
 		self.battleVisualElapsed = self.battleVisualElapsed + delta
 		self.shotElapsed = self.shotElapsed + delta
 		self.enemyShotElapsed = self.enemyShotElapsed + delta
-		self.enemyHitFlashRemaining = math.max(0, self.enemyHitFlashRemaining - delta)
-		-- Start from server launch sequences, rather than replaying a shot after HP has dropped.
-		if (battle.playerShotSequence or 0) > self.lastPlayerShotSequence then
-			self.lastPlayerShotSequence = battle.playerShotSequence
-			self.shotElapsed = math.max(0, battle.playerShotElapsed or 0)
-			if self.shotElapsed < self.shotFlightSeconds then
-				local targetPosition = self:GetBattleEnemyCenter(self:GetBattleEnemyPosition(), animationRuid)
-				local rotation = self:GetProjectileRotation(self:GetBattleMuzzlePosition(), targetPosition, self.cannonSpriteFacingOffset)
-				log("[AirBattleVisual] player shot started seq=" .. tostring(self.lastPlayerShotSequence) .. " rotation=" .. tostring(rotation) .. " muzzle=" .. tostring(self:GetBattleMuzzlePosition()) .. " target=" .. tostring(targetPosition))
+		self.enemyHitFlashRemaining = math.max(0, self.enemyHitFlashRemaining-delta)
+		local shot = self:GetBattlePlayerShot(battle)
+		if shot ~= nil and shot.sequence > self.lastPlayerShotSequence then
+			self:LoadBattleEnemyCenter(shot.animationRuid)
+			-- 中心尚未預載完成時等待，不能先瞄腳底、再於飛行途中偷偷修正落點。
+			if self._T.enemyCenterReady ~= nil and self._T.enemyCenterReady[shot.animationRuid] then
+				if self.lastPlayerShotSequence > (self._T.lastImpactSequence or 0) then
+					self:CompletePlayerShotVisual(self._T.playerShotEndPosition)
+				end
+				local wave = controller._T.airWave
+				local age = math.max(0, _UtilLogic.ElapsedSeconds-(wave.receivedAt or _UtilLogic.ElapsedSeconds))
+				self.lastPlayerShotSequence = shot.sequence
+				self.shotElapsed = math.max(0, (shot.elapsed or 0)+age)
+				self.shotFlightSeconds = math.max(0.01, shot.flightSeconds or 0.6)
+				self._T.playerShotTargetUid = shot.targetUid
+				self._T.playerShotTargetRuid = shot.animationRuid
+				self._T.playerShotTargetPackId = shot.targetId
+				self._T.playerShotStartPosition = self:GetBattleMuzzlePosition()
+				self._T.playerShotImpactTime = self.battleVisualElapsed+math.max(0, self.shotFlightSeconds-self.shotElapsed)
+				self._T.playerShotHit = shot.hit ~= false
+				self._T.playerShotDamage = shot.damage
+				self._T.playerShotCritical = shot.critical == true
+				self._T.playerShotEndPosition = self:GetBattleTargetCenter(shot.targetUid, shot.animationRuid, self._T.playerShotImpactTime)
+				if not self._T.playerShotHit then
+					self._T.playerShotEndPosition = self:GetBattleMissEndPosition(self._T.playerShotStartPosition,self._T.playerShotEndPosition,shot.animationRuid,shot.sequence)
+				end
+				self._T.playerShotRotation = self:GetProjectileRotation(self._T.playerShotStartPosition, self._T.playerShotEndPosition, self.cannonSpriteFacingOffset)
+				self._T.battleFinishElapsed = nil
+				log("[VRF] cannon launch seq=" .. tostring(shot.sequence) .. " targetUid=" .. tostring(shot.targetUid) .. " muzzle=" .. tostring(self._T.playerShotStartPosition) .. " endpoint=" .. tostring(self._T.playerShotEndPosition) .. " rotation=" .. tostring(self._T.playerShotRotation))
 			end
 		end
-		if (battle.enemyShotSequence or 0) > self.lastEnemyShotSequence then
-			self.lastEnemyShotSequence = battle.enemyShotSequence
-			self.enemyShotElapsed = math.max(0, battle.enemyShotElapsed or 0)
-			if self.enemyShotElapsed < self.shotFlightSeconds then
-				local rotation = self:GetProjectileRotation(self:GetBattleEnemyCenter(self:GetBattleEnemyPosition(), animationRuid), self:GetBattleShipPosition(), self.enemyShotSpriteFacingOffset)
-				log("[AirBattleVisual] enemy shot started seq=" .. tostring(self.lastEnemyShotSequence) .. " rotation=" .. tostring(rotation))
+		self:UpdateBattleHitPoses(delta, controller._T.airWave)
+		self:UpdateBattleWaveViews(battle, map)
+		local wave = controller._T.airWave
+		local enemyShot = wave and wave.id == battle.id and wave.enemies.enemyShot or nil
+		if enemyShot ~= nil and enemyShot.sequence == (battle.enemyShotSequence or 0) and enemyShot.sequence > self.lastEnemyShotSequence then
+			self.lastEnemyShotSequence = enemyShot.sequence
+			local age = math.max(0, _UtilLogic.ElapsedSeconds-(wave.receivedAt or _UtilLogic.ElapsedSeconds))
+			self.enemyShotElapsed = math.max(0, (enemyShot.elapsed or 0)+age)
+			self._T.enemyShotStartPosition = self:GetBattleTargetCenter(enemyShot.sourceUid, enemyShot.animationRuid, self.battleVisualElapsed)
+			self._T.enemyShotEndPosition = self:GetBattleShipPosition()
+			self._T.enemyShotRotation = self:GetProjectileRotation(self._T.enemyShotStartPosition, self._T.enemyShotEndPosition, self.enemyShotSpriteFacingOffset)
+			self._T.enemyShotFlightSeconds = math.max(0.01, enemyShot.flightSeconds or 0.6)
+		end
+		if self.lastPlayerShotSequence > 0 and self._T.playerShotEndPosition ~= nil then
+			local start = self._T.playerShotStartPosition
+			local target = self._T.playerShotEndPosition
+			local progress = math.min(1, self.shotElapsed/self.shotFlightSeconds)
+			local position = Vector3(start.x+(target.x-start.x)*progress, start.y+(target.y-start.y)*progress, 0)
+			self.localBattleShot.TransformComponent.Position = self:BattleWorldToLocal(position)
+			self.localBattleShot.TransformComponent.Rotation = Vector3(0,0,self._T.playerShotRotation)
+			self.localBattleShot.SpriteRendererComponent.Enable = progress < 1
+			if progress >= 0.45 and progress < 1 and self._T.midShotSequence ~= self.lastPlayerShotSequence then
+				self._T.midShotSequence = self.lastPlayerShotSequence
+				log("[VRF] cannon straight mid seq=" .. tostring(self.lastPlayerShotSequence) .. " progress=" .. tostring(progress) .. " position=" .. tostring(position))
 			end
+			if progress >= 1 then self:CompletePlayerShotVisual(target) end
 		end
-		if battle.enemyHp < self.lastEnemyHp then self.enemyHitFlashRemaining = 0.2 end
-		self.lastEnemyHp = battle.enemyHp
-		local enemyPosition = self:GetBattleEnemyPosition()
-		self.localBattleEnemy.TransformComponent.Position = self:BattleWorldToLocal(enemyPosition)
-		local enemyCenter = self:GetBattleEnemyCenter(enemyPosition, animationRuid)
-		local playerShotStart = self:GetBattleMuzzlePosition()
-		local shotProgress = math.min(1, self.shotElapsed / self.shotFlightSeconds)
-		local playerShotPosition = Vector3(playerShotStart.x + (enemyCenter.x - playerShotStart.x) * shotProgress, playerShotStart.y + (enemyCenter.y - playerShotStart.y) * shotProgress, 0)
-		self.localBattleShot.TransformComponent.Position = self:BattleWorldToLocal(playerShotPosition)
-		self.localBattleShot.TransformComponent.Rotation = Vector3(0, 0, self:GetProjectileRotation(playerShotStart, enemyCenter, self.cannonSpriteFacingOffset))
-		local playerShotVisible = self.shotElapsed < self.shotFlightSeconds
-		local wasPlayerShotVisible = self.localBattleShot.SpriteRendererComponent.Enable
-		self.localBattleShot.SpriteRendererComponent.Enable = playerShotVisible
-		if wasPlayerShotVisible and not playerShotVisible then
-			self._T.lastImpactSequence = self.lastPlayerShotSequence
-			self:ShowBattleImpact(enemyCenter)
-			log("[AirBattleVisual] player shot hidden seq=" .. tostring(self.lastPlayerShotSequence) .. " endpoint=" .. tostring(playerShotPosition) .. " target=" .. tostring(enemyCenter))
+		if self._T.enemyShotStartPosition ~= nil then
+			local start,target = self._T.enemyShotStartPosition,self._T.enemyShotEndPosition
+			local progress = math.min(1,self.enemyShotElapsed/(self._T.enemyShotFlightSeconds or 0.6))
+			self.localEnemyShot.TransformComponent.Position = self:BattleWorldToLocal(Vector3(start.x+(target.x-start.x)*progress,start.y+(target.y-start.y)*progress,0))
+			self.localEnemyShot.TransformComponent.Rotation = Vector3(0,0,self._T.enemyShotRotation)
+			local wasVisible = self.localEnemyShot.SpriteRendererComponent.Enable
+			self.localEnemyShot.SpriteRendererComponent.Enable = progress < 1
+			if wasVisible and progress >= 1 then self:ShowBattleImpact(target) end
 		end
-		local enemyShotProgress = math.min(1, self.enemyShotElapsed / self.shotFlightSeconds)
-		local shipPosition = self:GetBattleShipPosition()
-		local enemyShotPosition = Vector3(enemyCenter.x + (shipPosition.x - enemyCenter.x) * enemyShotProgress, enemyCenter.y + (shipPosition.y - enemyCenter.y) * enemyShotProgress, 0)
-		self.localEnemyShot.TransformComponent.Position = self:BattleWorldToLocal(enemyShotPosition)
-		self.localEnemyShot.TransformComponent.Rotation = Vector3(0, 0, self:GetProjectileRotation(enemyCenter, shipPosition, self.enemyShotSpriteFacingOffset))
-		local enemyShotVisible = self.enemyShotElapsed < self.shotFlightSeconds
-		local wasEnemyShotVisible = self.localEnemyShot.SpriteRendererComponent.Enable
-		self.localEnemyShot.SpriteRendererComponent.Enable = enemyShotVisible
-		if wasEnemyShotVisible and not enemyShotVisible then
-			self:ShowBattleImpact(Vector3(shipPosition.x, shipPosition.y, 0))
-			log("[AirBattleVisual] enemy shot hidden seq=" .. tostring(self.lastEnemyShotSequence))
-		end
-		if self.enemyHitFlashRemaining > 0 then
-			self.localBattleEnemy.SpriteRendererComponent.Color = Color(1, 0.5, 0.5, 1)
-		else
-			self.localBattleEnemy.SpriteRendererComponent.Color = Color(1, 1, 1, 1)
+		-- 勝利快照先到仍完成最後一發；保留短暫爆炸時間，避免下一幀就刪掉特效。
+		if battle.phase == "won" and (battle.playerShotSequence or 0) <= (self._T.lastImpactSequence or 0) then
+			self._T.battleFinishElapsed = (self._T.battleFinishElapsed or 0)+delta
+			if self._T.battleFinishElapsed >= 0.75 then
+				self._T.completedBattleId = battle.id
+				self:ReleaseBattleVisuals()
+			end
 		end
 	end
-
 	@ExecSpace("ClientOnly")
 	method void ReleaseBattleVisuals()
 		-- 離開戰鬥時清理仍在播的單次命中特效。
@@ -554,7 +665,22 @@ script GVShipVisualClient extends Component
 			for _, serial in ipairs(self._T.impactSerials) do _EffectService:RemoveEffect(serial) end
 			self._T.impactSerials = nil
 		end
-		if isvalid(self.localBattleEnemy) then self.localBattleEnemy:Destroy() end
+		for _, view in pairs(self._T.waveViews or {}) do if isvalid(view) then view:Destroy() end end
+		self._T.waveViews = {}
+		self._T.hitPoses = {}
+		self._T.appliedEnemyRuid = ""
+		self._T.roamBounds = nil
+		self._T.playerShotEndPosition = nil
+		self._T.playerShotHit = nil
+		self._T.playerShotDamage = nil
+		self._T.playerShotCritical = nil
+		self._T.playerShotImpactTime = nil
+		self._T.playerShotRotation = nil
+		self._T.enemyShotStartPosition = nil
+		self._T.enemyShotEndPosition = nil
+		self._T.enemyShotRotation = nil
+		self._T.battleFinishElapsed = nil
+		self._T.midShotSequence = nil
 		if isvalid(self.localBattleShot) then self.localBattleShot:Destroy() end
 		if isvalid(self.localEnemyShot) then self.localEnemyShot:Destroy() end
 		if self.appliedBattleId ~= "" then log("[AirBattleVisual] destroyed id=" .. self.appliedBattleId) end
@@ -563,6 +689,11 @@ script GVShipVisualClient extends Component
 		self.localEnemyShot = nil
 		self.appliedBattleId = ""
 		self._T.lastImpactSequence = 0
+		self._T.playerShotTargetUid = nil
+		self._T.playerShotTargetRuid = nil
+		self._T.playerShotTargetPackId = nil
+		self._T.playerShotStartPosition = nil
+		self.shotFlightSeconds = 0.6
 		self.battleVisualElapsed = 0
 		self.shotElapsed = 1
 		self.lastPlayerShotSequence = 0
@@ -571,4 +702,200 @@ script GVShipVisualClient extends Component
 		self.lastEnemyHp = -1
 		self.enemyShotElapsed = 1
 	end
+	@ExecSpace("ClientOnly")
+
+	method void UpdateBattleWaveViews(table battle, Entity map)
+		-- 每隻怪保留 UID 實體及獨立飛行位置；死亡只刪該隻，不把其他怪搬到主目標槽。
+		local wave = _GreatVoyageAdventureController._T.airWave
+		if wave == nil or wave.id ~= battle.id then return end
+		self:PreloadBattleMonsterHitAnimations(wave)
+		if self._T.waveViews == nil then self._T.waveViews = {} end
+		local wanted = {}
+		for _, enemy in ipairs(wave.enemies) do wanted[enemy.uid] = enemy end
+		local shotUid = self._T.playerShotTargetUid
+		if self._T.hitPoses == nil then self._T.hitPoses = {} end
+		if shotUid ~= nil and self.lastPlayerShotSequence > (self._T.lastImpactSequence or 0) and wanted[shotUid] == nil then
+			wanted[shotUid] = {uid=shotUid, animationRuid=self._T.playerShotTargetRuid}
+		end
+		for uid, pose in pairs(self._T.hitPoses) do
+			if wanted[uid] == nil then wanted[uid] = {uid=uid, id=pose.packId, animationRuid=pose.originalRuid} end
+		end
+		for uid, enemy in pairs(wanted) do
+			local pose = self._T.hitPoses[uid]
+			local time = self.battleVisualElapsed
+			if uid == shotUid and self._T.playerShotHit ~= false and self.lastPlayerShotSequence > (self._T.lastImpactSequence or 0) then
+				time = math.min(time, self._T.playerShotImpactTime or time)
+			end
+			local position = self:GetBattleRoamPosition(uid, time)
+			local view = self._T.waveViews[uid]
+			if not isvalid(view) then
+				view = _SpawnService:SpawnByModelId(self.overlayModelId, "GVLocalWaveEnemy" .. tostring(uid), position, map)
+				if isvalid(view) then
+					self._T.waveViews[uid] = view
+					log("[VRF] roaming enemy created uid=" .. tostring(uid))
+				end
+			end
+			self:LoadBattleEnemyCenter(enemy.animationRuid)
+			if isvalid(view) and view.SpriteRendererComponent ~= nil and view.TransformComponent ~= nil then
+				if pose ~= nil then
+					if view.SpriteRendererComponent.SpriteRUID ~= pose.hitRuid then view.SpriteRendererComponent.SpriteRUID = pose.hitRuid end
+					if pose.isDead == true and pose.position ~= nil then view.TransformComponent.Position = pose.position end
+				elseif view.SpriteRendererComponent.SpriteRUID ~= enemy.animationRuid then
+					view.SpriteRendererComponent.SpriteRUID = enemy.animationRuid
+				end
+				view.SpriteRendererComponent.SortingLayer = self:GetMapSortingLayer()
+				view.SpriteRendererComponent.OrderInLayer = 20
+				view.SpriteRendererComponent.FlipX = true
+				view.SpriteRendererComponent.Enable = true
+				view.TransformComponent.Scale = Vector3(1.5,1.5,1)
+				if pose == nil or pose.isDead ~= true then view.TransformComponent.Position = self:BattleWorldToLocal(position) end
+			end
+		end
+		for uid, view in pairs(self._T.waveViews) do
+			if wanted[uid] == nil then
+				if isvalid(view) then view:Destroy() end
+				self._T.waveViews[uid] = nil
+			end
+		end
+		local primary = wave.enemies[1]
+		self.localBattleEnemy = primary and self._T.waveViews[primary.uid] or nil
+	end	@ExecSpace("ClientOnly")
+
+	method table GetBattlePlayerShot(table battle)
+		-- 混編雙快照不同幀到達時等待正確序列；不能用最新主目標猜舊炮彈的目標。
+		local controller = _GreatVoyageAdventureController
+		local wave = controller and controller._T.airWave or nil
+		if wave ~= nil and wave.id == battle.id then
+			local shot = wave.enemies and wave.enemies.playerShot or nil
+			if shot == nil or shot.sequence ~= (battle.playerShotSequence or 0) then return nil end
+			return shot
+		end
+		return nil
+	end
+	@ExecSpace("ClientOnly")
+
+	method void CompletePlayerShotVisual(Vector3 targetPosition)
+		-- 固定終點只命中一次，保留數值證據；伺服器仍是唯一扣血與發賞來源。
+		local sequence = self.lastPlayerShotSequence
+		if sequence <= (self._T.lastImpactSequence or 0) then return end
+		local uid = self._T.playerShotTargetUid
+		local view = uid and self._T.waveViews and self._T.waveViews[uid] or nil
+		if self._T.playerShotHit ~= false and isvalid(view) then
+			local position = self:GetBattleRoamPosition(uid, self._T.playerShotImpactTime or self.battleVisualElapsed)
+			view.TransformComponent.Position = self:BattleWorldToLocal(position)
+			self:StartBattleHitPose(uid, self._T.playerShotTargetPackId or "", self._T.playerShotTargetRuid or "")
+		end
+		self._T.lastImpactSequence = sequence
+		if isvalid(self.localBattleShot) then
+			self.localBattleShot.TransformComponent.Position = self:BattleWorldToLocal(targetPosition)
+			self.localBattleShot.SpriteRendererComponent.Enable = false
+		end
+		if self._T.playerShotHit ~= false then self:ShowBattleImpact(targetPosition) end
+		local center = self:GetBattleTargetCenter(uid or 1, self._T.playerShotTargetRuid or "", self._T.playerShotImpactTime or self.battleVisualElapsed)
+		local numberPosition = targetPosition
+		if self._T.playerShotHit == false then
+			numberPosition = self:GetBattleMissTextPosition(uid or 1, self._T.playerShotTargetRuid or "", self._T.playerShotImpactTime or self.battleVisualElapsed)
+		end
+		self:ShowBattleDamageNumber(numberPosition)
+		local dx,dy = targetPosition.x-center.x, targetPosition.y-center.y
+		local result = "impact"
+		if self._T.playerShotHit == false then result = "miss" end
+		log("[VRF] cannon " .. result .. " seq=" .. tostring(sequence) .. " targetUid=" .. tostring(uid) .. " endpoint=" .. tostring(targetPosition) .. " bodyCenter=" .. tostring(center) .. " error=" .. tostring(math.sqrt(dx*dx+dy*dy)))
+	end
+
+	@ExecSpace("ClientOnly")
+	method Vector3 GetBattleRoamPosition(integer uid, number elapsed)
+		-- 固定 UID 各走不同平滑路線；世界邊界在交戰開始鎖定，不因主目標或鏡頭改變而瞬移。
+		if self._T.roamBounds == nil then
+			local low = _UILogic:ScreenToWorldPosition(Vector2(0, 0))
+			local high = _UILogic:ScreenToWorldPosition(Vector2(_UILogic.ScreenWidth, _UILogic.ScreenHeight))
+			self._T.roamBounds = {x=low.x, y=low.y, width=high.x-low.x, height=high.y-low.y}
+		end
+		local bounds = self._T.roamBounds
+		local phase = uid or 1
+		local x = 0.24 + math.sin(elapsed * (0.48 + (phase % 5) * 0.06) + phase * 2.399) * 0.10
+			+ math.sin(elapsed * 1.13 + phase * 0.71) * 0.035
+		local y = 0.50 + math.sin(elapsed * (0.37 + (phase % 7) * 0.04) + phase * 1.618) * 0.17
+			+ math.sin(elapsed * 0.91 + phase * 0.37) * 0.055
+		return Vector3(bounds.x + bounds.width * x, bounds.y + bounds.height * y, 0)
+	end
+
+	@ExecSpace("ClientOnly")
+	method Vector3 GetBattleTargetCenter(integer uid, string animationRuid, number elapsed)
+		-- 所有怪物以相同比例渲染，預判落點與實際 UID 身體中心共用同一條路線。
+		return self:GetBattleEnemyCenter(self:GetBattleRoamPosition(uid, elapsed), animationRuid)
+	end
+
+	@ExecSpace("ClientOnly")
+	method Vector3 GetBattleMissTextPosition(integer uid, string animationRuid, number elapsed)
+		-- MISS 原生文字錨在指定 UID 頭頂；有效 view 取實際位置，否則重用該 RUID 的最高 top cache。
+		local position = nil
+		local view = uid and self._T.waveViews and self._T.waveViews[uid] or nil
+		if isvalid(view) and view.TransformComponent ~= nil then
+			position = view.TransformComponent.WorldPosition
+		else
+			position = self:GetBattleRoamPosition(uid or 1, elapsed)
+		end
+		local bodyCenter = self:GetBattleEnemyCenter(position, animationRuid)
+		local topOffset = 0
+		if self._T.enemyTopOffsetCache ~= nil then topOffset = self._T.enemyTopOffsetCache[animationRuid] or 0 end
+		return Vector3(bodyCenter.x, position.y+topOffset+0.15, position.z)
+	end
+
+	@ExecSpace("ClientOnly")
+	method Vector3 GetBattleMissEndPosition(Vector3 start, Vector3 center, string animationRuid, integer sequence)
+		-- 落空時在出膛前偏離素材外緣；整段仍固定直線，不貼怪物播爆炸。
+		local dx,dy = center.x-start.x,center.y-start.y
+		local distance = math.sqrt(dx*dx+dy*dy)
+		local nx,ny = 0,1
+		if distance > 0.000001 then nx,ny = -dy/distance,dx/distance end
+		local radius = self._T.enemyMissRadius and self._T.enemyMissRadius[animationRuid] or 1.5
+		local side = 1
+		if sequence % 2 == 0 then side = -1 end
+		return Vector3(center.x+nx*radius*side,center.y+ny*radius*side,0)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void UpdateBattleDamageNumbers()
+		-- 傷害字固定在命中地點，怪物死亡或換目標不會帶走數字；離圖與逾時回收。
+		local map = self.Entity.CurrentMap
+		local player = _UserService.LocalPlayer
+		local active = isvalid(player) and player.CurrentMap == map
+		for index = #(self._T.damageNumbers or {}),1,-1 do
+			local entry = self._T.damageNumbers[index]
+			if not active or not isvalid(entry.entity) or _UtilLogic.ElapsedSeconds >= entry.expiresAt then
+				if isvalid(entry.entity) then entry.entity:Destroy() end
+				table.remove(self._T.damageNumbers,index)
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ShowBattleDamageNumber(Vector3 position)
+		-- 數字與爆擊只讀伺服器該發炮擊結果；MISS 用原生文字皮膚，不假扣血。
+		local hit = self._T.playerShotHit ~= false
+		local damage = self._T.playerShotDamage or 0
+		if hit and damage <= 0 then return end
+		local map = self.Entity.CurrentMap
+		if not isvalid(map) then return end
+		self._T.damageNumberSequence = (self._T.damageNumberSequence or 0)+1
+		local anchor = _SpawnService:SpawnByModelId(self.overlayModelId,"GVLocalDamage" .. tostring(self._T.damageNumberSequence),self:BattleWorldToLocal(position),map)
+		if not isvalid(anchor) then return end
+		if anchor.SpriteRendererComponent ~= nil then anchor.SpriteRendererComponent.Enable = false end
+		if anchor.DamageSkinComponent == nil then anchor:AddComponent("DamageSkinComponent") end
+		if self._T.damageNumbers == nil then self._T.damageNumbers = {} end
+		-- 同屏限制8隻，傷害字另留最多16個錨點，結束後仍能播完1.2秒。
+		if #self._T.damageNumbers >= 16 then
+			local oldest = table.remove(self._T.damageNumbers,1)
+			if isvalid(oldest.entity) then oldest.entity:Destroy() end
+		end
+		table.insert(self._T.damageNumbers,{entity=anchor,expiresAt=_UtilLogic.ElapsedSeconds+1.2})
+		if hit then
+			_DamageSkinService:Play(anchor,"3271c3e79bf04ecba9a107d55495970d",0,{damage},DamageSkinTweenType.Default,self._T.playerShotCritical == true,Vector2(0,0.4),Vector2(1,1),1,1,LitMode.Default)
+		else
+			_DamageSkinService:PlayTextDamage(anchor,"3271c3e79bf04ecba9a107d55495970d",DamageSkinTextType.Miss,DamageSkinTweenType.Default,Vector2(0,0),Vector2(1,1),1,1,LitMode.Default)
+		end
+		log("[VRF] damage number seq=" .. tostring(self.lastPlayerShotSequence) .. " damage=" .. tostring(damage) .. " critical=" .. tostring(self._T.playerShotCritical == true) .. " hit=" .. tostring(hit))
+	end
+
 end

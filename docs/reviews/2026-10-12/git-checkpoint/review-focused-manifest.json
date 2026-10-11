@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-12",
+  "diffFiles": [
+    {
+      "path": "Tests/test_encounter_data.py",
+      "bytes": 6733,
+      "sha256": "a99a49f5beeb0ef650a6ea724fbb3e6233b6963629435bf59fc8053f987384db"
+    }
+  ],
+  "context": "REVIEW_CONTEXT.md from full review baseline",
+  "transformed": false
+}

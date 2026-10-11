@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "scope": "Chrome local review UI only; no MSW runtime verification",
+  "url": "http://127.0.0.1:8769/encounter-balance.html",
+  "checks": {
+    "defaultT1": "27.3%, 1–3, low100% mid0% high0%",
+    "richT1": {
+      "cash": 2147483647,
+      "temptation": 100,
+      "cards": [
+        "lure"
+      ],
+      "chance": 0.95,
+      "count": [
+        11,
+        24
+      ],
+      "sampled": 10000,
+      "low": 165458,
+      "mid": 0,
+      "high": 0
+    },
+    "richT5Ludus": {
+      "count": [
+        24,
+        40
+      ],
+      "wave": 37,
+      "active": 8,
+      "queued": 29
+    },
+    "invalidCash": "-1 displays validation error and disables sample button; 舊抽樣清除、怪物池顯示無效條件",
+    "consoleErrors": [],
+    "scriptVersion": "encounter-review.js?v=2"
+  },
+  "screenshot": "encounter-preview.png"
+}

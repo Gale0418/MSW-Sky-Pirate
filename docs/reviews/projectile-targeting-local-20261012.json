@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "date": "2026-10-12",
+  "scope": "UID roaming/fixed straight cannon/mild accuracy/server variance and critical/native DamageSkin/hit1 pose/above-head MISS",
+  "test": {
+    "command": "python -m pytest Tests -q",
+    "exitCode": 0,
+    "tests": 132,
+    "subtests": 21,
+    "durationSeconds": 1.2
+  },
+  "review": {
+    "agent": "roaming_cannon_review",
+    "mode": "read-only static",
+    "findings": 0,
+    "notRuntimeProof": true,
+    "scope": "accuracy/server variance/critical/native DamageSkin/hit1 plus above-head MISS geometry/cache/UID"
+  },
+  "hitResource": {
+    "enabledCount": 129,
+    "matchedSamePack": 129,
+    "missing": 0,
+    "evidence": "Docs/reviews/monster-hit-clips-20261012.json"
+  },
+  "files": [
+    {
+      "path": "RootDesk/MyDesk/GreatVoyageVoyageState.mlua",
+      "sha256": "fe86d4ecdb51388245eafad03d3ef967e9f1064024e4fec8b29e0889dbf8049c"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyageVoyageData.mlua",
+      "sha256": "25eff110f15331dcab8b2d836a2e6ea053e51a00af45e6d2772c376b558edc45"
+    },
+    {
+      "path": "RootDesk/MyDesk/Combat/GreatVoyageEncounterData.mlua",
+      "sha256": "c77df9cf06329bf38d1c6a9cf80ad68154ff82605c11484c8b2b4e81cd0f9093"
+    },
+    {
+      "path": "RootDesk/MyDesk/ShipVisual/GVShipVisualClient.mlua",
+      "sha256": "b06fd5273c2dc3310bd791f4a665c5a8a1b314b39dfac4e0c133b15ba0fa5286"
+    },
+    {
+      "path": "RootDesk/MyDesk/UI/GreatVoyageAdventureController.mlua",
+      "sha256": "1e25a8d900b6cbd0b9c04c8d26f068468cf20ed191ff9dd036961e6134fcc124"
+    },
+    {
+      "path": "Tests/test_air_accuracy.py",
+      "sha256": "d7313529efd4cf2ae4a8931381637134d7b6219a89cb28d1629f9f371b2d8a60"
+    },
+    {
+      "path": "Tests/test_projectile_targeting.py",
+      "sha256": "deb271f672a4bac5ccd6440025bb7a8baca614c3338af7f9972be897d1194697"
+    }
+  ],
+  "history": [
+    {
+      "result": "Initial accuracy test fixture wrote Python proxy rather than Lua table; production branch made explicit and fixture fixed."
+    },
+    {
+      "result": "Initial full visual run after hit-pose merge had 11 failures due missing bindings for new actual methods; fixture updated to bind real methods, final full suite passed."
+    }
+  ],
+  "limitations": [
+    "Offline tests stub native boundaries; Maker receipt required for actual sprites and DamageSkin.",
+    "No full voyage/multiplayer/published save verification in this local suite."
+  ]
+}

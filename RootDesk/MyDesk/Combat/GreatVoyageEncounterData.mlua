@@ -1,0 +1,320 @@
+@Logic
+script GreatVoyageEncounterData extends Logic
+
+	-- 第一次呼叫時快取完整採用清單與索引；出怪檢查不會重建資料。
+	method table GetAllMonsters()
+		-- 首次建立物種定義快取，後續遭遇直接重用同一份資料。
+		if self._T.monsterDefinitions == nil then
+			self._T.monsterDefinitions = {
+			{ packId = "mob/0100120.img", name = "提諾", area = "ereve", band = "low", family = "wildlife", enabled = true, level = 1, hp = 12, maxHp = 12, attack = 2, attackDamage = 2, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "6da58f8e04ed4b2abf7d82310efa89d7", hitAnimationRuid = "5b79eb601f1c482285d4147eb1fd492e" },
+			{ packId = "mob/0100130.img", name = "穆魯", area = "rien", band = "low", family = "wildlife", enabled = true, level = 1, hp = 12, maxHp = 12, attack = 2, attackDamage = 2, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "57693c8d00d44460ad10df1cd6579860", hitAnimationRuid = "8718bb335c014aec9facb301297574ed" },
+			{ packId = "mob/9300379.img", name = "黑魔法師的翼龍", area = "crimson", band = "low", family = "wildlife", enabled = false, level = 1, hp = 12, maxHp = 12, attack = 2, attackDamage = 2, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "975f6e8a77294b0e90c56cfec8dd2d4a" },
+			{ packId = "mob/0100121.img", name = "提弗", area = "ereve", band = "low", family = "wildlife", enabled = true, level = 3, hp = 12, maxHp = 12, attack = 2, attackDamage = 2, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "8be3493f73ba4bd9ad896e201b77afcf", hitAnimationRuid = "1166588cd2d64f39a99d0f56d2761551" },
+			{ packId = "mob/0100131.img", name = "穆魯帕", area = "rien", band = "low", family = "wildlife", enabled = true, level = 3, hp = 12, maxHp = 12, attack = 2, attackDamage = 2, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "e98866170ae04fd19e2380f0ac8a53d7", hitAnimationRuid = "c779eb4b6f764034b96efab88f740159" },
+			{ packId = "mob/0100122.img", name = "提姆", area = "ereve", band = "low", family = "wildlife", enabled = true, level = 5, hp = 12, maxHp = 12, attack = 2, attackDamage = 2, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "15e8ceb9f42c48efbf3b8ccb04f3306d", hitAnimationRuid = "74fb45f72e704f228cf08a04a87ea502" },
+			{ packId = "mob/0100132.img", name = "穆魯菲亞", area = "rien", band = "low", family = "wildlife", enabled = true, level = 5, hp = 12, maxHp = 12, attack = 2, attackDamage = 2, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "2820a71ba1d74361b9c7e4d6179786c8", hitAnimationRuid = "3f596f1393d6462892b5db22cada533f" },
+			{ packId = "mob/0100133.img", name = "穆魯穆魯", area = "rien", band = "low", family = "wildlife", enabled = true, level = 7, hp = 18, maxHp = 18, attack = 2, attackDamage = 2, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "d37cf90985d145e88ddc0bfc3f4a9d7b", hitAnimationRuid = "46e501c3c5294e4f9370b5b5f52dc0b8" },
+			{ packId = "mob/9300312.img", name = "下黃金蛋的飛格米", area = "__allair", band = "low", family = "wildlife", enabled = true, level = 10, hp = 30, maxHp = 30, attack = 4, attackDamage = 4, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "084542cffca4474e954beed0b51d6a2e", hitAnimationRuid = "d71a8270b28d42ad8cfd64d3950171b9" },
+			{ packId = "mob/9500195.img", name = "南瓜幽靈", area = "victoria", band = "low", family = "magic", enabled = true, level = 10, hp = 30, maxHp = 30, attack = 4, attackDamage = 4, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "d39b5079bf1a48ca891a74a706c4579f", hitAnimationRuid = "772d29348ecb453abb8aa41398f29e5a" },
+			{ packId = "mob/9500197.img", name = "幽靈", area = "victoria", band = "low", family = "magic", enabled = true, level = 10, hp = 30, maxHp = 30, attack = 4, attackDamage = 4, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "18e1f1c670f4418381b6a1a62060963f", hitAnimationRuid = "25233c32b95a4f2bb8b637a56ce50941" },
+			{ packId = "mob/9300064.img", name = "鬼火", area = "victoria", band = "low", family = "magic", enabled = true, level = 11, hp = 34, maxHp = 34, attack = 4, attackDamage = 4, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "8b2da7d7a01343fab5c46090bb0ef6ad", hitAnimationRuid = "3b61c794a6b444589a20227da79bd310" },
+			{ packId = "mob/1120100.img", name = "三眼章魚", area = "victoria", band = "low", family = "neutral", enabled = true, level = 12, hp = 38, maxHp = 38, attack = 5, attackDamage = 5, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "3e5f23a5c00541c698fe3836b1ea244d", hitAnimationRuid = "c3cf643b618346c7bfa6574187b396f9" },
+			{ packId = "mob/9300412.img", name = "訓練機器人 0", area = "edelstein", band = "low", family = "neutral", enabled = true, level = 13, hp = 43, maxHp = 43, attack = 5, attackDamage = 5, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "3fda9c3099184f8090308bcee1c57931", hitAnimationRuid = "83b06a4836924d0b91c534ad2b6ce613" },
+			{ packId = "mob/1150000.img", name = "巡邏機器人", area = "edelstein", band = "low", family = "neutral", enabled = true, level = 14, hp = 47, maxHp = 47, attack = 5, attackDamage = 5, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "2c3fbaff3775480990fb7da37609ab61", hitAnimationRuid = "e69edfdc600141f48e3478fbd7145d7b" },
+			{ packId = "mob/9500184.img", name = "紫色魔法書", area = "victoria", band = "low", family = "magic", enabled = true, level = 15, hp = 52, maxHp = 52, attack = 6, attackDamage = 6, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "fab75ac9f77c48d3bb54be15a34bbb52", hitAnimationRuid = "d1722488ac43482ebcc219cd9b6f8aae" },
+			{ packId = "mob/9500185.img", name = "橘色魔法書", area = "victoria", band = "low", family = "magic", enabled = true, level = 15, hp = 52, maxHp = 52, attack = 6, attackDamage = 6, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "dd9993ae811f472eb15369d68bc5dbb3", hitAnimationRuid = "fe1d7817774843a9a97877fb2b451368" },
+			{ packId = "mob/9500186.img", name = "藍色魔法書", area = "victoria", band = "low", family = "magic", enabled = true, level = 15, hp = 52, maxHp = 52, attack = 6, attackDamage = 6, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "71e2148d40ac472da959a809e233e199", hitAnimationRuid = "6c15d137b3584c14966a99b5171566ef" },
+			{ packId = "mob/2100100.img", name = "母砂兔", area = "nihal", band = "low", family = "wildlife", enabled = true, level = 20, hp = 76, maxHp = 76, attack = 8, attackDamage = 8, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "1eaee5c96fec4a07afdf902b96e3a0d8", hitAnimationRuid = "e77fd0ddfcc44f02af01fd4eb2e9ff97" },
+			{ packId = "mob/2300100.img", name = "蝙蝠", area = "victoria", band = "low", family = "wildlife", enabled = true, level = 20, hp = 76, maxHp = 76, attack = 8, attackDamage = 8, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "d548c5a6486f48389dd7e1f7e9478d56", hitAnimationRuid = "1e543e3e410a4a27a3a4514f0e963d6e" },
+			{ packId = "mob/2100101.img", name = "公砂兔", area = "nihal", band = "low", family = "wildlife", enabled = true, level = 21, hp = 81, maxHp = 81, attack = 9, attackDamage = 9, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "aba7383e06ec4d4eb28fb695f602b7b1", hitAnimationRuid = "7a7c8580735b4e4a9eef4aa9800124da" },
+			{ packId = "mob/5200000.img", name = "小石球", area = "maple", band = "low", family = "wildlife", enabled = true, level = 23, hp = 92, maxHp = 92, attack = 10, attackDamage = 10, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "1277c45f644d4452a6770c2a1b73a474", hitAnimationRuid = "7472bba97ee540babf2726801f8a8819" },
+			{ packId = "mob/2150003.img", name = "巡邏機器人S", area = "edelstein", band = "low", family = "neutral", enabled = true, level = 28, hp = 120, maxHp = 120, attack = 12, attackDamage = 12, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "87a719f8ddd3479695232dad82f8eb7c", hitAnimationRuid = "f6660a4922b64f2ba98b35db2f98680a" },
+			{ packId = "mob/2230109.img", name = "泡泡魚", area = "__allair", band = "low", family = "wildlife", enabled = true, level = 28, hp = 120, maxHp = 120, attack = 12, attackDamage = 12, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "20946ff7a9ed48bb8a92a69d035a0133", hitAnimationRuid = "57f09ef245f845f5bd24110a0f548ba9" },
+			{ packId = "mob/2230200.img", name = "花鯰魚", area = "aqua", band = "low", family = "wildlife", enabled = true, level = 29, hp = 126, maxHp = 126, attack = 12, attackDamage = 12, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "3e350a94b70d41a9bc737d8fcb375f9b", hitAnimationRuid = "9b033e761f844342999fc7482796413a" },
+			{ packId = "mob/3000000.img", name = "石球", area = "sky", band = "low", family = "wildlife", enabled = true, level = 30, hp = 132, maxHp = 132, attack = 13, attackDamage = 13, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "ea50dee6f5b34a6dab5a535cfb857718", hitAnimationRuid = "e2f5544a8c23463e9e8efc886a765125" },
+			{ packId = "mob/3000001.img", name = "蝴蝶精", area = "maple", band = "low", family = "wildlife", enabled = true, level = 30, hp = 132, maxHp = 132, attack = 13, attackDamage = 13, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "d06aaf68f8f04729a7d6d49535a76c30", hitAnimationRuid = "731aa8c4bc56416299a40bf917479aca" },
+			{ packId = "mob/3100102.img", name = "禿鷹", area = "nihal", band = "low", family = "wildlife", enabled = true, level = 30, hp = 132, maxHp = 132, attack = 13, attackDamage = 13, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "382b479cba4a49d78ba5e4ea32e458f3", hitAnimationRuid = "05268d3affb44b329e4ec6625c5c5ec8" },
+			{ packId = "mob/5200001.img", name = "冰石球", area = "sky", band = "low", family = "wildlife", enabled = true, level = 30, hp = 132, maxHp = 132, attack = 13, attackDamage = 13, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "b3d510cd422e493fa19e551f65a88ac9", hitAnimationRuid = "2f3d48c32c874b5d953a197a55d9ccb9" },
+			{ packId = "mob/5200002.img", name = "火石球", area = "sky", band = "low", family = "wildlife", enabled = true, level = 30, hp = 132, maxHp = 132, attack = 13, attackDamage = 13, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "e7ae62362d7f46b38403158b94a90877", hitAnimationRuid = "ed18f0d0aef6459b8e6981173ae75d5c" },
+			{ packId = "mob/3230307.img", name = "邱布", area = "ludus", band = "low", family = "neutral", enabled = true, level = 31, hp = 138, maxHp = 138, attack = 13, attackDamage = 13, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "7ad069ac329f4ec588406b378ef248e6", hitAnimationRuid = "728f2e6829844ca892901d1060eaeefa" },
+			{ packId = "mob/3110300.img", name = "方塊水靈", area = "nihal", band = "low", family = "neutral", enabled = true, level = 32, hp = 144, maxHp = 144, attack = 14, attackDamage = 14, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "4a141fc777a14395b6af8444cef50d73", hitAnimationRuid = "8d69bfe6ca074f12b51f7703b32d885f" },
+			{ packId = "mob/3230104.img", name = "蒙面河豚", area = "aqua", band = "low", family = "wildlife", enabled = true, level = 32, hp = 144, maxHp = 144, attack = 14, attackDamage = 14, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "49a2600dc1af49e495508a8dc9387168", hitAnimationRuid = "506ea5470ea841749e43ab017602edc8" },
+			{ packId = "mob/5300000.img", name = "利堤", area = "sky", band = "low", family = "neutral", enabled = true, level = 32, hp = 144, maxHp = 144, attack = 14, attackDamage = 14, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "06a45ac974274fd498b6489d2e79ee8c", hitAnimationRuid = "b877d9b7358443938d393107ebc88254" },
+			{ packId = "mob/5300001.img", name = "黑利堤", area = "sky", band = "low", family = "neutral", enabled = true, level = 33, hp = 150, maxHp = 150, attack = 14, attackDamage = 14, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "ba65e9c84e35431f85143c2addea205e", hitAnimationRuid = "e7424e27cdad452592d6d551774bf0df" },
+			{ packId = "mob/3210204.img", name = "玩具鴨", area = "ludus", band = "low", family = "neutral", enabled = true, level = 34, hp = 156, maxHp = 156, attack = 15, attackDamage = 15, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "e3a8290787b643b0b60ffc2f8ec4fdb6", hitAnimationRuid = "585f3cd19eca4b5ca88a648d43654bc3" },
+			{ packId = "mob/3110302.img", name = "黑妖苗", area = "nihal", band = "low", family = "neutral", enabled = true, level = 35, hp = 162, maxHp = 162, attack = 16, attackDamage = 16, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "ca7ff20a978a45959848eb1a89537fdc", hitAnimationRuid = "29c1dc4bcac64258b8fd2dc77ce320b1" },
+			{ packId = "mob/3230101.img", name = "小幽靈", area = "victoria", band = "low", family = "magic", enabled = true, level = 35, hp = 162, maxHp = 162, attack = 16, attackDamage = 16, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "9658914ae9c64a87b266d8be957715bc", hitAnimationRuid = "77286b849a66449cadc6ea4564db169b" },
+			{ packId = "mob/3230200.img", name = "星光精靈", area = "sky", band = "low", family = "magic", enabled = true, level = 35, hp = 162, maxHp = 162, attack = 16, attackDamage = 16, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "a25f27e01d7446c6910550d595ef08b6", hitAnimationRuid = "f0f493b1149e4b6a863890a82d82fca6" },
+			{ packId = "mob/3230300.img", name = "幼魔精靈", area = "victoria", band = "low", family = "magic", enabled = true, level = 35, hp = 162, maxHp = 162, attack = 16, attackDamage = 16, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "84a2e710c5ea4cb1843b52ad777a2074", hitAnimationRuid = "2358e38b0c9b4d9da987387deba59de0" },
+			{ packId = "mob/3230302.img", name = "機器章魚", area = "ludus", band = "low", family = "neutral", enabled = true, level = 35, hp = 162, maxHp = 162, attack = 16, attackDamage = 16, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "5417210796834fe8a6648451ec86a395", hitAnimationRuid = "bd3f11d2c6a04c3b8021179b1bdf6752" },
+			{ packId = "mob/3210206.img", name = "黃色戰鬥機", area = "ludus", band = "low", family = "neutral", enabled = true, level = 36, hp = 168, maxHp = 168, attack = 16, attackDamage = 16, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "2ea57f7287af47c3a718c48bfa4cf5bd", hitAnimationRuid = "f46984b61dc84bf0a4faaa76ed6e2625" },
+			{ packId = "mob/3210450.img", name = "潛水企鵝王", area = "aqua", band = "low", family = "wildlife", enabled = true, level = 36, hp = 168, maxHp = 168, attack = 16, attackDamage = 16, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "de109c39fae342f198c9c0c281582ab3", hitAnimationRuid = "86ab604017404ebbbe3d21c89d616dba" },
+			{ packId = "mob/3230303.img", name = "粉紅色戰鬥機", area = "ludus", band = "low", family = "neutral", enabled = true, level = 37, hp = 175, maxHp = 175, attack = 17, attackDamage = 17, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "1deb8ddc76294966b6e9263894401b50", hitAnimationRuid = "a259cba637e64200bfe56b685a5cba06" },
+			{ packId = "mob/3230306.img", name = "妖魔", area = "ludus", band = "low", family = "magic", enabled = true, level = 37, hp = 175, maxHp = 175, attack = 17, attackDamage = 17, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "2e361c296dd94cab820ede0791a44553", hitAnimationRuid = "9a0ab5e69833499f9b982e401fb3f5c8" },
+			{ packId = "mob/3110303.img", name = "黑妖苗三兄弟", area = "nihal", band = "low", family = "neutral", enabled = true, level = 38, hp = 181, maxHp = 181, attack = 17, attackDamage = 17, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "8104c53ae8b5462796fe594669de2ef0", hitAnimationRuid = "639e084cb89f4ea4818b5d13d3e47d0b" },
+			{ packId = "mob/3230103.img", name = "機器章魚王", area = "ludus", band = "low", family = "neutral", enabled = true, level = 38, hp = 181, maxHp = 181, attack = 17, attackDamage = 17, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "85bf19a24eb54ac1b7c83313acf0115a", hitAnimationRuid = "6dad564f922a420eab103ff36758db28" },
+			{ packId = "mob/3230304.img", name = "藍色戰鬥機", area = "ludus", band = "low", family = "neutral", enabled = true, level = 38, hp = 181, maxHp = 181, attack = 17, attackDamage = 17, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "d35b6064b6d348eaa743f89c8c6f27ab", hitAnimationRuid = "fa29740aa4f94bcda51a0a48f277670e" },
+			{ packId = "mob/3230308.img", name = "特威德", area = "ludus", band = "low", family = "neutral", enabled = true, level = 39, hp = 188, maxHp = 188, attack = 18, attackDamage = 18, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "b81e54f8eaae4b99bb77ac4ba09f2c57", hitAnimationRuid = "49c455263dbf4b18b131fef8f1efee1f" },
+			{ packId = "mob/4230101.img", name = "天使猴", area = "victoria", band = "low", family = "neutral", enabled = true, level = 40, hp = 194, maxHp = 194, attack = 18, attackDamage = 18, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "0c805e8052c14fbda03173990bf2d2b8", hitAnimationRuid = "4c81ea278214405199875fae8ebfd951" },
+			{ packId = "mob/4230200.img", name = "河豚", area = "aqua", band = "low", family = "wildlife", enabled = true, level = 40, hp = 194, maxHp = 194, attack = 18, attackDamage = 18, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "d59ef8bb8a96426ab650d61bbd823cea", hitAnimationRuid = "b55e39376ff241e6af67741d5401f656" },
+			{ packId = "mob/4230201.img", name = "毒河豚", area = "aqua", band = "low", family = "wildlife", enabled = true, level = 40, hp = 194, maxHp = 194, attack = 18, attackDamage = 18, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "fc8d724afa5f417fac2b1b7abd8766c2", hitAnimationRuid = "bfb341c4065b4553857dd5cb1dc94c8f" },
+			{ packId = "mob/9400011.img", name = "燈籠鬼", area = "herbtown", band = "low", family = "magic", enabled = true, level = 40, hp = 194, maxHp = 194, attack = 18, attackDamage = 18, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "9bd4e5bcf9894dd183c048c15b317e67", hitAnimationRuid = "dadba96b45514df8ae56f3adad512c2d" },
+			{ packId = "mob/4230107.img", name = "獨眼蝙蝠", area = "sky", band = "low", family = "wildlife", enabled = true, level = 41, hp = 201, maxHp = 201, attack = 19, attackDamage = 19, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "04d56278279f45c6a99f6726ef5c91fe", hitAnimationRuid = "da1ea90aa01a4d1ba8bf15f1f9a5e4f6" },
+			{ packId = "mob/4230114.img", name = "進化妖魔", area = "ludus", band = "low", family = "magic", enabled = true, level = 41, hp = 201, maxHp = 201, attack = 19, attackDamage = 19, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "496efe3f5205442283393f88f763cf71", hitAnimationRuid = "2d5fe3b085394494926869f70052a3ba" },
+			{ packId = "mob/4230119.img", name = "馬堤安", area = "ludus", band = "low", family = "neutral", enabled = true, level = 41, hp = 201, maxHp = 201, attack = 19, attackDamage = 19, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "56d71f4c4ce847a6a1e902fd6261cfc2", hitAnimationRuid = "9387c56817b8472a959e25ecc5a78abb" },
+			{ packId = "mob/4110300.img", name = "鋼鐵穆太", area = "nihal", band = "low", family = "neutral", enabled = true, level = 42, hp = 207, maxHp = 207, attack = 19, attackDamage = 19, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "206db9593b5e4eb3a49fadf7b3dbaf65", hitAnimationRuid = "f6c5c88ef3bf46ef89902d7ff1ad4621" },
+			{ packId = "mob/4230117.img", name = "葛雷士兵", area = "ludus", band = "low", family = "neutral", enabled = true, level = 42, hp = 207, maxHp = 207, attack = 19, attackDamage = 19, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "816a0529822b4f9c8d63a32302acc433", hitAnimationRuid = "810f39f763e1447e9c7bd07d3dd31f8b" },
+			{ packId = "mob/4230120.img", name = "培利堤安", area = "ludus", band = "low", family = "neutral", enabled = true, level = 44, hp = 221, maxHp = 221, attack = 20, attackDamage = 20, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "465e3bc6e1824abead268d7fd6f74568", hitAnimationRuid = "dbd09fceaf9548fda4949f30134ca6c5" },
+			{ packId = "mob/4110301.img", name = "強化鋼鐵穆太", area = "nihal", band = "low", family = "neutral", enabled = true, level = 45, hp = 228, maxHp = 228, attack = 21, attackDamage = 21, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "1148e9d29e1842de97797c1e20c39fa9", hitAnimationRuid = "c64b3d7da84c418ba898edc5cbb76113" },
+			{ packId = "mob/4230106.img", name = "月光精靈", area = "sky", band = "low", family = "magic", enabled = true, level = 45, hp = 228, maxHp = 228, attack = 21, attackDamage = 21, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "6c09e340af2f4ca697463ef36a95f523", hitAnimationRuid = "187b73445d4645d68750ed12f924203a" },
+			{ packId = "mob/4230110.img", name = "積木泥人王", area = "ludus", band = "low", family = "neutral", enabled = true, level = 45, hp = 228, maxHp = 228, attack = 21, attackDamage = 21, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "bee00dd9a504448bb7cec3583a956124", hitAnimationRuid = "28a6605a9d6d450796aad227ced90779" },
+			{ packId = "mob/4230118.img", name = "葛雷隊長", area = "ludus", band = "low", family = "neutral", enabled = true, level = 45, hp = 228, maxHp = 228, attack = 21, attackDamage = 21, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "efad97a5ad6a40c799f2ac3b16eb0895", hitAnimationRuid = "c1bd6931d5574ba780372b47664c6be8" },
+			{ packId = "mob/4230115.img", name = "妖魔隊長", area = "ludus", band = "low", family = "magic", enabled = true, level = 46, hp = 235, maxHp = 235, attack = 21, attackDamage = 21, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "974389e929804a15a7475de5424f5a6f", hitAnimationRuid = "0e23b49c9a0a41ac93eb165b2bf53266" },
+			{ packId = "mob/4110302.img", name = "鋰礦穆太", area = "nihal", band = "low", family = "neutral", enabled = true, level = 47, hp = 241, maxHp = 241, attack = 22, attackDamage = 22, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "679e977d594e4392a9848f0e16571aa0", hitAnimationRuid = "af0cfa2f179746a6b444ff335594b878" },
+			{ packId = "mob/4230102.img", name = "大幽靈", area = "victoria", band = "low", family = "magic", enabled = true, level = 48, hp = 248, maxHp = 248, attack = 22, attackDamage = 22, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "2f11969b1f694825ac8ad13635711c5b", hitAnimationRuid = "23a95f12278c491bb7358ca69540c206" },
+			{ packId = "mob/4240000.img", name = "葛雷元老", area = "ludus", band = "low", family = "neutral", enabled = true, level = 49, hp = 255, maxHp = 255, attack = 23, attackDamage = 23, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "9e024a03a30d4849b44f4629daad36ef", hitAnimationRuid = "0fb2b63822d04efd8498e7b59578dd2d" },
+			{ packId = "mob/5110300.img", name = "強化鋰礦穆太", area = "nihal", band = "low", family = "neutral", enabled = true, level = 50, hp = 262, maxHp = 262, attack = 23, attackDamage = 23, attackInterval = 2, attackIntervalSeconds = 2, bounty = 500, animationRuid = "d08de4e38e764e8cbd6c665693afb3f1", hitAnimationRuid = "6c4ccaef40b642cb89c1972b49cbf815" },
+			{ packId = "mob/5100002.img", name = "火精靈", area = "sky", band = "mid", family = "magic", enabled = true, level = 51, hp = 270, maxHp = 270, attack = 24, attackDamage = 24, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "1c83eb2bcc8f4441bbdb66c1b9dd93f3", hitAnimationRuid = "3c760b02faa04b2c8bfbbe364e3649dd" },
+			{ packId = "mob/5120000.img", name = "日光精靈", area = "sky", band = "mid", family = "magic", enabled = true, level = 52, hp = 277, maxHp = 277, attack = 24, attackDamage = 24, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "7230c88964604573b9b687a919855b00", hitAnimationRuid = "dc25c90c27904ce8b20ae1ada438bf9a" },
+			{ packId = "mob/5120506.img", name = "書靈", area = "herbtown", band = "mid", family = "neutral", enabled = true, level = 55, hp = 299, maxHp = 299, attack = 26, attackDamage = 26, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "238c9e4be9b446268f56cb77e378e110", hitAnimationRuid = "77f58fa82728483ab0918e853ca204e3" },
+			{ packId = "mob/9300162.img", name = "戴利", area = "herbtown", band = "mid", family = "neutral", enabled = true, level = 55, hp = 299, maxHp = 299, attack = 26, attackDamage = 26, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "9cb67ebe1c854946b441cf23b0ecc3c9", hitAnimationRuid = "df3fc783f69446c6b908688068651c8b" },
+			{ packId = "mob/5090000.img", name = "冥界幽靈", area = "victoria", band = "mid", family = "magic", enabled = true, level = 56, hp = 306, maxHp = 306, attack = 27, attackDamage = 27, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "78864f612e9e43bf8e44090fc075c693", hitAnimationRuid = "6875aba4088d48b499af8e2c3a6fe688" },
+			{ packId = "mob/6130200.img", name = "小丑柏非", area = "ludus", band = "mid", family = "neutral", enabled = true, level = 61, hp = 343, maxHp = 343, attack = 29, attackDamage = 29, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "004923bd3c884d18a1b6741b757162a3", hitAnimationRuid = "3398867dfcc04a02b9d0930b916fdf17" },
+			{ packId = "mob/6090003.img", name = "書生幽靈", area = "herbtown", band = "mid", family = "magic", enabled = true, level = 62, hp = 351, maxHp = 351, attack = 30, attackDamage = 30, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "8204e3b756db4484a56ce66ac458d35e", hitAnimationRuid = "b6285c00fb9c4aeeaf58499f756659bc" },
+			{ packId = "mob/6230400.img", name = "幽魂發條熊", area = "ludus", band = "mid", family = "magic", enabled = true, level = 63, hp = 359, maxHp = 359, attack = 30, attackDamage = 30, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "65870521568c40c99a700acc5418efd1", hitAnimationRuid = "2243ef05cec34584b6b89b996612bec3" },
+			{ packId = "mob/6090001.img", name = "雪山魔女", area = "sky", band = "mid", family = "neutral", enabled = true, level = 64, hp = 366, maxHp = 366, attack = 31, attackDamage = 31, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "8816e805196a4f09aca79f27de12ade8", hitAnimationRuid = "79d70b581e22411abbd0f142c038b7ad" },
+			{ packId = "mob/6090000.img", name = "厄運死神", area = "sky", band = "mid", family = "magic", enabled = true, level = 65, hp = 374, maxHp = 374, attack = 32, attackDamage = 32, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "82965e5a9a6a4a9295a9dcb72c158c10", hitAnimationRuid = "e6bb40a549684e9f9225671eb568835f" },
+			{ packId = "mob/6110300.img", name = "燒杯怪", area = "nihal", band = "mid", family = "neutral", enabled = true, level = 65, hp = 374, maxHp = 374, attack = 32, attackDamage = 32, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "f46c4862e92746afb183cd7351ce36f4", hitAnimationRuid = "224bcc0e9d8744df9eea3b1d09b7944d" },
+			{ packId = "mob/9300175.img", name = "中毒的小精靈", area = "ludus", band = "mid", family = "magic", enabled = true, level = 65, hp = 374, maxHp = 374, attack = 32, attackDamage = 32, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "5d10e316ef0e410aa6196ca0100fc91b", hitAnimationRuid = "9caebe4c9d1449828a21addf4a63ddb0" },
+			{ packId = "mob/6230300.img", name = "小丑瑞奇", area = "ludus", band = "mid", family = "neutral", enabled = true, level = 66, hp = 382, maxHp = 382, attack = 32, attackDamage = 32, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "a5c3da452e9a411cbc48e2d29bc922ce", hitAnimationRuid = "6d53bd4a627146e79e37a649186588b0" },
+			{ packId = "mob/6230500.img", name = "幽魂發條熊隊長", area = "ludus", band = "mid", family = "magic", enabled = true, level = 67, hp = 390, maxHp = 390, attack = 33, attackDamage = 33, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "2a510521fe3d466a909b1afabc877e00", hitAnimationRuid = "568f795aa4cd4aefa3c59c2d8c94283b" },
+			{ packId = "mob/8140200.img", name = "冥鐘", area = "ludus", band = "mid", family = "neutral", enabled = true, level = 70, hp = 413, maxHp = 413, attack = 34, attackDamage = 34, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "a1267117a6714a35bc1ab5000314a214", hitAnimationRuid = "8356d60912314c79881685a9b8fcbb6e" },
+			{ packId = "mob/7130002.img", name = "橡木甲蟲", area = "leafre", band = "mid", family = "wildlife", enabled = true, level = 72, hp = 429, maxHp = 429, attack = 36, attackDamage = 36, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "e58c5fd852534b31915a96cae3d14013", hitAnimationRuid = "0ddaf0c315e6464bbb208e22b68efe12" },
+			{ packId = "mob/7110301.img", name = "哈門庫魯", area = "edelstein", band = "mid", family = "neutral", enabled = true, level = 73, hp = 438, maxHp = 438, attack = 36, attackDamage = 36, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "b1749640a2954a50b98b509e43290b8a", hitAnimationRuid = "0aa21b28b3ed4799a5991f01262d7eb9" },
+			{ packId = "mob/6300100.img", name = "貝爾芬", area = "ludus", band = "mid", family = "neutral", enabled = true, level = 74, hp = 446, maxHp = 446, attack = 37, attackDamage = 37, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "86e665a5dbfa410da3effcef85a465ab", hitAnimationRuid = "40fcf0861bb34ef2aba3192919e34b76" },
+			{ packId = "mob/7130003.img", name = "金屬甲蟲", area = "leafre", band = "mid", family = "wildlife", enabled = true, level = 76, hp = 462, maxHp = 462, attack = 38, attackDamage = 38, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "76b79c890a6c470fac88947098ef962e", hitAnimationRuid = "93b0e513d2e74a3ab2152362d5ea33c2" },
+			{ packId = "mob/8140300.img", name = "黑暗冥鐘", area = "ludus", band = "mid", family = "neutral", enabled = true, level = 76, hp = 462, maxHp = 462, attack = 38, attackDamage = 38, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "659fe5bae7b348a7911f467a51455b8f", hitAnimationRuid = "dd533959c5824a6499fd126bf61d9a02" },
+			{ packId = "mob/6400100.img", name = "特貝爾芬", area = "ludus", band = "mid", family = "neutral", enabled = true, level = 77, hp = 470, maxHp = 470, attack = 38, attackDamage = 38, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "1094915b7123406ca8e64d244a5e5061", hitAnimationRuid = "cc317eab2bf34ecda96d2cddc9f993c2" },
+			{ packId = "mob/8140001.img", name = "哈維", area = "leafre", band = "mid", family = "wildlife", enabled = true, level = 80, hp = 495, maxHp = 495, attack = 40, attackDamage = 40, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "e9c9f7d1a0a64accb03ff506b72a601e", hitAnimationRuid = "dc78e9c9078e40fc9404156906317117" },
+			{ packId = "mob/8200000.img", name = "時間之眼", area = "temple", band = "mid", family = "magic", enabled = true, level = 80, hp = 495, maxHp = 495, attack = 40, attackDamage = 40, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "585a18605df24117a62ec86364ff0d8c", hitAnimationRuid = "85e82ab322804ae6a648fe8312ef48ec" },
+			{ packId = "mob/7140000.img", name = "百烈", area = "ludus", band = "mid", family = "neutral", enabled = true, level = 83, hp = 520, maxHp = 520, attack = 42, attackDamage = 42, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "cd8ebd7aab2a4167b2b9d8f2be3b3250", hitAnimationRuid = "23521d22f089487197bbfcf6af8ef6ab" },
+			{ packId = "mob/8140002.img", name = "血腥哈維", area = "leafre", band = "mid", family = "wildlife", enabled = true, level = 83, hp = 520, maxHp = 520, attack = 42, attackDamage = 42, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "5004df97436a49458160b2c48e9f3748", hitAnimationRuid = "8fed6100596948f5aa8075509117a58f" },
+			{ packId = "mob/7130010.img", name = "怨靈發條熊", area = "ludus", band = "mid", family = "neutral", enabled = true, level = 85, hp = 537, maxHp = 537, attack = 43, attackDamage = 43, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "f5ffa569b67046009dfe29b6332a7b51", hitAnimationRuid = "6ad325f9e35345e4a6cb1c0144657ee4" },
+			{ packId = "mob/7160000.img", name = "多立百烈", area = "ludus", band = "mid", family = "neutral", enabled = true, level = 87, hp = 554, maxHp = 554, attack = 44, attackDamage = 44, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "ae9639db754b4aaf9e374351edfce2dc", hitAnimationRuid = "88183d896e714eb0b03158a346bb19a9" },
+			{ packId = "mob/7130300.img", name = "怨靈發條熊隊長", area = "ludus", band = "mid", family = "neutral", enabled = true, level = 89, hp = 572, maxHp = 572, attack = 45, attackDamage = 45, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "a1dea0e7d8624be5a862e724ef84bc18", hitAnimationRuid = "329722b578c3490cae3031ab59fed3e6" },
+			{ packId = "mob/8200001.img", name = "回憶的祭司", area = "temple", band = "mid", family = "magic", enabled = true, level = 91, hp = 589, maxHp = 589, attack = 47, attackDamage = 47, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "fd234d210d06488cad1fc407a7cbf325", hitAnimationRuid = "89f5b13f03c94fb997c1df84f1598727" },
+			{ packId = "mob/8140600.img", name = "骨骸魚", area = "aqua", band = "mid", family = "wildlife", enabled = true, level = 92, hp = 598, maxHp = 598, attack = 47, attackDamage = 47, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "e07176dbc7be471191e20e4e381b0c20", hitAnimationRuid = "7104964f80d0443ebd0192af7ed2a9e6" },
+			{ packId = "mob/8141000.img", name = "維京", area = "ludus", band = "mid", family = "neutral", enabled = true, level = 93, hp = 607, maxHp = 607, attack = 48, attackDamage = 48, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "b1c161a48efe4ec49257ba9a6f1a110d", hitAnimationRuid = "79cbb91c5f6c40da96a73a4e44614031" },
+			{ packId = "mob/8141300.img", name = "烏賊怪", area = "aqua", band = "mid", family = "wildlife", enabled = true, level = 94, hp = 616, maxHp = 616, attack = 48, attackDamage = 48, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "6adccbc2b8f64db8a62022711bcf8747", hitAnimationRuid = "33b17dffdf08474fa36578f78b1f9303" },
+			{ packId = "mob/8200002.img", name = "回憶的神官", area = "temple", band = "mid", family = "magic", enabled = true, level = 94, hp = 616, maxHp = 616, attack = 48, attackDamage = 48, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "d3af70dfe4684b4e9e612c708c9b7ded", hitAnimationRuid = "589f9d5fc7c4474d9e7659e1c3d77c18" },
+			{ packId = "mob/8142000.img", name = "幽魂女巫", area = "ludus", band = "mid", family = "magic", enabled = true, level = 95, hp = 624, maxHp = 624, attack = 49, attackDamage = 49, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "13e1f2cf1fea43ff99e6ec18023a5047", hitAnimationRuid = "06ab0a1285e64753a5e0cf570a828537" },
+			{ packId = "mob/8142100.img", name = "致命烏賊怪", area = "aqua", band = "mid", family = "wildlife", enabled = true, level = 97, hp = 642, maxHp = 642, attack = 50, attackDamage = 50, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "e43be4179d344657a6b90c0d43b3a87e", hitAnimationRuid = "3fa6071f9b4f4cb990fc5f03ba83703e" },
+			{ packId = "mob/8150300.img", name = "赤翼龍", area = "crimson", band = "mid", family = "wildlife", enabled = true, level = 97, hp = 642, maxHp = 642, attack = 50, attackDamage = 50, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "040fa2b4f613404ca0b75c85243de6df", hitAnimationRuid = "dc7a59cd48a74eccb10b2d044fb964c3" },
+			{ packId = "mob/8141100.img", name = "巨人維京", area = "ludus", band = "mid", family = "neutral", enabled = true, level = 98, hp = 651, maxHp = 651, attack = 51, attackDamage = 51, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "8e8a091259cb47e5871b34dea117f11e", hitAnimationRuid = "06c3a654ba5d49a4809092ec4325bd6c" },
+			{ packId = "mob/8200003.img", name = "回憶守護兵", area = "temple", band = "mid", family = "magic", enabled = true, level = 98, hp = 651, maxHp = 651, attack = 51, attackDamage = 51, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "caed0eac916246ccb12cb6a3ece69c69", hitAnimationRuid = "6612cfc3ce9a4ec4949dc80a586fc2c9" },
+			{ packId = "mob/8143000.img", name = "怨靈女巫", area = "ludus", band = "mid", family = "magic", enabled = true, level = 99, hp = 660, maxHp = 660, attack = 51, attackDamage = 51, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "23fec8a8a0a8411c84ddbebc56c83501", hitAnimationRuid = "e3c3cddc3eaf4f2196d4c2e8c4d6b4a2" },
+			{ packId = "mob/9400013.img", name = "雪女", area = "herbtown", band = "mid", family = "magic", enabled = true, level = 100, hp = 669, maxHp = 669, attack = 52, attackDamage = 52, attackInterval = 2, attackIntervalSeconds = 2, bounty = 2500, animationRuid = "890cba40e5934292a5b53177ff495a34", hitAnimationRuid = "d173f4ea90ce40b49dc280b080fb94b6" },
+			{ packId = "mob/8150301.img", name = "藍翼龍", area = "crimson", band = "high", family = "wildlife", enabled = true, level = 101, hp = 678, maxHp = 678, attack = 52, attackDamage = 52, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "40eb0fc11d894ba195a05e5ae7a05e67", hitAnimationRuid = "1f7d6618bba24591a2214757e4a55a0b" },
+			{ packId = "mob/8200004.img", name = "回憶守護隊長", area = "temple", band = "high", family = "magic", enabled = true, level = 101, hp = 678, maxHp = 678, attack = 52, attackDamage = 52, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "f7bc51a56e2e492186a3c82b3528484e", hitAnimationRuid = "e6afbf8ceb1c45a6a1e74f885bdb0c0c" },
+			{ packId = "mob/8150302.img", name = "黑翼龍", area = "crimson", band = "high", family = "wildlife", enabled = true, level = 103, hp = 696, maxHp = 696, attack = 54, attackDamage = 54, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "af21747f71154e3392d2669160dceb81", hitAnimationRuid = "72fecb8b631b44a3969843bca9453130" },
+			{ packId = "mob/8180001.img", name = "格瑞芬多", area = "leafre", band = "high", family = "wildlife", enabled = true, level = 105, hp = 715, maxHp = 715, attack = 55, attackDamage = 55, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "74191c32e6c240d5a9daee58eac09ecb", hitAnimationRuid = "6079cbd6f14d472d8e7e7cf98d94fb9e" },
+			{ packId = "mob/8200005.img", name = "悔恨的祭司", area = "temple", band = "high", family = "magic", enabled = true, level = 106, hp = 724, maxHp = 724, attack = 55, attackDamage = 55, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "5641e8309fd04e3381d210aba558c0e4", hitAnimationRuid = "3e5d03c46b0142ab984621db3c79dc49" },
+			{ packId = "mob/8170000.img", name = "達納托斯", area = "ludus", band = "high", family = "neutral", enabled = true, level = 108, hp = 742, maxHp = 742, attack = 57, attackDamage = 57, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "a21cbaa71a364bd59215c432d3222dbc", hitAnimationRuid = "681ac3cf4ba14ca791f3c8959fff2b9b" },
+			{ packId = "mob/8200006.img", name = "悔恨的神官", area = "temple", band = "high", family = "magic", enabled = true, level = 109, hp = 752, maxHp = 752, attack = 57, attackDamage = 57, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "14484eb99f734914afeda8b456789bd7", hitAnimationRuid = "9bd50d7b76f74ec29c900f30d529fa0c" },
+			{ packId = "mob/9300045.img", name = "女神的月光精靈", area = "sky", band = "high", family = "magic", enabled = true, level = 110, hp = 761, maxHp = 761, attack = 58, attackDamage = 58, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "321449eff5b34e7d821ae7f63a425411", hitAnimationRuid = "446510b2f6024a3c9a7b5e3c5a4c67bd" },
+			{ packId = "mob/9300046.img", name = "女神的星光精靈", area = "sky", band = "high", family = "magic", enabled = true, level = 110, hp = 761, maxHp = 761, attack = 58, attackDamage = 58, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "025d265ab7f74d519529cec934064b0d", hitAnimationRuid = "fac3a34a9a47491ba441e74369b0f77c" },
+			{ packId = "mob/9300047.img", name = "女神的日光精靈", area = "sky", band = "high", family = "magic", enabled = true, level = 110, hp = 761, maxHp = 761, attack = 58, attackDamage = 58, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "6128a2c23d2c431faf0011223de337c7", hitAnimationRuid = "a129831558c2447cbe5953df91f1f4ac" },
+			{ packId = "mob/8200007.img", name = "悔恨的守護兵", area = "temple", band = "high", family = "magic", enabled = true, level = 113, hp = 789, maxHp = 789, attack = 60, attackDamage = 60, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "89a7fae39ed44d82a76bfb162d9878bb", hitAnimationRuid = "614482f63ca247ccbe5cc95611e7cc10" },
+			{ packId = "mob/9400014.img", name = "天狗", area = "herbtown", band = "high", family = "magic", enabled = true, level = 115, hp = 808, maxHp = 808, attack = 61, attackDamage = 61, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "b93cdc5574b54ca2974898e98fb68d2d", hitAnimationRuid = "29a185b022474df4a0fb68d343052029" },
+			{ packId = "mob/8200008.img", name = "悔恨的守護隊長", area = "temple", band = "high", family = "magic", enabled = true, level = 116, hp = 818, maxHp = 818, attack = 62, attackDamage = 62, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "cff69f5401264842ad0192550215aaf2", hitAnimationRuid = "20aadeaf7d9a48f9ab290e9e1fc2e55c" },
+			{ packId = "mob/8200009.img", name = "忘卻的祭司", area = "temple", band = "high", family = "magic", enabled = true, level = 121, hp = 866, maxHp = 866, attack = 65, attackDamage = 65, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "7abfd571cadb484d99ab96b29480ac7e", hitAnimationRuid = "f1fa2da8b86a4f2ea240aad6a8fe696e" },
+			{ packId = "mob/8220004.img", name = "多多", area = "temple", band = "high", family = "neutral", enabled = true, level = 121, hp = 866, maxHp = 866, attack = 65, attackDamage = 65, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "a247729732f0464f85bd2842d5c064a3", hitAnimationRuid = "71860db25d9f490db35856503a32b77f" },
+			{ packId = "mob/8200010.img", name = "忘卻的神官", area = "temple", band = "high", family = "magic", enabled = true, level = 124, hp = 895, maxHp = 895, attack = 66, attackDamage = 66, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "97873a2e853245ba89bc159b83dcb1a1", hitAnimationRuid = "0a4cfa8f90a646ef8efae747a4ad1621" },
+			{ packId = "mob/8200011.img", name = "忘卻的守護兵", area = "temple", band = "high", family = "magic", enabled = true, level = 128, hp = 934, maxHp = 934, attack = 69, attackDamage = 69, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "617501c8a8cf4b02acba5f6a95507817", hitAnimationRuid = "58facb0472bb40c3a951ead4b3159f7c" },
+			{ packId = "mob/8200012.img", name = "忘卻的守護隊長", area = "temple", band = "high", family = "magic", enabled = true, level = 131, hp = 963, maxHp = 963, attack = 71, attackDamage = 71, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "75f4058fa8ad4b4c9af10df5a5d394c1", hitAnimationRuid = "4aad26b05e9244bea91a205c11747813" },
+			{ packId = "mob/8220005.img", name = "利里諾斯", area = "temple", band = "high", family = "neutral", enabled = true, level = 131, hp = 963, maxHp = 963, attack = 71, attackDamage = 71, attackInterval = 2, attackIntervalSeconds = 2, bounty = 10000, animationRuid = "8e7d819e07c24ef598cf40f6b4034fe1", hitAnimationRuid = "0c158245b669433db00221dd0020fe6c" },
+			{ packId = "mob/8240092.img", name = "量產型新時代機器人A", area = "__allair", band = "high", family = "neutral", enabled = true, level = 208, hp = 1798, maxHp = 1798, attack = 120, attackDamage = 120, attackInterval = 2, attackIntervalSeconds = 2, bounty = 40000, animationRuid = "5053c2f4d0a7401ba84977e3bce8d2e6", hitAnimationRuid = "99ae2d6866824bb0bd9df27742a1e9a1" },
+			{ packId = "mob/8240094.img", name = "量產型新時代機器人B", area = "__allair", band = "high", family = "neutral", enabled = true, level = 209, hp = 1810, maxHp = 1810, attack = 121, attackDamage = 121, attackInterval = 2, attackIntervalSeconds = 2, bounty = 40000, animationRuid = "7a6e6b4f2ecb4fc9974b211849a5a094", hitAnimationRuid = "ebb182fcebef4ca7ac01e5763c0b6d1a" },
+			{ packId = "mob/8220003.img", name = "有力的寒霜冰龍", area = "crimson", band = "mid", family = "wildlife", enabled = false, level = nil, hp = 0, maxHp = 0, attack = 0, attackDamage = 0, attackInterval = 2, attackIntervalSeconds = 2, bounty = 0, animationRuid = "9386a203ce5f4551b0dd9d6b8d97bfcd" },
+			{ packId = "mob/8642102.img", name = "巴達雷伊", area = "__allair", band = "low", family = "wildlife", enabled = true, level = 28, hp = 120, maxHp = 120, attack = 12, attackDamage = 12, attackInterval = 2, attackIntervalSeconds = 2, bounty = 100, animationRuid = "4d72c5ce3a924253b1dae0f9150136ef", hitAnimationRuid = "1b5cef3ca72b448298b9fc3228f3ac88" },
+			{ packId = "mob/9300511.img", name = "噴火龍", area = "leafre", band = "high", family = "wildlife", enabled = false, level = nil, hp = 0, maxHp = 0, attack = 0, attackDamage = 0, attackInterval = 2, attackIntervalSeconds = 2, bounty = 0, animationRuid = "7631c122d4b443aaa1747ee76d6ffc19" },
+			}
+		end
+		return self._T.monsterDefinitions
+	end
+
+	method string GetMonsterHitAnimationRuid(string packId)
+		-- 僅回傳該官方 pack 已核實的原生 hit1 clip；未知或無資料時不以飛行動畫冒充受擊。
+		local monster = self:GetMonsterById(packId)
+		if monster == nil then return "" end
+		return monster.hitAnimationRuid or ""
+	end
+
+	method number GetMonsterHitChance(string packId)
+		-- 只按現有怪物 packId 點名少數靈活小型飛怪與大型目標；其餘沿用一般命中率。
+		if self._T.flexibleMonsterIds == nil then
+			self._T.flexibleMonsterIds = {
+				["mob/2300100.img"] = true, -- 蝙蝠
+				["mob/3000001.img"] = true, -- 蝴蝶精
+				["mob/3230101.img"] = true, -- 小幽靈
+				["mob/3230200.img"] = true, -- 星光精靈
+				["mob/3230300.img"] = true, -- 幼魔精靈
+				["mob/3210206.img"] = true, -- 黃色戰鬥機
+				["mob/3230303.img"] = true, -- 粉紅色戰鬥機
+				["mob/3230304.img"] = true, -- 藍色戰鬥機
+				["mob/9500197.img"] = true, -- 幽靈
+				["mob/9300064.img"] = true, -- 鬼火
+				["mob/4230119.img"] = true, -- 馬堤安
+				["mob/4230120.img"] = true, -- 培利堤安
+			}
+		end
+		if self._T.largeMonsterIds == nil then
+			self._T.largeMonsterIds = {
+				["mob/8150300.img"] = true, -- 赤翼龍
+				["mob/8150301.img"] = true, -- 藍翼龍
+				["mob/8150302.img"] = true, -- 黑翼龍
+				["mob/8180001.img"] = true, -- 格瑞芬多
+				["mob/8140200.img"] = true, -- 冥鐘
+				["mob/8140300.img"] = true, -- 黑暗冥鐘
+				["mob/9300511.img"] = true, -- 噴火龍
+			}
+		end
+		if self._T.flexibleMonsterIds[packId] then return 0.82 end
+		if self._T.largeMonsterIds[packId] then return 0.96 end
+		return 0.92
+	end
+
+	method number GetPlayerHitChance(integer tier, string packId, number accuracyBonus)
+		-- 船級炮控最多加 10 個百分點；最終命中率限制在 75%～99%。
+		local clampedTier = math.max(0, math.min(5, math.floor(tier or 0)))
+		local baseChance = self:GetMonsterHitChance(packId)
+		return math.max(0.75, math.min(0.99, baseChance + 0.02 * clampedTier + (accuracyBonus or 0)))
+	end
+
+	method table GetMonsterById(string packId)
+		-- 建立一次 packId 索引並回傳指定物種；未知 ID 回傳 nil。
+		if self._T.monstersById == nil then
+			self._T.monstersById = {}
+			for _, definition in ipairs(self:GetAllMonsters()) do
+				self._T.monstersById[definition.packId] = definition
+			end
+		end
+		return self._T.monstersById[packId]
+	end
+
+	method table GetShipTier(integer tier)
+		-- 快取 T0～T5 遭遇設定並依船級回傳。
+		if self._T.shipTiers == nil then
+			self._T.shipTiers = {
+			[0] = { tier = 0, maxLevel = 30, weights = { 1, 0, 0 }, chance = 0.18, countMin = 1, countMax = 1, cargoReference = 12000, screenLimit = 2 },
+			[1] = { tier = 1, maxLevel = 50, weights = { 1, 0, 0 }, chance = 0.25, countMin = 1, countMax = 2, cargoReference = 50000, screenLimit = 3 },
+			[2] = { tier = 2, maxLevel = 80, weights = { 0.75, 0.25, 0 }, chance = 0.35, countMin = 2, countMax = 4, cargoReference = 500000, screenLimit = 4 },
+			[3] = { tier = 3, maxLevel = 100, weights = { 0.4, 0.6, 0 }, chance = 0.45, countMin = 4, countMax = 7, cargoReference = 5000000, screenLimit = 5 },
+			[4] = { tier = 4, maxLevel = 150, weights = { 0.2, 0.55, 0.25 }, chance = 0.55, countMin = 7, countMax = 11, cargoReference = 200000000, screenLimit = 6 },
+			[5] = { tier = 5, maxLevel = 999, weights = { 0.1, 0.35, 0.55 }, chance = 0.65, countMin = 10, countMax = 16, cargoReference = 2147483647, screenLimit = 8 },
+			}
+		end
+		return self._T.shipTiers[tier]
+	end
+
+	method table GetCombatProfile(integer tier)
+		-- 快取各船級固定戰鬥值，不隨貨值或遭遇卡變動。
+		if self._T.combatProfiles == nil then
+			self._T.combatProfiles = {
+			[0] = { maxHull = 100, maxShield = 20, maxArmor = 40, cannonDamage = 20, cannonInterval = 1 },
+			[1] = { maxHull = 120, maxShield = 24, maxArmor = 48, cannonDamage = 40, cannonInterval = 1 },
+			[2] = { maxHull = 600, maxShield = 150, maxArmor = 300, cannonDamage = 120, cannonInterval = 0.9 },
+			[3] = { maxHull = 2000, maxShield = 500, maxArmor = 1000, cannonDamage = 400, cannonInterval = 0.8 },
+			[4] = { maxHull = 8000, maxShield = 2000, maxArmor = 4000, cannonDamage = 1200, cannonInterval = 0.7 },
+			[5] = { maxHull = 30000, maxShield = 6000, maxArmor = 12000, cannonDamage = 4000, cannonInterval = 0.6 },
+			}
+		end
+		return self._T.combatProfiles[tier]
+	end
+
+	method table Prepare(string areaId, integer tier, number cargoValue, number temptation, table stats, boolean fog)
+		-- 依船級、空域、貨值與卡片累積值建立候選權重和遭遇參數。
+		local bands = { "low", "mid", "high" }
+		local function encounterFactor(sum) return math.max(0.1, 1 + (sum or 0)) end
+		local definitions = self:GetAllMonsters()
+		local ship = self:GetShipTier(tier)
+		if ship == nil then error("船級必須為 T0～T5") end
+		if cargoValue == nil or cargoValue ~= cargoValue or cargoValue < 0 or cargoValue > 9007199254740991 or cargoValue ~= math.floor(cargoValue) then error("貨物估值須為非負安全整數") end
+		if temptation == nil or temptation ~= temptation or temptation < 0 or temptation > 100 then error("誘惑度須在 0～100") end
+		local validArea = areaId == "open_sea" or areaId == "victoria" or areaId == "maple" or areaId == "sky" or areaId == "ludus" or areaId == "nihal" or areaId == "leafre" or areaId == "edelstein" or areaId == "herbtown" or areaId == "ereve" or areaId == "rien" or areaId == "crimson" or areaId == "aqua" or areaId == "temple"
+		if not validArea then error("未知空域") end
+		stats = stats or {}
+		local general = encounterFactor(stats.encounterMultiplier)
+		if fog == true then general = general * encounterFactor(stats.fogEncounterMultiplier) end
+		local pressure = math.log(1 + cargoValue / ship.cargoReference) / math.log(2)
+		local attraction = 1 + temptation / 100
+		local shift = 1 + pressure * 0.1 + temptation / 200
+		local candidates = {}
+		local baseTotal = 0
+		local modifiedTotal = 0
+		for bandIndex, band in ipairs(bands) do
+			local bandWeight = ship.weights[bandIndex] * shift ^ (bandIndex - 1)
+			if bandWeight > 0 then
+				local localCount = 0
+				local sharedCount = 0
+				for _, definition in ipairs(definitions) do
+					if definition.enabled and definition.level ~= nil and definition.level >= 1 and definition.level <= ship.maxLevel and definition.band == band then
+						if definition.area == areaId then localCount = localCount + 1 end
+						if definition.area == "__allair" then sharedCount = sharedCount + 1 end
+					end
+				end
+				local localShare = sharedCount > 0 and 0.85 or 1
+				local sharedShare = localCount > 0 and 0.15 or 1
+				for _, definition in ipairs(definitions) do
+					if definition.enabled and definition.level ~= nil and definition.level >= 1 and definition.level <= ship.maxLevel and definition.band == band then
+						local share = nil
+						if definition.area == areaId then share = localShare / localCount end
+						if definition.area == "__allair" then share = sharedShare / sharedCount end
+						if share ~= nil then
+							local baseWeight = bandWeight * share
+							local familyDelta = 0
+							if definition.family == "wildlife" then familyDelta = stats.monsterEncounterMultiplier or 0 end
+							if definition.family == "magic" then familyDelta = stats.magicEncounterMultiplier or 0 end
+							local weight = baseWeight * encounterFactor(familyDelta)
+							table.insert(candidates, { definition = definition, weight = weight })
+							baseTotal = baseTotal + baseWeight
+							modifiedTotal = modifiedTotal + weight
+						end
+					end
+				end
+			end
+		end
+		local familyMean = 1
+		if baseTotal > 0 then familyMean = modifiedTotal / baseTotal end
+		local cardFactor = general * familyMean
+		local hazard = (1 + pressure * 0.35) * attraction * cardFactor
+		local chance = 0
+		local countMin = 0
+		local countMax = 0
+		if #candidates > 0 then
+			chance = math.min(0.95, 1 - (1 - ship.chance) ^ hazard)
+			local countFactor = (1 + pressure * 0.35) * (1 + temptation / 200) * math.sqrt(cardFactor)
+			countMin = math.max(1, math.floor(ship.countMin * countFactor))
+			countMax = math.max(countMin, math.ceil(ship.countMax * countFactor))
+		end
+		return { chance = chance, countMin = countMin, countMax = countMax, screenLimit = ship.screenLimit, candidates = candidates, totalWeight = modifiedTotal }
+	end
+
+	method table DrawWave(table prepared)
+		-- 遇敵已由呼叫端確認；此處只抽數量與可重複的混合怪物隊伍。
+		local result = {}
+		if prepared == nil or prepared.totalWeight == nil or prepared.totalWeight <= 0 then return result end
+		local count = _UtilLogic:RandomIntegerRange(prepared.countMin, prepared.countMax)
+		for index = 1, count do
+			local roll = _UtilLogic:RandomDouble() * prepared.totalWeight
+			local cumulative = 0
+			local selected = prepared.candidates[#prepared.candidates].definition
+			for _, candidate in ipairs(prepared.candidates) do
+				cumulative = cumulative + candidate.weight
+				if roll < cumulative then selected = candidate.definition break end
+			end
+			table.insert(result, selected)
+		end
+		return result
+	end
+end

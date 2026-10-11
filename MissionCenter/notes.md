@@ -21,8 +21,8 @@
 - 官方素材庫中可用飛空船、甲板、天空背景、巴洛古或空賊相關素材需要進 Maker 實際確認。
 - 交易貨物買低賣高要如何接到目前金幣/雲海結晶循環？
 - 下一步要先做正式 HUD/UI，還是先補交易資料表？
-- 本機已找到 MSW Maker MCP 入口：C:\Users\USER\AppData\Local\Nexon\MapleStory Worlds\MakerMCP\msw-maker-mcp.bat。
-- Codex config 已加入 mcp_servers.msw_maker，並備份為 C:\Users\USER\.codex\config.toml.bak-msw-20260709-103130。
+- 本機已找到 MSW Maker MCP 入口：官方 MakerMCP/msw-maker-mcp.bat（私人安裝路徑省略）。
+- Codex config 已加入 mcp_servers.msw_maker，並備份；本機備份路徑不列入公開紀錄。
 - 目前 Codex session 已能看到並使用 MSW Maker MCP 工具。
 - MSW Maker MCP 已確認可操作 efresh、play、stop、logs、screenshot、keyboard_input、xecute_script。
 - Phase 0 第一版已採用 Maker 內 @Logic 按鍵文字流程，不先做完整 UI。
@@ -135,9 +135,9 @@
 
 ## 2026-10-10 21 億經濟與材料規劃 checkpoint
 
-- 定案：T5 金幣費 2,147,483,647 G，材料另計；船／卡整數價。其餘候選價格以 ../Docs/GreatVoyage-Ship-Materials-20261010.md 為本輪整合規格。
-- 已完成唯讀盤點：19 個 RootDesk mLua 的正式本金／交易／卡片／維修／金額上限、停用本地原型及 UI 投影，見 ../Docs/reviews/all-money-audit-20261010.md。賞金與製造消耗尚未實作。
-- 已完成靜態算術：13 現役港、11 種 verified 未退役材料、T2～T5 配方與單位；收據 ../Docs/reviews/ship-material-design-check-20261010.json。Luna 獨立唯讀複核通過相同範圍，不代表 Maker runtime 通過。
+- 定案：T5 金幣費 2,147,483,647 G，材料另計；船／卡整數價。其餘候選價格以 ../docs/GreatVoyage-Ship-Materials-20261010.md 為本輪整合規格。
+- 已完成唯讀盤點：19 個 RootDesk mLua 的正式本金／交易／卡片／維修／金額上限、停用本地原型及 UI 投影，見 ../docs/reviews/all-money-audit-20261010.md。賞金與製造消耗尚未實作。
+- 已完成靜態算術：13 現役港、11 種 verified 未退役材料、T2～T5 配方與單位；收據 ../docs/reviews/ship-material-design-check-20261010.json。Luna 獨立唯讀複核通過相同範圍，不代表 Maker runtime 通過。
 - 尚待：水世界／工業港商人綁定、必要材料保底、全商品跨港收益矩陣、價格版本／舊批次處理、金額擴容與讀回、分批寄存與原子製造、空域池／權重／賞金 claim、防重掉落。任務／造船 NPC 放後面。
 - MissionCenter/ship-material-task-draft.md 為可檢閱草案，未發布 tasks.md，未修改 lifecycle；本輪沒有改遊戲數值或執行新的 Maker 遊戲驗證。
 
@@ -152,3 +152,20 @@
 - 審查雜湊與Maker回執：[git-checkpoint](../docs/reviews/2026-10-10/git-checkpoint/)。CodeRabbit結果與推送收據待本輪完成後補入。
 
 - 15:56收尾補充：完整32檔Rabbit提出1 Major issue已先重現並修；複審實際9檔0 issues。市場同步清理過期列、先查48KB，再換帳號；交易caller同步失敗取消並復原行情。88 tests＋10 subtests；修正後Native build73／runtime45全Info、fixture cleanup完成。完整[紀錄](../docs/CodeRabbit-Review-20261010.md)。上方84測試與唯讀Native是修正前checkpoint，保留歷史，不代表最後結果。
+
+## 2026-10-11｜怪物分類與巴達雷伊存檔
+
+- 主人要求保存目前怪物表；完整人工分類 300 筆保留，採用 132 種，129 種可作離線抽樣、3 種待校準。低 69／中 41／高 22 包含待校準者。
+- 巴達雷伊依主人指定比照泡泡魚採自訂分級 Lv.28／低難度，保留全空域分類及原作等級未知。主人決策另存 balanceOverride，不覆寫來源數據。
+- 固定[存檔表](evidence/2026-10-11/monster-table/summary.md)含完整 JSON、人工分類原檔、決策與 SHA-256 雜湊。[可調整檢閱頁](../docs/web/encounter-balance/encounter-balance.html)與[規格](../docs/GreatVoyage-Encounter-Balance-20261011.md)已同步。
+- 22,464 組條件／98,000 次離線抽樣 PASS；卡片顯示另以最小 DOM fixture 執行驗證。未執行本次 Chrome／Maker 驗收，HP／攻擊／間隔仍待校準。
+- 關聯 AC-T7 後續路線怪規劃；未修改 tasks.md 或任何任務生命週期。
+
+
+## 2026-10-12｜遭遇與賞金串接 checkpoint
+
+已接入貨值限定引怪、129物種固定戰力／賞金與混編隊伍。T0～T5戰力與維修資料已建，高階材料造船與NPC未開。詳見[串接紀錄](../docs/GreatVoyage-Encounter-Runtime-20261012.md)。107 tests／10 subtests與22,464條件／98,000抽樣通過；CodeRabbit 8檔提出1 minor已修，Maker Server邏輯／Client跨端快照切片通過，build87 Info／最終runtime58 Info、0 Warning／Error；完整航程與多怪畫面仍待驗。維持既有任務狀態與10月11日人工分類封存。
+
+## 2026-10-12｜空戰回饋與 Git 發布補記
+
+前一段107／10是較早的遭遇串接切片。最新版完整回歸133 tests／21 subtests通過；怪物頭頂原生MISS、浮動傷害與爆擊、129種同pack受擊素材已接入，完整航程／正式服／逐種素材畫面未驗。CodeRabbit完整39檔1 minor路徑大小寫問題先重現後修；單一差異檔連同關聯程式5檔複審0 issues，本輪兩次。詳見[發布審查](../docs/CodeRabbit-Review-20261012.md)。

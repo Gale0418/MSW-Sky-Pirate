@@ -1,0 +1,8 @@
+{
+  "name": "great-voyage-encounter-review",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "node encounter-smoke.cjs"
+  }
+}

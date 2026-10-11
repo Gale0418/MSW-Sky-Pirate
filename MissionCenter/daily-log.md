@@ -1,6 +1,6 @@
 # Daily Log
 
-- Last organized: 2026-10-10
+- Last organized: 2026-10-12
 
 ## 2026-08-14
 - 完成 MissionCenter 0.3.1 契約遷移與歷史 Done 驗證債務正規化；未補造 Pass。
@@ -101,3 +101,37 @@
 - 15:56｜main 保存前驗證完成：CodeRabbit完整32檔提出1 Major issue，先production-body重現再修過期市場列／48KB換入前檢查；追到caller補MarkDirty結果、買賣同步失敗取消與單列復原。5檔差異連同關聯程式9檔複審0 issues，兩輪exit0／review_completed；本時段共2次，未湊假150檔。88 tests＋10 subtests、十三港UTF-8大小界線與diff check通過。修正後Maker正向prune／stock／拒絕不換帳號／MarkDirty false→true／cleanup，build73／runtime45全Info、0Warning/Error，已stop。README與[審查紀錄](../docs/CodeRabbit-Review-20261010.md)同步；正式重登與跨instance待驗、M1／Save既有狀態不前進。
 
 - 16:00｜87檔checkpoint `bca479f2d3c3de688932470b3ae439d4e15fa346` 已一般推送origin/main、exit0；git ls-remote與GitHub connector查commit確認遠端同SHA，當時工作樹乾淨。全程無新增遊戲分支／PR、無force push；README／任務中心於上傳前更新，這份上傳回執另以文件提交保存。[提交](https://github.com/Gale0418/MSW-Sky-Pirate/commit/bca479f2d3c3de688932470b3ae439d4e15fa346)。MSW世界未由本次Git上傳發布，正式重登等限制維持。
+
+
+## 2026-10-11
+
+- Timestamp：2026-10-11T21:34:55+08:00｜GV-MONSTER-TABLE-20261011-BADDAREI
+- Change：保存 132 種怪物表與 300 筆人工分類原檔；巴達雷伊比照泡泡魚，自訂分級 Lv.28／低難度、全空域。
+- Reason：主人指定可愛魚類的分級並要求 Mission Center 存檔，避免遺失人工分類與決策。
+- Impact：離線工具 129 種可抽／3 種待校準；22,464 條件／98,000 抽樣與卡片顯示檢查通過。HP／攻擊／間隔未定，尚未串 MSW，多怪實機待驗；tasks.md 狀態不變。
+- Evidence：[完整怪物表與固定快照](evidence/2026-10-11/monster-table/summary.md)。
+
+
+## 2026-10-12
+
+- Timestamp：2026-10-12T01:15:15+08:00｜GV-ENCOUNTER-RUNTIME-20261012
+- Change：接入129種固定戰力怪與混編隊伍、擊殺賞金及滿錢包保留，建立T0～T5戰力／維修曲線；同步README及遭遇規格。
+- Reason：主人要求弱怪少賞金、強怪多賞金，且只由貨物價值吸引怪物，現金不掉落不應引怪。
+- Impact：每100距離持續檢查、尾段折算、Server防重結算；107 tests／10 subtests、22,464條件／98,000抽樣通過。Maker Server邏輯與Client跨端快照切片通過，build87／最終runtime58全Info，0 Warning／Error，Timer清除且已stop。高階材料造船／NPC、BOSS、全航程畫面及正式服仍待後續；不改任務生命週期。
+- Evidence：[串接與限制](../docs/GreatVoyage-Encounter-Runtime-20261012.md)、[Maker收據](../docs/reviews/encounter-runtime-maker-20261012.json)。
+
+- 最終補記：107 tests／10 subtests、22,464條件／98,000抽樣通過。CodeRabbit 8檔1 minor已查證修正並補正負向回歸；Maker Server混編／固定賞金與Client跨端Timer快照通過，build87／最終runtime58全Info、0 Warning／Error。前輪夾具與時序診斷保留，Timer清除、已stop回edit。全航程與多怪sprites／正式服未驗；收據見 ../docs/reviews/encounter-runtime-maker-20261012.json。
+
+- Timestamp：2026-10-12T02:47:49+08:00｜GV-COMBAT-FEEDBACK-20261012
+- Change：加入原 UID 獨立飛行與固定直線砲擊、溫和命中、±10% 傷害／5%×1.5 爆擊、原生傷害字與頭頂 MISS，129 種怪物各用同官方 pack hit1，活怪約0.3秒後還原、死怪延後回收；DIY砲台保留後續規劃。
+- Reason：主人要求怪物自由亂飛、砲彈不能追蹤、傷害浮動／爆擊／受擊表情，以及 MISS 顯示在頭上。
+- Impact：完整132 tests／21 subtests通過，Luna唯讀覆核無具體問題。Maker normal／critical／MISS 與hit1還原／死亡TTL切片有正向證據；最新頭頂MISS以泡泡魚／赤翼龍與同UID fallback核對，build73Info／normal72Info、0Warning／Error，fixture與Timer、玩家／船狀態已還原、stop回Edit。前輪兩筆probe錯誤保留；短TTL文字未截圖、全航程／正式服／多人／129種逐一畫面未驗，任務生命週期不前進。森林砲口圖與投影時序正另核對，未先改數值或宣稱像素吻合。
+- Evidence：[砲擊與受擊回饋](../docs/GreatVoyage-Projectile-Targeting-20261012.md)、[本機收據](../docs/reviews/projectile-targeting-local-20261012.json)、[Maker收據](../docs/reviews/projectile-targeting-maker-20261012.json)、[129種官方hit1](../docs/reviews/monster-hit-clips-20261012.json)。
+
+- 砲口補記：同一 forest RUID／截圖前後投影一致的校準確認起點約(518.7,416.3)落在黑砲口約(522,419)內，未修改 offset；早先32px差異來自不同時點，另一還原後截圖是T0，診斷保留。calibrationCycle build73Info／normal66Info、0Warning／Error，玩家／船狀態還原、未新增Timer、已stop；不是所有船種或pixel-perfect驗收。
+
+- Timestamp：2026-10-12T03:03:09+08:00｜GV-GIT-RELEASE-20261012
+- Change：依主人授權直接保存／推送main，不另留遊戲分支／PR；README、發布審查與公開收據已整理，帳號識別值42處遮罩、私人原始副本不入Git。
+- Reason：保存完成的怪物分類／129物種空戰與賞金、船級戰力資料，以及原UID直線砲擊／命中／浮傷／爆擊／頭頂MISS與同pack受擊表情。
+- Impact：CodeRabbit完整39檔提出1 minor路徑大小寫問題，新增回歸先重現後修；1個差異檔連同關聯程式共5檔複審0 issues，兩輪exit0／review_completed，本輪未追加第三次。133 tests／21 subtests、22,464條件／98,000抽樣通過；沒有修遊戲production或重新跑Maker。高階材料造船／NPC／特殊Boss與正式服、全航程等限制保留；既有任務生命週期不變。提交／push與遠端SHA確認待以下回執補記。
+- Evidence：[完整發布紀錄](../docs/CodeRabbit-Review-20261012.md)、[review input／原始回應／驗證](../docs/reviews/2026-10-12/git-checkpoint/)。

@@ -169,6 +169,7 @@ script GreatVoyageProfileStore extends Logic
 		if not knownPort then return false end
 		local core = profile.core
 		if type(core) ~= "table" or not self:IsIntegerInRange(core.money, 0, 2147483647) then return false end
+		if core.bountyCredit ~= nil and (not self:IsFiniteNumber(core.bountyCredit) or core.bountyCredit < 0 or core.bountyCredit ~= math.floor(core.bountyCredit) or core.bountyCredit > 9007199254740991) then return false end
 		if type(core.ships) ~= "table" or type(core.cardInventory) ~= "table" or type(core.cargo) ~= "table" then return false end
 		if not self:IsKnownId(core.activeShipId, shipCatalog) then return false end
 		local installedCounts = {}
@@ -251,7 +252,7 @@ script GreatVoyageProfileStore extends Logic
 	@ExecSpace("ServerOnly")
 	method any BuildRuntimeProfile(any state, any profile)
 		-- 將 runtime 狀態收斂為 schema 欄位，不保存航程、戰鬥與衍生 stats。
-		local core = { money = state.money, cargo = { id = "", quantity = 0, buyPrice = 0, lots = {} }, activeShipId = state.activeShipId, ships = {}, cardInventory = {} }
+		local core = { money = state.money, bountyCredit = state.bountyCredit or 0, cargo = { id = "", quantity = 0, buyPrice = 0, lots = {} }, activeShipId = state.activeShipId, ships = {}, cardInventory = {} }
 		if state.cargo ~= nil then
 			core.cargo = _GreatVoyageVoyageData:CopyCargo(state.cargo)
 			if core.cargo == nil then return nil end
@@ -744,7 +745,7 @@ script GreatVoyageProfileStore extends Logic
 		local lotsRaw = self:EncodeCargoLots(cargo.lots)
 		if lotsRaw == nil then return nil end
 		local cargoWithLots = string.sub(cargoRaw, 1, string.len(cargoRaw) - 1) .. ",\"lots\":" .. lotsRaw .. "}"
-		local objectPart = { money = core.money, activeShipId = core.activeShipId, ships = core.ships }
+		local objectPart = { money = core.money, bountyCredit = core.bountyCredit or 0, activeShipId = core.activeShipId, ships = core.ships }
 		local objectOk, raw = pcall(function() return _HttpService:JSONEncode(objectPart) end)
 		if objectOk ~= true or type(raw) ~= "string" or string.sub(raw, -1) ~= "}" then return nil end
 		local cardInventoryRaw = "{}"

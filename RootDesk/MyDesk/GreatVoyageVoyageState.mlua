@@ -151,7 +151,7 @@ script GreatVoyageVoyageState extends Logic
 		local state = self.voyageByPlayer[playerId]
 		if state ~= nil and state.persistencePending == true then return nil end
 		if state == nil or state.profileCode ~= profileCode then
-			state = { playerId = playerId, profileCode = profileCode, status = "idle", originId = profile.safePortId, destinationId = "", route = nil, segments = {}, distanceTravelled = 0, budgetRemaining = 0, pausedDistance = 0, pendingEncounter = nil, encounterCount = 0, cargo = { id = "", quantity = 0, buyPrice = 0, lots = {} }, money = profile.core.money, economyRevision = 0, economyMessage = "", hullDamage = 0, elapsedSailingSeconds = 0, voyageDurationSeconds = self.voyageDurationSeconds, startedAt = -1, raidRemaining = 0, raidEnemies = {}, lastRaidDamageAt = -1, lastAdvanceAt = -1, lastReason = "", cardInventory = {}, cardInventoryRevision = 0, ownedShips = {}, safePortId = profile.safePortId }
+			state = { playerId = playerId, profileCode = profileCode, status = "idle", originId = profile.safePortId, destinationId = "", route = nil, segments = {}, distanceTravelled = 0, budgetRemaining = 0, pausedDistance = 0, pendingEncounter = nil, encounterCount = 0, cargo = { id = "", quantity = 0, buyPrice = 0, lots = {} }, money = profile.core.money, bountyCredit = profile.core.bountyCredit or 0, pendingBounty = 0, economyRevision = 0, economyMessage = "", hullDamage = 0, elapsedSailingSeconds = 0, voyageDurationSeconds = self.voyageDurationSeconds, startedAt = -1, raidRemaining = 0, raidEnemies = {}, lastRaidDamageAt = -1, lastAdvanceAt = -1, lastReason = "", cardInventory = {}, cardInventoryRevision = 0, ownedShips = {}, safePortId = profile.safePortId }
 			state.cargo = _GreatVoyageVoyageData:CopyCargo(profile.core.cargo)
 			for cardId, quantity in pairs(profile.core.cardInventory) do state.cardInventory[cardId] = quantity end
 			for shipId, savedShip in pairs(profile.core.ships) do
@@ -181,6 +181,10 @@ script GreatVoyageVoyageState extends Logic
 			local player = _UserService:GetUserEntityByUserId(playerId)
 			if player ~= nil and player.PlayerComponent ~= nil and player.PlayerComponent.ProfileCode == profileCode and self:GetPortIdFromMap(player.CurrentMapName) ~= profile.safePortId then self:MovePlayerToPort(playerId, profile.safePortId) end
 		end
+		if state.status ~= "sailing" and (state.bountyCredit or 0) > 0 and state.money < 2147483647 then
+			self:SettleMonsterBounties(state)
+			_GreatVoyageProfileStore:MarkStateDirty(playerId, state)
+		end
 		return state
 	end
 
@@ -189,6 +193,7 @@ script GreatVoyageVoyageState extends Logic
 		-- 抵港或沉船先封鎖其他交易，再把安全資產用同步 CAS 寫穩。
 		if state == nil or state.profileCode == nil or _GreatVoyageProfileStore == nil then return false end
 		state.persistencePending = true
+		self:SettleMonsterBounties(state)
 		state.safePortId = safePortId
 		local marked = _GreatVoyageProfileStore:MarkStateDirty(playerId, state)
 		local saved = marked and _GreatVoyageProfileStore:FlushAndWait(state.profileCode)
@@ -230,7 +235,7 @@ script GreatVoyageVoyageState extends Logic
 	@ExecSpace("ServerOnly")
 	method any CreateOwnedShip(any definition)
 		-- 建立單艘船獨立船況；新購時採滿狀態，日後切換只取回已保存數值。
-		local ship = { id = definition.id, name = definition.name, hull = definition.maxHull, maxHull = definition.maxHull, baseHull = definition.maxHull, shield = definition.maxShield, maxShield = definition.maxShield, armor = definition.maxArmor, maxArmor = definition.maxArmor, baseCargoCapacity = definition.cargoCapacity, baseCannonMultiplier = definition.cannonMultiplier, baseDurationMultiplier = definition.durationMultiplier, cargoCapacity = definition.cargoCapacity, cannonMultiplier = definition.cannonMultiplier, durationMultiplier = definition.durationMultiplier, slots = { "", "", "" } }
+		local ship = { id = definition.id, tier = definition.tier, name = definition.name, hull = definition.maxHull, maxHull = definition.maxHull, baseHull = definition.maxHull, shield = definition.maxShield, maxShield = definition.maxShield, armor = definition.maxArmor, maxArmor = definition.maxArmor, baseCargoCapacity = definition.cargoCapacity, baseCannonMultiplier = definition.cannonMultiplier, baseDurationMultiplier = definition.durationMultiplier, cargoCapacity = definition.cargoCapacity, cannonMultiplier = definition.cannonMultiplier, durationMultiplier = definition.durationMultiplier, slots = { "", "", "" } }
 		return ship
 	end
 
@@ -257,6 +262,7 @@ script GreatVoyageVoyageState extends Logic
 		local magicEncounterMultiplier = 0
 		local boilerSpeedBonus = 0
 		local boilerHeatPercent = 0
+		local accuracyBonus = 0
 		for slotIndex = 1, 3 do
 			local cardId = slots[slotIndex] or ""
 			if cardId ~= "" then
@@ -280,6 +286,7 @@ script GreatVoyageVoyageState extends Logic
 					magicEncounterMultiplier = magicEncounterMultiplier + (card.magicEncounterMultiplier or 0)
 					boilerSpeedBonus = boilerSpeedBonus + (card.boilerSpeedBonus or 0)
 					boilerHeatPercent = boilerHeatPercent + (card.boilerHeatPercent or 0)
+					accuracyBonus = accuracyBonus + (card.accuracyBonus or 0)
 				end
 			end
 		end
@@ -289,7 +296,7 @@ script GreatVoyageVoyageState extends Logic
 		local maxArmor = math.max(0, math.floor(definition.maxArmor * math.max(0.25, 1 + armorMultiplier) + 0.5))
 		local maxShield = math.max(0, math.floor(definition.maxShield * math.max(0.25, 1 + shieldMultiplier) + 0.5))
 		local cargoCapacity = math.max(1, math.floor(definition.cargoCapacity * (1 + cargoMultiplier) + 0.5) + cargoBonus)
-		return { baseCannonMultiplier = definition.cannonMultiplier, baseDurationMultiplier = definition.durationMultiplier, baseCargoCapacity = definition.cargoCapacity, cannonMultiplier = definition.cannonMultiplier * (1 + fireBonus), durationMultiplier = definition.durationMultiplier / speedMultiplier, cargoCapacity = cargoCapacity, maxHull = maxHull, maxArmor = maxArmor, maxShield = maxShield, stats = { speedMultiplier = speedMultiplier, repairCostMultiplier = repairMultiplier, regenPercent = regenPercent, dodgeChance = math.min(0.75, dodgeChance), incomingDamageMultiplier = incomingDamageMultiplier, encounterMultiplier = encounterMultiplier, fogEncounterMultiplier = fogEncounterMultiplier, monsterEncounterMultiplier = monsterEncounterMultiplier, magicEncounterMultiplier = magicEncounterMultiplier, boilerSpeedBonus = boilerSpeedBonus, boilerHeatPercent = boilerHeatPercent } }
+		return { baseCannonMultiplier = definition.cannonMultiplier, baseDurationMultiplier = definition.durationMultiplier, baseCargoCapacity = definition.cargoCapacity, cannonMultiplier = definition.cannonMultiplier * (1 + fireBonus), durationMultiplier = definition.durationMultiplier / speedMultiplier, cargoCapacity = cargoCapacity, maxHull = maxHull, maxArmor = maxArmor, maxShield = maxShield, stats = { speedMultiplier = speedMultiplier, repairCostMultiplier = repairMultiplier, regenPercent = regenPercent, dodgeChance = math.min(0.75, dodgeChance), incomingDamageMultiplier = incomingDamageMultiplier, encounterMultiplier = encounterMultiplier, fogEncounterMultiplier = fogEncounterMultiplier, monsterEncounterMultiplier = monsterEncounterMultiplier, magicEncounterMultiplier = magicEncounterMultiplier, boilerSpeedBonus = boilerSpeedBonus, boilerHeatPercent = boilerHeatPercent, accuracyBonus = math.min(0.99, accuracyBonus) } }
 	end
 
 	@ExecSpace("ServerOnly")
@@ -365,8 +372,34 @@ script GreatVoyageVoyageState extends Logic
 			if battle.lastEnemyShotAt ~= nil then enemyShotElapsed = math.max(0, _UtilLogic.ServerElapsedSeconds - battle.lastEnemyShotAt) end
 			if phase == "active" then remainingSeconds = math.max(0, (battle.endsAt or _UtilLogic.ServerElapsedSeconds) - _UtilLogic.ServerElapsedSeconds) end
 		end
+		local active = {}
+		if battle ~= nil then
+			for _, enemy in ipairs(battle.enemies or {}) do
+				if enemy.active and enemy.hp > 0 then table.insert(active, {uid=enemy.uid, id=enemy.id, name=enemy.name, hp=enemy.hp, maxHp=enemy.maxHp, animationRuid=enemy.animationRuid, bounty=enemy.bounty}) end
+			end
+		end
+		-- 保留該發炮彈的真實目標，即使擊殺後主目標已補位也不能改瞄別隻。
+		local shotTarget = battle and battle.lastPlayerShotTarget or nil
+		if shotTarget ~= nil then
+			active.playerShot = {sequence=playerShotSequence, targetUid=shotTarget.uid, targetId=shotTarget.id,
+				animationRuid=shotTarget.animationRuid, elapsed=playerShotElapsed, flightSeconds=battle.flightSeconds,
+				hit=battle.lastPlayerShotHit ~= false, hitChance=battle.lastPlayerShotHitChance or 1,
+				critical=battle.lastPlayerShotCritical == true, damage=battle.lastPlayerShotDamage or battle.playerDamage}
+		end
+		local shotSource = battle and battle.lastEnemyShotSource or nil
+		if shotSource ~= nil then
+			active.enemyShot = {sequence=enemyShotSequence, sourceUid=shotSource.uid, animationRuid=shotSource.animationRuid,
+				elapsed=enemyShotElapsed, flightSeconds=battle.flightSeconds}
+		end
 		local ship = state.ship or {}
-		self:ReceiveAirBattleSnapshot(battleId, phase, airspaceId, enemyId, enemyName, enemyHp, enemyMaxHp, ship.hull or 0, ship.maxHull or 0, remainingSeconds, outcome, playerShotSequence, enemyShotSequence, playerShotElapsed, enemyShotElapsed, playerId, playerId)
+		-- 同一封快照帶齊隊伍、炮彈目標與戰況；不依賴兩種 RPC 的抵達順序。
+		self._T.airProjectionSerial = (self._T.airProjectionSerial or 0)+1
+		active.projection = {serial=self._T.airProjectionSerial, id=battleId, phase=phase, airspaceId=airspaceId,
+			enemyId=enemyId, enemyName=enemyName, enemyHp=enemyHp, enemyMaxHp=enemyMaxHp,
+			playerHp=ship.hull or 0, playerMaxHp=ship.maxHull or 0, remainingSeconds=remainingSeconds, outcome=outcome,
+			playerShotSequence=playerShotSequence, enemyShotSequence=enemyShotSequence,
+			playerShotElapsed=playerShotElapsed, enemyShotElapsed=enemyShotElapsed}
+		self:ReceiveAirWaveSnapshot(battleId, active, battle and (#battle.enemies - battle.kills) or 0, battle and #battle.enemies or 0, battle and battle.kills or 0, state.pendingBounty or 0, state.bountyCredit or 0, playerId, playerId)
 	end
 
 	@ExecSpace("Client")
@@ -376,6 +409,8 @@ script GreatVoyageVoyageState extends Logic
 		if not isvalid(player) or player.PlayerComponent == nil or player.PlayerComponent.UserId ~= snapshotPlayerId then return end
 		local controller = _GreatVoyageAdventureController
 		if controller ~= nil then
+			-- 採用原子快照後拒絕舊分離投影，避免晚到 active 覆蓋 won。
+			if controller._T.airProjectionSerial ~= nil then return end
 			controller:ReceiveAirBattleSnapshot(battleId, phase, airspaceId, enemyId, enemyName, enemyHp, enemyMaxHp, playerHp, playerMaxHp, remainingSeconds, outcome, playerShotSequence, enemyShotSequence, playerShotElapsed, enemyShotElapsed, snapshotPlayerId)
 		end
 	end
@@ -1122,6 +1157,10 @@ script GreatVoyageVoyageState extends Logic
 		state.voyageSequence = (state.voyageSequence or 0) + 1
 		state.airBattle = nil
 		state.airBattleCount = 0
+		state.nextEncounterDistance = math.min(100, route.distance)
+		state.lastEncounterDistance = 0
+		state.pendingBounty = 0
+		state.encounterCargoValue = _GreatVoyageVoyageData:GetCargoEncounterValue(state.cargo)
 		state.nextAirBattleSegmentIndex = 1
 		state.segmentEncounterRolls = {}
 		state.regenGranted = 0
@@ -1184,20 +1223,14 @@ script GreatVoyageVoyageState extends Logic
 
 	@ExecSpace("ServerOnly")
 	method number GetSegmentEncounterChance(any state, any segment)
-		local stats = state.ship.stats or {}
-		local chance = 0.65 * (1 + (stats.encounterMultiplier or 0))
-		local airspaceId = segment.airspaceId or ""
-		if airspaceId == "open_sea" or airspaceId == "aqua" or string.find(airspaceId, "wind") ~= nil or string.find(airspaceId, "cloud") ~= nil then
-			chance = chance * (1 + (stats.fogEncounterMultiplier or 0))
-		end
-		local enemy = _GreatVoyageVoyageData:GetAirBattleDefinition(airspaceId)
-		if enemy ~= nil then
-			if enemy.id == "stirge" or enemy.id == "kiyo" then chance = chance * (1 + (stats.monsterEncounterMultiplier or 0)) end
-			if enemy.id == "star_pixie" then chance = chance * (1 + (stats.magicEncounterMultiplier or 0)) end
-		end
-		return math.max(0.1, math.min(0.95, chance))
+		-- 機率與隊伍均使用同一次準備的權重；現金完全不參與。
+		local fog = segment.airspaceId == "open_sea"
+		for _, zone in ipairs(_GreatVoyageVoyageData:GetAirspaces()) do if zone.id == segment.airspaceId then fog = zone.fog == true end end
+		local definition = _GreatVoyageVoyageData:GetShipById(state.ship.id)
+		local tier = state.ship.tier or (definition or {}).tier or 0
+		state.preparedEncounter = _GreatVoyageEncounterData:Prepare(segment.airspaceId, tier, state.encounterCargoValue or _GreatVoyageVoyageData:GetCargoEncounterValue(state.cargo), 0, state.ship.stats or {}, fog)
+		return state.preparedEncounter.chance
 	end
-
 	@ExecSpace("ServerOnly")
 	method void ApplyVoyageRegen(any state, number previousDistance, number nextDistance)
 		-- 依航程發放修復並同步衍生損傷，避免船況與航程快照不同步。
@@ -1247,55 +1280,42 @@ script GreatVoyageVoyageState extends Logic
 
 	@ExecSpace("ServerOnly")
 	method void BeginAirBattle(string playerId, any state, any segment, integer segmentIndex, number now)
-		if _GreatVoyageVoyageData == nil or segment == nil then return end
-		local enemy = _GreatVoyageVoyageData:GetAirBattleDefinition(segment.airspaceId)
-		if enemy == nil then
-			log_warning("[AirBattle] missing airspace pool player=" .. playerId .. " airspace=" .. tostring(segment.airspaceId))
-			return
-		end
+		-- 伺服器抽完整混編隊伍；畫面上限只限制同時交戰數，不刪掉後援。
+		if segment == nil or _GreatVoyageEncounterData == nil then return end
+		local prepared = state.preparedEncounter
+		if prepared == nil then self:GetSegmentEncounterChance(state, segment) prepared = state.preparedEncounter end
+		local definitions = _GreatVoyageEncounterData:DrawWave(prepared)
+		if #definitions == 0 then return end
 		state.airBattleCount = (state.airBattleCount or 0) + 1
-		local damage = math.max(1, math.floor(20 * (state.ship.cannonMultiplier or 1) + 0.5))
-		local stats = state.ship.stats or {}
-		local fireIntervalSeconds = 1
-		local flightSeconds = 0.6
-		local attacksToWin = math.ceil(enemy.maxHp / damage)
-		local durationSeconds = math.max(5, math.min(15, attacksToWin * fireIntervalSeconds + 1 + flightSeconds))
-		local voyageSequence = state.voyageSequence or 1
-		state.airBattle = {
-			id = playerId .. "_voyage_" .. tostring(voyageSequence) .. "_battle_" .. tostring(state.airBattleCount),
-			phase = "active",
-			outcome = "",
-			airspaceId = segment.airspaceId,
-			enemyId = enemy.id,
-			enemyName = enemy.name,
-			enemyHp = enemy.maxHp,
-			enemyMaxHp = enemy.maxHp,
-			enemyDamage = math.max(1, math.floor(enemy.attackDamage * (1 + (stats.incomingDamageMultiplier or 0)) + 0.5)),
-			enemyAttackIntervalSeconds = math.max(1, enemy.attackIntervalSeconds),
-			playerDamage = damage,
-			playerAttackIntervalSeconds = fireIntervalSeconds,
-			flightSeconds = flightSeconds,
-			playerShotSequence = 0,
-			enemyShotSequence = 0,
-			lastPlayerShotAt = nil,
-			lastEnemyShotAt = nil,
-			playerImpactAt = nil,
-			enemyImpactAt = nil,
-			nextPlayerAttackAt = now + fireIntervalSeconds,
-			nextEnemyAttackAt = now + enemy.attackIntervalSeconds,
-			startedAt = now,
-			endsAt = now + durationSeconds,
-			segmentIndex = segmentIndex,
-			settled = false
+		local shipDefinition = _GreatVoyageVoyageData:GetShipById(state.ship.id)
+		local profile = _GreatVoyageEncounterData:GetCombatProfile(state.ship.tier or (shipDefinition or {}).tier or 0)
+		local accuracyBonus = (state.ship.stats or {}).accuracyBonus or 0
+		local battle = {
+			id = playerId .. "_voyage_" .. tostring(state.voyageSequence or 1) .. "_battle_" .. tostring(state.airBattleCount),
+			phase = "active", outcome = "", airspaceId = segment.airspaceId, enemies = {}, kills = 0, bounty = 0,
+			screenLimit = prepared.screenLimit, playerDamage = math.max(1, math.floor(profile.cannonDamage * (state.ship.cannonMultiplier or 1) + 0.5)),
+			playerAttackIntervalSeconds = profile.cannonInterval, flightSeconds = 0.6, damageVariance = 0.10,
+			critChance = math.max(0, math.min(1, profile.critChance or 0.05)), critMultiplier = profile.critMultiplier or 1.5,
+			playerShotSequence = 0, enemyShotSequence = 0, nextPlayerAttackAt = now + profile.cannonInterval,
+			startedAt = now, segmentIndex = segmentIndex, settled = false
 		}
-		state.lastReason = "進入" .. (segment.shortName or segment.displayName or "空域") .. "，自動交戰開始！"
-		log("[AirBattle] started player=" .. playerId .. " id=" .. state.airBattle.id .. " airspace=" .. segment.airspaceId .. " enemy=" .. enemy.id .. " segment=" .. tostring(segmentIndex))
+		for index, monster in ipairs(definitions) do
+			table.insert(battle.enemies, {uid=index, id=monster.packId, name=monster.name, hp=monster.maxHp, maxHp=monster.maxHp,
+				damage=math.max(1, math.floor(monster.attackDamage * (1 + ((state.ship.stats or {}).incomingDamageMultiplier or 0)) + 0.5)),
+				interval=monster.attackIntervalSeconds, bounty=monster.bounty, animationRuid=monster.animationRuid,
+				hitChance=_GreatVoyageEncounterData:GetPlayerHitChance(state.ship.tier or (shipDefinition or {}).tier or 0, monster.packId, accuracyBonus),
+				claimed=false, active=false})
+		end
+		state.airBattle = battle
+		self:RefreshBattleRoster(battle, now)
+		state.lastReason = "進入" .. (segment.shortName or "空域") .. "，遭遇 " .. tostring(#definitions) .. " 隻混編敵人！"
+		log("[VRF] wave start n=" .. tostring(#definitions) .. " tier=" .. tostring(state.ship.tier or 0) .. " cargoValue=" .. tostring(state.encounterCargoValue or 0))
 		self:PublishSnapshot(playerId, state)
 	end
-
 	@ExecSpace("ServerOnly")
 	method void FinalizeAirBattle(string playerId, any state, any battle, string phase, number now)
 		if battle == nil or battle.settled == true or state.airBattle ~= battle or (phase ~= "won" and phase ~= "sunk") then return end
+		if phase == "won" and battle.kills ~= #battle.enemies then return end
 		battle.settled = true
 		battle.phase = phase
 		battle.outcome = phase
@@ -1321,72 +1341,89 @@ script GreatVoyageVoyageState extends Logic
 
 	@ExecSpace("ServerOnly")
 	method void AdvanceAirBattle(string playerId, any state, number now)
+		-- 依絕對時間處理炮彈命中與每隻怪各自攻擊；只有全滅才獲勝，沒有超時送勝利。
 		local battle = state.airBattle
-		if state.status ~= "sailing" or battle == nil or battle.phase ~= "active" or battle.settled == true then return end
-		local simulationTime = math.min(now, battle.endsAt)
+		if state.status ~= "sailing" or battle == nil or battle.phase ~= "active" or battle.settled then return end
 		local iterations = 0
 		local changed = false
-		while battle.phase == "active" and iterations < 32 do
-			if state.ship.hull <= 0 then
-				self:FinalizeAirBattle(playerId, state, battle, "sunk", now)
-				return
-			end
-			-- Preserve the previous player-first tie order; hull already at zero always sinks above.
-			local nextEventAt = simulationTime + 1
+		while battle.phase == "active" and iterations < 128 do
+			if state.ship.hull <= 0 then self:FinalizeAirBattle(playerId, state, battle, "sunk", now) return end
+			local nextEventAt = now + 1
 			local nextEvent = ""
-			if battle.playerImpactAt ~= nil and battle.playerImpactAt < nextEventAt then nextEventAt = battle.playerImpactAt nextEvent = "player_impact" end
-			if battle.enemyImpactAt ~= nil and battle.enemyImpactAt < nextEventAt - 0.000001 then nextEventAt = battle.enemyImpactAt nextEvent = "enemy_impact" end
-			if battle.nextPlayerAttackAt < nextEventAt - 0.000001 then nextEventAt = battle.nextPlayerAttackAt nextEvent = "player_launch" end
-			if battle.nextEnemyAttackAt < nextEventAt - 0.000001 then nextEventAt = battle.nextEnemyAttackAt nextEvent = "enemy_launch" end
-			if nextEvent == "" or nextEventAt > simulationTime then break end
-			iterations = iterations + 1
+			local eventEnemy = nil
+			-- 同時命中保留玩家先處理；已離膛敵彈仍可命中，未離膛的死亡敵人不再攻擊。
+			if battle.playerImpactAt ~= nil then nextEventAt = battle.playerImpactAt nextEvent = "player_impact" end
+			for _, enemy in ipairs(battle.enemies) do
+				if enemy.impactAt ~= nil and enemy.impactAt < nextEventAt - 0.000001 then nextEventAt = enemy.impactAt nextEvent = "enemy_impact" eventEnemy = enemy end
+			end
+			if battle.nextPlayerAttackAt < nextEventAt - 0.000001 then nextEventAt = battle.nextPlayerAttackAt nextEvent = "player_launch" eventEnemy = nil end
+			for _, enemy in ipairs(battle.enemies) do
+				if enemy.active and enemy.hp > 0 and enemy.nextAttackAt < nextEventAt - 0.000001 then nextEventAt = enemy.nextAttackAt nextEvent = "enemy_launch" eventEnemy = enemy end
+			end
+			if nextEvent == "" or nextEventAt > now then break end
+			iterations = iterations + 1 changed = true
 			if nextEvent == "enemy_impact" then
-				battle.enemyImpactAt = nil
-				self:ApplyShipDamage(state, battle.enemyDamage)
+				eventEnemy.impactAt = nil
+				self:ApplyShipDamage(state, eventEnemy.damage)
 				state.hullDamage = math.max(0, state.ship.maxHull - state.ship.hull)
-				changed = true
-				if state.ship.hull <= 0 then
-					self:FinalizeAirBattle(playerId, state, battle, "sunk", now)
-					return
-				end
 			elseif nextEvent == "player_impact" then
 				battle.playerImpactAt = nil
-				battle.enemyHp = math.max(0, battle.enemyHp - battle.playerDamage)
-				changed = true
-				if battle.enemyHp <= 0 then
-					self:FinalizeAirBattle(playerId, state, battle, "won", now)
-					return
+				local target = battle.playerTarget
+				if battle.lastPlayerShotHit ~= false and target ~= nil and target.hp > 0 then
+					local impactDamage = battle.playerPendingDamage or battle.lastPlayerShotDamage or battle.playerDamage
+					target.hp = math.max(0, target.hp - impactDamage)
+					if target.hp <= 0 then
+						self:ClaimMonsterBounty(state, battle, target)
+						target.active = false
+					end
 				end
+				battle.playerPendingDamage = nil
+				battle.playerTarget = nil
+				self:RefreshBattleRoster(battle, nextEventAt)
+				if battle.kills == #battle.enemies then self:FinalizeAirBattle(playerId, state, battle, "won", now) return end
 			elseif nextEvent == "enemy_launch" then
 				battle.enemyShotSequence = battle.enemyShotSequence + 1
 				battle.lastEnemyShotAt = nextEventAt
-				battle.enemyImpactAt = nextEventAt + battle.flightSeconds
-				battle.nextEnemyAttackAt = nextEventAt + battle.enemyAttackIntervalSeconds
-				changed = true
+				battle.lastEnemyShotSource = eventEnemy
+				eventEnemy.impactAt = nextEventAt + battle.flightSeconds
+				eventEnemy.nextAttackAt = nextEventAt + eventEnemy.interval
 			else
 				battle.playerShotSequence = battle.playerShotSequence + 1
 				battle.lastPlayerShotAt = nextEventAt
+				battle.playerTarget = battle.primary
+				battle.lastPlayerShotTarget = battle.primary
+				local hitChance = battle.primary and battle.primary.hitChance or nil
+				-- 舊 fixture 未帶命中率時必中並沿用固定傷害；正式戰鬥為每隻敵人預先計算機率。
+				local didHit = true
+				if hitChance ~= nil then didHit = _UtilLogic:RandomDouble() < hitChance end
+				battle.lastPlayerShotHitChance = hitChance or 1
+				battle.lastPlayerShotHit = didHit
+				local shotDamage = 0
+				local isCritical = false
+				if didHit then
+					local damageMultiplier = 1
+					if battle.damageVariance ~= nil then
+						local damageRoll = _UtilLogic:RandomDouble()
+						damageMultiplier = 1 - battle.damageVariance + 2 * battle.damageVariance * damageRoll
+					end
+					if battle.critChance ~= nil then
+						local critChance = math.max(0, math.min(1, battle.critChance))
+						isCritical = _UtilLogic:RandomDouble() < critChance
+					end
+					if isCritical then damageMultiplier = damageMultiplier * (battle.critMultiplier or 1.5) end
+					shotDamage = math.max(1, math.floor(battle.playerDamage * damageMultiplier + 0.5))
+				end
+				battle.lastPlayerShotCritical = isCritical
+				battle.lastPlayerShotDamage = shotDamage
+				battle.playerPendingDamage = shotDamage
 				battle.playerImpactAt = nextEventAt + battle.flightSeconds
 				battle.nextPlayerAttackAt = nextEventAt + battle.playerAttackIntervalSeconds
-				changed = true
+				log("[VRF] air shot hitChance=" .. tostring(battle.lastPlayerShotHitChance) .. " hit=" .. tostring(didHit) .. " critical=" .. tostring(isCritical) .. " damage=" .. tostring(shotDamage) .. " uid=" .. tostring(battle.primary and battle.primary.uid or ""))
 			end
 		end
-		if battle.phase == "active" and state.ship.hull <= 0 then
-			self:FinalizeAirBattle(playerId, state, battle, "sunk", now)
-			return
-		end
-		if battle.phase == "active" and now >= battle.endsAt
-			and battle.nextPlayerAttackAt > battle.endsAt
-			and battle.nextEnemyAttackAt > battle.endsAt
-			and (battle.playerImpactAt == nil or battle.playerImpactAt > battle.endsAt)
-			and (battle.enemyImpactAt == nil or battle.enemyImpactAt > battle.endsAt) then
-			-- 已按時間順序補完戰鬥期限內的攻擊，存活才可視為逼退敵人。
-			self:FinalizeAirBattle(playerId, state, battle, "won", now)
-			return
-		end
+		if state.ship.hull <= 0 then self:FinalizeAirBattle(playerId, state, battle, "sunk", now) return end
 		if changed then self:PublishSnapshot(playerId, state) end
 	end
-
 	method string GetShopMerchantPath(string portId)
 		-- 商人路徑隨港口目錄擴充，仍由 Server 驗證距離。
 		local port = _GreatVoyageVoyageData:GetPort(portId)
@@ -1650,14 +1687,18 @@ script GreatVoyageVoyageState extends Logic
 		end
 		if targetElapsed >= voyageDuration then targetDistance = state.route.distance end
 		local previousDistance = state.distanceTravelled
-		local nextSegmentIndex = state.nextAirBattleSegmentIndex or 1
-		while nextSegmentIndex <= #(state.segments or {}) do
-			local triggerDistance = self:GetAirBattleTriggerDistance(state, nextSegmentIndex)
+		local nextCheckDistance = state.nextEncounterDistance or math.min(100, state.route.distance)
+		while nextCheckDistance <= state.route.distance do
+			local triggerDistance = nextCheckDistance
 			if triggerDistance < 0 or targetDistance < triggerDistance then break end
-			local segment = state.segments[nextSegmentIndex]
-			local encounterOccurred = math.random() < self:GetSegmentEncounterChance(state, segment)
-			state.segmentEncounterRolls[nextSegmentIndex] = encounterOccurred
-			state.nextAirBattleSegmentIndex = nextSegmentIndex + 1
+			local previousCheck = state.lastEncounterDistance or 0
+			local segment = self:GetSegmentForDistance(state, (previousCheck + triggerDistance) * 0.5)
+			local fullChance = self:GetSegmentEncounterChance(state, segment)
+			local exposure = (triggerDistance - previousCheck) / 100
+			local encounterOccurred = math.random() < 1 - (1 - fullChance)^exposure
+			state.lastEncounterDistance = triggerDistance
+			state.nextEncounterDistance = math.min(triggerDistance + 100, state.route.distance)
+			if triggerDistance >= state.route.distance then state.nextEncounterDistance = state.route.distance + 100 end
 			if encounterOccurred then
 				local distanceRatio = triggerDistance / state.route.distance
 				if boilerSpeedBonus > 0 then
@@ -1674,11 +1715,11 @@ script GreatVoyageVoyageState extends Logic
 				state.distanceTravelled = triggerDistance
 				state.budgetRemaining = math.max(0, state.route.distance - triggerDistance)
 				if self:ApplyVoyageCardProgress(playerId, state, previousDistance, triggerDistance) == false then return end
-				self:BeginAirBattle(playerId, state, segment, nextSegmentIndex, now)
+				self:BeginAirBattle(playerId, state, segment, state.airBattleCount or 0, now)
 				return
 			end
 			state.lastReason = "通過" .. (segment.shortName or segment.displayName or "空域") .. "，一路平安沒有遇到敵人！"
-			nextSegmentIndex = state.nextAirBattleSegmentIndex
+			nextCheckDistance = state.nextEncounterDistance
 		end
 		if self:ApplyVoyageCardProgress(playerId, state, previousDistance, targetDistance) == false then return end
 		state.elapsedSailingSeconds = targetElapsed
@@ -1714,5 +1755,76 @@ script GreatVoyageVoyageState extends Logic
 	@ExecSpace("ClientOnly")
 	method any GetVoyageSnapshot()
 		return self:CopyClientSnapshot()
+	end
+	@ExecSpace("ServerOnly")
+	method void RefreshBattleRoster(table battle, number now)
+		-- 每次擊殺後補上排隊敵人；同時存活不超過對應船級的畫面上限。
+		local active = 0
+		local primary = nil
+		for _, enemy in ipairs(battle.enemies) do
+			if enemy.hp > 0 and enemy.active then active = active + 1 if primary == nil then primary = enemy end end
+		end
+		for _, enemy in ipairs(battle.enemies) do
+			if active >= battle.screenLimit then break end
+			if enemy.hp > 0 and not enemy.active then
+				enemy.active = true
+				enemy.nextAttackAt = now + enemy.interval
+				active = active + 1
+				if primary == nil then primary = enemy end
+			end
+		end
+		battle.primary = primary
+		if primary ~= nil then
+			battle.enemyId = primary.id battle.enemyName = primary.name
+			battle.enemyHp = primary.hp battle.enemyMaxHp = primary.maxHp
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean ClaimMonsterBounty(any state, table battle, table enemy)
+		-- 只接受本航次實際死亡的敵人，重複事件不能二次領賞；不按船級或貨值加錢。
+		if state.airBattle ~= battle or battle.settled or enemy.hp > 0 or enemy.claimed then return false end
+		enemy.claimed = true
+		battle.kills = battle.kills + 1
+		battle.bounty = battle.bounty + enemy.bounty
+		state.pendingBounty = (state.pendingBounty or 0) + enemy.bounty
+		log("[VRF] monster killed uid=" .. tostring(enemy.uid) .. " species=" .. enemy.id .. " bounty=" .. tostring(enemy.bounty))
+		return true
+	end
+
+	@ExecSpace("ServerOnly")
+	method void SettleMonsterBounties(any state)
+		-- 安全港結算與資產同一份 CAS；滿錢包的餘額留下，不丟棄固定賞金。
+		local total = (state.bountyCredit or 0) + (state.pendingBounty or 0)
+		if total <= 0 then return end
+		local paid = math.min(total, math.max(0, 2147483647 - state.money))
+		state.money = state.money + paid
+		state.bountyCredit = total - paid
+		state.pendingBounty = 0
+		state.economyRevision = state.economyRevision + 1
+		state.economyMessage = "賞金入帳 " .. tostring(paid) .. " G；待領餘額 " .. tostring(state.bountyCredit) .. " G。"
+		log("[VRF] bounty settle paid=" .. tostring(paid) .. " credit=" .. tostring(state.bountyCredit))
+	end
+	@ExecSpace("Client")
+	method void ReceiveAirWaveSnapshot(string battleId, table enemies, integer remaining, integer total, integer kills, number bounty, number credit, string snapshotPlayerId)
+		-- 隊伍與賞金只由伺服器投影到本人客戶端，客戶端沒有發賞介面。
+		local player = _UserService.LocalPlayer
+		if not isvalid(player) or player.PlayerComponent == nil or player.PlayerComponent.UserId ~= snapshotPlayerId then return end
+		if _GreatVoyageAdventureController ~= nil then
+			local projection = enemies.projection
+			if projection ~= nil then
+				if projection.serial <= (_GreatVoyageAdventureController._T.airProjectionSerial or 0) then return end
+				_GreatVoyageAdventureController._T.airProjectionSerial = projection.serial
+			end
+			_GreatVoyageAdventureController._T.airWave = {id=battleId, enemies=enemies, remaining=remaining, total=total, kills=kills, bounty=bounty, credit=credit, receivedAt=_UtilLogic.ElapsedSeconds}
+			if projection ~= nil then
+				_GreatVoyageAdventureController:ReceiveAirBattleSnapshot(projection.id, projection.phase, projection.airspaceId,
+					projection.enemyId, projection.enemyName, projection.enemyHp, projection.enemyMaxHp,
+					projection.playerHp, projection.playerMaxHp, projection.remainingSeconds, projection.outcome,
+					projection.playerShotSequence, projection.enemyShotSequence, projection.playerShotElapsed, projection.enemyShotElapsed, snapshotPlayerId)
+			else
+				_GreatVoyageAdventureController:RefreshAirBattleDisplay()
+			end
+		end
 	end
 end

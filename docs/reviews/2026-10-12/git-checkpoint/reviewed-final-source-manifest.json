@@ -1,0 +1,192 @@
+{
+  "date": "2026-10-12",
+  "sourceCount": 37,
+  "files": [
+    {
+      "path": "RootDesk/MyDesk/Combat/GreatVoyageEncounterData.mlua",
+      "bytes": 56804,
+      "sha256": "c77df9cf06329bf38d1c6a9cf80ad68154ff82605c11484c8b2b4e81cd0f9093"
+    },
+    {
+      "path": "RootDesk/MyDesk/Economy/GreatVoyageMarketPricing.mlua",
+      "bytes": 6003,
+      "sha256": "8807b7e046044f90d67051d3ec86bdda8af4bad837ce8e48daee75a1475d780d"
+    },
+    {
+      "path": "RootDesk/MyDesk/Economy/GreatVoyagePlayerMarket.mlua",
+      "bytes": 5006,
+      "sha256": "88360e2709394650da9e421e575cf9fa04c1590769424da6905d8eb26198497c"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyageBackdropController.mlua",
+      "bytes": 7293,
+      "sha256": "232c58f8d7d80262357298f47abe0690a5e405ee19b585aed5a7c50edcfff5b7"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyageDeckMushroom.mlua",
+      "bytes": 1317,
+      "sha256": "78f30165bcc0bee6bfbb00ede6d7a114b6ff7f9df012b2c1347851ba68b00eca"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyageDeckRaid.mlua",
+      "bytes": 6493,
+      "sha256": "7d9c7558342582a2ff1faea780134ea53e9e23a81c34797d831a1bad85e17ed1"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyagePlayerAttack.mlua",
+      "bytes": 1808,
+      "sha256": "41b12fa0323cefaf396d36460b9815aaafdf4b18ec3a88805e835612bc697702"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyageVoyageData.mlua",
+      "bytes": 39413,
+      "sha256": "25eff110f15331dcab8b2d836a2e6ea053e51a00af45e6d2772c376b558edc45"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyageVoyageState.mlua",
+      "bytes": 104776,
+      "sha256": "fe86d4ecdb51388245eafad03d3ef967e9f1064024e4fec8b29e0889dbf8049c"
+    },
+    {
+      "path": "RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.mlua",
+      "bytes": 51652,
+      "sha256": "938428f4b50fee92b571e713aefdf27e8fdb7d2befecd323374bed9123fe546c"
+    },
+    {
+      "path": "RootDesk/MyDesk/Persistence/GreatVoyageSaveMaintenance.mlua",
+      "bytes": 162,
+      "sha256": "6c1d1ecb533993ca5169b97b1b7e08e597b5b3bbae591556b7f23f37a5371f15"
+    },
+    {
+      "path": "RootDesk/MyDesk/Phase0VoyagePrototype.mlua",
+      "bytes": 12204,
+      "sha256": "e59aebe4268fc4beb136e90e6265bddcfb910e71b1ba06d886ee018888351a9d"
+    },
+    {
+      "path": "RootDesk/MyDesk/Ports/GVAquaWhaleBoundary.mlua",
+      "bytes": 3508,
+      "sha256": "466ba5d033139737513f2c80e4bd0642ced3c0ede8b66b7f86d024de78183920"
+    },
+    {
+      "path": "RootDesk/MyDesk/ShipVisual/GVShipDeckBounds.mlua",
+      "bytes": 7561,
+      "sha256": "466ecb670ac6fb92b044dcfbafd71580cdc38f3ae7d8d326e2fc16dc395f69e9"
+    },
+    {
+      "path": "RootDesk/MyDesk/ShipVisual/GVShipVisualClient.mlua",
+      "bytes": 45351,
+      "sha256": "b06fd5273c2dc3310bd791f4a665c5a8a1b314b39dfac4e0c133b15ba0fa5286"
+    },
+    {
+      "path": "RootDesk/MyDesk/UI/GreatVoyageAdventureController.mlua",
+      "bytes": 196618,
+      "sha256": "1e25a8d900b6cbd0b9c04c8d26f068468cf20ed191ff9dd036961e6134fcc124"
+    },
+    {
+      "path": "RootDesk/MyDesk/UI/GreatVoyageHUDController.mlua",
+      "bytes": 5796,
+      "sha256": "c32975cc3f2243234ae7c88a3865fc65b83f1d980dc6cb1a503f2304345a7b44"
+    },
+    {
+      "path": "RootDesk/MyDesk/UI/GreatVoyageOnboarding.mlua",
+      "bytes": 4784,
+      "sha256": "028db04a9f9fd5720e3513be6c5ac4cb46543e849bce00e46bc48744717752d8"
+    },
+    {
+      "path": "RootDesk/MyDesk/UI/GreatVoyageRouteDeskController.mlua",
+      "bytes": 7470,
+      "sha256": "86864672256c07411bf3c2c8cb34b8893123233d0320a7e41e1dfdc9bc9281b6"
+    },
+    {
+      "path": "Tests/test_air_accuracy.py",
+      "bytes": 11367,
+      "sha256": "d7313529efd4cf2ae4a8931381637134d7b6219a89cb28d1629f9f371b2d8a60"
+    },
+    {
+      "path": "Tests/test_air_wave_combat.py",
+      "bytes": 8823,
+      "sha256": "947900b22431d41c8f51c80dfed4f76c3e987b709f8128812b81fe31add351ae"
+    },
+    {
+      "path": "Tests/test_cargo_transactions.py",
+      "bytes": 13979,
+      "sha256": "733b773eaf65c419f06a09ec19baffcd9df544d0b3469440a2709869759b3e14"
+    },
+    {
+      "path": "Tests/test_cargo_ui.py",
+      "bytes": 26144,
+      "sha256": "1736e170e531b23951ff7ab4d2eb7ac54403ddc23b680bf295aa882f1dec5734"
+    },
+    {
+      "path": "Tests/test_encounter_cadence.py",
+      "bytes": 7652,
+      "sha256": "db659b68205200160a8db8bdbff7ba17cd69f56b54eba21c5ef1e791e8a1d6ac"
+    },
+    {
+      "path": "Tests/test_encounter_data.py",
+      "bytes": 6733,
+      "sha256": "a99a49f5beeb0ef650a6ea724fbb3e6233b6963629435bf59fc8053f987384db"
+    },
+    {
+      "path": "Tests/test_git_review_regressions.py",
+      "bytes": 3494,
+      "sha256": "83caaa891219f2aa764b5925df1fd6261bd36aababaed09fb26b649bfb4d8333"
+    },
+    {
+      "path": "Tests/test_projectile_targeting.py",
+      "bytes": 41018,
+      "sha256": "deb271f672a4bac5ccd6440025bb7a8baca614c3338af7f9972be897d1194697"
+    },
+    {
+      "path": "Tests/test_save_maintenance_lua.py",
+      "bytes": 12027,
+      "sha256": "02169448a147feac68dad37cdf0ff09556493927b3c95adeb958c7ca72a1ea98"
+    },
+    {
+      "path": "Tests/test_save_v1_lua.py",
+      "bytes": 56959,
+      "sha256": "c7ac9c8221b6af2c86c7a55c99031fff7801774e7b398df39e4ccb65b8b81e88"
+    },
+    {
+      "path": "Tests/test_transaction_feedback.py",
+      "bytes": 23702,
+      "sha256": "ed988df5356444a8d6687537e283513b5704044255dec37391f3bf6eeb83cf00"
+    },
+    {
+      "path": "Scripts/CityTradeManager.lua",
+      "bytes": 2709,
+      "sha256": "b2a289436cd14ffc59eb918038fdc8c2dd572a97b0d3788a2572d0480107282d"
+    },
+    {
+      "path": "Scripts/PlayerInventory.lua",
+      "bytes": 1422,
+      "sha256": "cd7bd5c467ceaddf18433886777adab2cdd594e847616f40172d6e389b930605"
+    },
+    {
+      "path": "Scripts/PriceFluctuation.lua",
+      "bytes": 1154,
+      "sha256": "2da9446acb586ecd69e8f65ac7c47ff486cf27f16ca30e88ac7b3086bf20e82a"
+    },
+    {
+      "path": "docs/web/encounter-balance/encounter-balance.html",
+      "bytes": 100747,
+      "sha256": "fd5eaad612ef434b9e6543100a581880fba3b2fbc27505012fa598baf98fee9b"
+    },
+    {
+      "path": "docs/web/encounter-balance/encounter-engine.js",
+      "bytes": 5740,
+      "sha256": "731c10b69358a4420c35e0affd87c8f7551dd44c27b17670a0674f608bbe4093"
+    },
+    {
+      "path": "docs/web/encounter-balance/encounter-review.js",
+      "bytes": 7149,
+      "sha256": "8c52d05dc2a90c64eb0a4ab14bb78e14aa8366e338a163cf068241494428c72c"
+    },
+    {
+      "path": "docs/web/encounter-balance/encounter-smoke.cjs",
+      "bytes": 9559,
+      "sha256": "b5e50f23903169f70c5cef78c4703e22695863df048528999353c647928ff0c8"
+    }
+  ],
+  "note": "Matches full review except focused-reviewed test casing fix. README final release prose added after review; excluded static commodity data unchanged."
+}

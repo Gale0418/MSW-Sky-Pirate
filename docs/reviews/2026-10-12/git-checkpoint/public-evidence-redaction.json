@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-12",
+  "accountIdentifiers": 1,
+  "replacements": 42,
+  "privateOriginals": "Ignored .tmp/private-release-20261012; not published",
+  "portableFiles": [
+    "docs/GreatVoyage-Projectile-Targeting-20261012.md",
+    "MissionCenter/smoke-tests.md",
+    "docs/reviews/encounter-local-20261012.json",
+    "docs/reviews/monster-hit-clips-20261012.json",
+    "docs/reviews/projectile-targeting-local-20261012.json",
+    "docs/reviews/projectile-targeting-maker-20261012.json",
+    "docs/reviews/encounter-runtime-maker-20261012.json",
+    "MissionCenter/notes.md"
+  ],
+  "note": "Published receipts keep events/results/diagnostics. Local screenshot path labels do not imply image assets were committed.",
+  "largeCatalogCheck": {
+    "file": "docs/reviews/flight-monster-fullscan-20261010.json",
+    "bytes": 6935127,
+    "tokenPatternsFound": 0,
+    "signedCredentialPatternsFound": 0
+  }
+}

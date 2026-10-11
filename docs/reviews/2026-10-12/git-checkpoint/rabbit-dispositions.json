@@ -1,0 +1,14 @@
+{
+  "round": 1,
+  "issues": 1,
+  "dispositions": [
+    {
+      "severity": "minor",
+      "file": "Tests/test_encounter_data.py",
+      "issue": "Docs vs canonical lowercase docs path fails on case-sensitive filesystems",
+      "status": "confirmed-and-fixed",
+      "reproduction": "Added filesystem-name casing test: before fix 1 failed (Docs not in directory names); after fix full suite tested",
+      "change": "Use docs path and add portability regression"
+    }
+  ]
+}

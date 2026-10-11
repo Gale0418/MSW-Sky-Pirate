@@ -217,7 +217,7 @@ script GreatVoyageVoyageData extends Logic
 			{ id = "fog", name = "雲海偽裝", description = "雲海與水域遭遇率 -30%", price = 90, sellPrice = 45, available = true, requirement = "", fogEncounterMultiplier = -0.30 },
 			{ id = "monster_bait", name = "飛怪誘餌", description = "野生飛行敵池遭遇率 +35%", price = 90, sellPrice = 45, available = true, requirement = "", monsterEncounterMultiplier = 0.35 },
 			{ id = "magic_resonator", name = "魔力共鳴器", description = "魔法飛行敵空域遭遇率 +50%", price = 100, sellPrice = 50, available = true, requirement = "", magicEncounterMultiplier = 0.50 },
-			{ id = "stabilizer", name = "穩定炮架", description = "提高炮擊穩定與射程", price = 0, sellPrice = 0, available = false, requirement = "命中率與射程系統尚未開放" },
+			{ id = "stabilizer", name = "穩定炮架", description = "炮擊命中率 +5 個百分點（最高 99%）", price = 100, sellPrice = 50, available = true, requirement = "", accuracyBonus = 0.05 },
 			{ id = "folding_cabin", name = "折疊客艙", description = "擴充乘客服務空間", price = 0, sellPrice = 0, available = false, requirement = "客運與乘客艙位尚未開放" },
 			{ id = "fire_compartment", name = "防火隔艙", description = "隔離船上火災", price = 0, sellPrice = 0, available = false, requirement = "火災事件與滅火系統尚未開放" },
 			{ id = "boarding", name = "接舷爪鉤", description = "登上敵方船隻", price = 0, sellPrice = 0, available = false, requirement = "接舷戰系統尚未開放" },
@@ -284,6 +284,13 @@ script GreatVoyageVoyageData extends Logic
 		if ship.id == "small_sampan" then return 0 end
 		local multiplier = 1
 		if ship.stats ~= nil and ship.stats.repairCostMultiplier ~= nil then multiplier = ship.stats.repairCostMultiplier end
+		local definition = self:GetShipById(ship.id)
+		local tier = ship.tier or (definition or {}).tier or 0
+		if tier >= 2 and tier <= 5 then
+			local pool = (ship.maxHull or 0) + (ship.maxShield or 0) + (ship.maxArmor or 0)
+			local fullRepair = self:GetShipProgression()[tier + 1].fullRepair
+			return math.ceil(fullRepair * missing / math.max(1, pool) * math.max(0, multiplier))
+		end
 		return math.ceil(missing * 0.5 * math.max(0, multiplier) * self:GetEconomyScale())
 	end
 
@@ -356,46 +363,33 @@ script GreatVoyageVoyageData extends Logic
 	end
 
 	method any GetAirspaces()
-		-- 七個命名空域刻意保留少量重疊與凹邊，測試 priority、凹多邊形及 open_sea fallback。
-		return {
-			{ id = "forest_wind", displayName = "森林風廊", shortName = "森林", priority = 10, risk = 0.08, airBattleEnemyId = "stirge", encounterCards = {
-				{ id = "forest_wind_gust", title = "森林側風", text = "側風把帆面吹偏啦！快到舵輪校正航向。", outcome = "stabilized" }
-			}, polygon = {
-				{ x = 0.00, y = 0.99 }, { x = 0.25, y = 0.99 }, { x = 0.27, y = 0.91 }, { x = 0.12, y = 0.86 }, { x = 0.00, y = 0.88 }
-			} },
-			{ id = "victoria", displayName = "維多利亞航道", shortName = "維多利亞", priority = 30, risk = 0.16, airBattleEnemyId = "stirge", encounterCards = {
-				{ id = "victoria_mushroom_raid", title = "菇菇襲擊", text = "熟悉的菇菇群跳出雲層，朝甲板護欄撞來啦！", outcome = "defended" }
-			}, polygon = {
-			{ x = 0.07, y = 0.76 }, { x = 0.25, y = 0.76 }, { x = 0.29, y = 0.50 }, { x = 0.19, y = 0.47 }, { x = 0.07, y = 0.55 }
-			} },
-			{ id = "aqua", displayName = "水世界氣流", shortName = "水世界", priority = 35, risk = 0.24, airBattleEnemyId = "bubble_fish", encounterCards = {
-				{ id = "aqua_mist", title = "水霧航道", text = "濃濃水霧遮住浮標了，快到舵輪確認航標！", outcome = "charted" }
-			}, polygon = {
-			{ x = 0.22, y = 0.61 }, { x = 0.40, y = 0.61 }, { x = 0.41, y = 0.36 }, { x = 0.35, y = 0.33 }, { x = 0.22, y = 0.44 }
-			} },
-			{ id = "ludus", displayName = "玩具鐘塔航線", shortName = "路德斯湖", priority = 45, risk = 0.31, airBattleEnemyId = "yellow_plane", encounterCards = {
-				{ id = "ludus_drifting_cargo", title = "漂流貨箱", text = "鐘塔飄來無主貨箱；這次不回收，到舵輪確認航線再走！", outcome = "passed" }
-			}, polygon = {
-			{ x = 0.34, y = 0.49 }, { x = 0.53, y = 0.49 }, { x = 0.56, y = 0.26 }, { x = 0.48, y = 0.22 }, { x = 0.38, y = 0.27 }, { x = 0.40, y = 0.37 }
-			} },
-			{ id = "nihal", displayName = "納希沙漠熱風", shortName = "納希", priority = 50, risk = 0.36, airBattleEnemyId = "kiyo", encounterCards = {
-				{ id = "nihal_heat_haze", title = "沙海熱浪", text = "熱浪讓船身直冒汗，快到舵輪微調避開熱流！", outcome = "cooled" }
-			}, polygon = {
-			{ x = 0.48, y = 0.32 }, { x = 0.79, y = 0.32 }, { x = 0.79, y = 0.04 }, { x = 0.47, y = 0.04 }, { x = 0.45, y = 0.19 }
-			} },
-			{ id = "orbis_highwind", displayName = "天空高風", shortName = "天空", priority = 20, risk = 0.12, airBattleEnemyId = "star_pixie", encounterCards = {
-				{ id = "orbis_highwind_crosswind", title = "天空高風", text = "高空強風呼呼吹！快到舵輪穩住航向再出發。", outcome = "trimmed" }
-			}, polygon = {
-			{ x = 0.22, y = 0.87 }, { x = 0.39, y = 0.87 }, { x = 0.38, y = 0.69 }, { x = 0.23, y = 0.69 }
-			} },
-			{ id = "ellinia_cloud", displayName = "艾利涅雲海", shortName = "艾利涅", priority = 25, risk = 0.20, airBattleEnemyId = "stirge", encounterCards = {
-				{ id = "ellinia_cloud_drift", title = "艾利涅漂雲", text = "軟綿綿的雲團飄過來了，到舵輪微調一下航向！", outcome = "steered" }
-			}, polygon = {
-				{ x = 0.06, y = 0.35 }, { x = 0.22, y = 0.46 }, { x = 0.38, y = 0.35 }, { x = 0.30, y = 0.14 }, { x = 0.12, y = 0.16 }
-			} }
+		-- 航圖座標對應人工分類；魔森與維多利亞港共用，保留時間神殿空域。
+		if self._T.airspaces ~= nil then return self._T.airspaces end
+		local zones = {
+			{ id = "victoria", displayName = "維多利亞空域", bounds = {0.045, 0.21, 0.56, 0.745} },
+			{ id = "maple", displayName = "楓之島空域", bounds = {0.15, 0.27, 0.81, 0.94} },
+			{ id = "sky", displayName = "天空之城空域", bounds = {0.39, 0.68, 0.59, 0.77}, fog = true },
+			{ id = "ludus", displayName = "玩具城空域", bounds = {0.35, 0.56, 0.30, 0.47} },
+			{ id = "nihal", displayName = "納希沙漠空域", bounds = {0.45, 0.79, 0.04, 0.32} },
+			{ id = "leafre", displayName = "神木村空域", bounds = {0.15, 0.355, 0.115, 0.30} },
+			{ id = "edelstein", displayName = "艾爾德斯坦空域", bounds = {0.72, 0.94, 0.71, 0.98} },
+			{ id = "herbtown", displayName = "靈藥幻境空域", bounds = {0.77, 0.96, 0.16, 0.40} },
+			{ id = "ereve", displayName = "耶雷弗空域", bounds = {0.25, 0.37, 0.71, 0.80} },
+			{ id = "rien", displayName = "瑞恩空域", bounds = {0.02, 0.135, 0.37, 0.49} },
+			{ id = "crimson", displayName = "緋紅天空空域", bounds = {0.36, 0.44, 0.18, 0.28} },
+			{ id = "aqua", displayName = "水世界空域", bounds = {0.215, 0.345, 0.46, 0.57}, fog = true },
+			{ id = "temple", displayName = "時間神殿空域", bounds = {0.00, 0.135, 0.13, 0.32}, fog = true }
 		}
+		for index, zone in ipairs(zones) do
+			local b = zone.bounds
+			zone.shortName = zone.displayName
+			zone.priority = index
+			zone.risk = 0
+			zone.polygon = {{ x=b[1], y=b[3] }, { x=b[2], y=b[3] }, { x=b[2], y=b[4] }, { x=b[1], y=b[4] }}
+		end
+		self._T.airspaces = zones
+		return zones
 	end
-
 	method any GetAirBattleDefinition(string airspaceId)
 		-- M1 空戰每段航路使用該空域指定的一種已驗證怪物；不沿用舊遭遇卡牌。
 		local enemyId = ""
@@ -594,43 +588,31 @@ script GreatVoyageVoyageData extends Logic
 
 	@ExecSpace("ClientOnly")
 	method boolean RunGeometrySelfTest()
-		local direct = self:SplitRoute(self:GetPort("forest").position, self:GetPort("nihal").position)
-		local expected = { "victoria", "aqua", "ludus", "nihal" }
-		local found = {}
-		for _, segment in ipairs(direct) do
-			if segment.airspaceId ~= "open_sea" and (#found == 0 or found[#found] ~= segment.airspaceId) then table.insert(found, segment.airspaceId) end
+		-- 驗證全港所屬分類與雙向分段航距，避免增加空域後沿用舊四港固定答案。
+		local passed = true
+		for _, port in ipairs(self:GetPortCatalog()) do
+			if port.available then
+				local expected = port.id
+				if expected == "forest" or expected == "lith" then expected = "victoria" end
+				if self:ClassifyPoint(port.position).id ~= expected then passed = false end
+			end
 		end
-		local orderOK = #found >= #expected
-		for index, id in ipairs(expected) do if found[index] ~= id then orderOK = false end end
-		local reverse = self:SplitRoute(self:GetPort("nihal").position, self:GetPort("forest").position)
-		local reverseDistance = 0
-		local reverseFound = {}
-		for _, segment in ipairs(reverse) do
-			reverseDistance = reverseDistance + segment.length
-			if segment.airspaceId ~= "open_sea" and (#reverseFound == 0 or reverseFound[#reverseFound] ~= segment.airspaceId) then table.insert(reverseFound, segment.airspaceId) end
-		end
-		local reverseOrderOK = #reverseFound >= #expected
-		for index, id in ipairs(expected) do if reverseFound[index] ~= expected[#expected - index + 1] then reverseOrderOK = false end end
+		local origin = self:GetPort("forest").position
+		local destination = self:GetPort("nihal").position
+		local direct = self:SplitRoute(origin, destination)
+		local reverse = self:SplitRoute(destination, origin)
 		local directDistance = 0
-		for _, segment in ipairs(direct) do directDistance = directDistance + segment.length end
-		local distanceOK = math.abs(reverseDistance - directDistance) <= 0.001
-		local tangent = self:SplitRoute({ x = 0.12, y = 0.86 }, { x = 0.21, y = 0.86 })
-		local vertex = self:SplitRoute({ x = 0.18, y = 0.72 }, { x = 0.34, y = 0.44 })
-		local tangentBoundary = self:ClassifyPoint({ x = 0.12, y = 0.86 })
-		local tangentExit = self:ClassifyPoint({ x = 0.21, y = 0.86 })
-		local overlap = self:ClassifyPoint({ x = 0.36, y = 0.60 })
-		local fallback = self:ClassifyPoint({ x = 0.93, y = 0.85 })
-		local airspaces = self:GetAirspaces()
-		local concaveInside = self:PointInPolygon({ x = 0.45, y = 0.40 }, airspaces[4].polygon)
-		local concavePocketOutside = self:PointInPolygon({ x = 0.39, y = 0.34 }, airspaces[4].polygon) == false
-		local noZero = true
-		for _, segment in ipairs(direct) do if segment.length <= self.geometryEpsilon then noZero = false end end
-		local tangentOK = #tangent > 0 and tangentBoundary.id == "forest_wind" and tangentExit.id == "open_sea"
-		local passed = orderOK and reverseOrderOK and distanceOK and tangentOK and #vertex > 0 and concaveInside and concavePocketOutside and overlap.id == "aqua" and fallback.id == "open_sea" and noZero
-		log("[VoyageData][SelfTest] order=" .. tostring(orderOK) .. " reverseOrder=" .. tostring(reverseOrderOK) .. " distance=" .. tostring(distanceOK) .. " tangent=" .. tostring(tangentOK) .. " vertex=" .. tostring(#vertex) .. " concave=" .. tostring(concaveInside and concavePocketOutside) .. " overlap=" .. overlap.id .. " fallback=" .. fallback.id .. " noZero=" .. tostring(noZero))
+		local reverseDistance = 0
+		for _, segment in ipairs(direct) do
+			if segment.length <= self.geometryEpsilon then passed = false end
+			directDistance = directDistance + segment.length
+		end
+		for _, segment in ipairs(reverse) do reverseDistance = reverseDistance + segment.length end
+		if math.abs(directDistance - reverseDistance) > 0.001 then passed = false end
+		if self:ClassifyPoint({x=0.99,y=0.99}).id ~= "open_sea" then passed = false end
+		log("[VRF] airspace geometry ports=" .. tostring(passed) .. " zones=" .. tostring(#self:GetAirspaces()))
 		return passed
 	end
-
 	method integer GetStartingMoney()
 		-- 草案原價所需的新手航海本金。
 		return 12000
@@ -647,4 +629,26 @@ script GreatVoyageVoyageData extends Logic
 		return _GreatVoyageCommodityCatalog:GetActive()
 	end
 
+	method number GetCargoEncounterValue(table cargo)
+		-- 只累加實際貨箱的固定基準價；現金、買入價與地區需求倍率都不吸怪。
+		local value = 0
+		for _, lot in ipairs((cargo or {}).lots or {}) do
+			local good = self:GetGoodById(lot.id)
+			if good ~= nil then value = value + good.price * math.max(0, lot.quantity or 0) end
+		end
+		return value
+	end
+
+	method table GetShipProgression()
+		-- 高階船的戰鬥與經濟曲線；造船 NPC 與材料解鎖另階段接上，不直接販售。
+		local names = {"小風帆", "護衛艦", "驅逐艦", "巡洋艦", "戰艦", "旗艦"}
+		local prices = {0, 50000, 500000, 5000000, 200000000, 2147483647}
+		local repair = {0, 9600, 20000, 200000, 5000000, 50000000}
+		local result = {}
+		for tier = 0, 5 do
+			local combat = _GreatVoyageEncounterData:GetCombatProfile(tier)
+			result[tier+1] = {tier=tier, name=names[tier+1], price=prices[tier+1], fullRepair=repair[tier+1], combat=combat}
+		end
+		return result
+	end
 end

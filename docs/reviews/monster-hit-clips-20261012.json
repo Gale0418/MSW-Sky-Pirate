@@ -1,0 +1,3026 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-10-12",
+  "purpose": "Enabled monster pack native hit animationclip RUID mapping. MISS does not trigger this mapping; hit-only behavior is implemented by the caller.",
+  "roster": {
+    "source": "<local-codex-cache>",
+    "enabledCount": 129,
+    "totalCount": 132,
+    "publishedRoster": "docs/web/encounter-balance/encounter-balance.json",
+    "sourceNote": "原始盤點來自本機 atlas；公開來源保留物種RUID/官方pack對照與此處資料表，私人cache路徑省略。"
+  },
+  "selection": {
+    "actionPreference": [
+      "hit",
+      "hit1",
+      "hit2",
+      "hit3",
+      "other hitN"
+    ],
+    "onlySamePack": true,
+    "hitAnimationCount": 129,
+    "missingCount": 0,
+    "missing": [],
+    "missingPolicy": "If a same-pack hit animation is absent, hitAnimationRuid stays null and caller must retain originalAnimationRuid/action (never borrow another monster RUID)."
+  },
+  "sources": {
+    "cachedPackDetails": [
+      {
+        "packId": "mob/9300412.img",
+        "file": "<workspace>/.tmp/monster-habitat-research-20261011/edelstein-extra-packs.json"
+      },
+      {
+        "packId": "mob/1150000.img",
+        "file": "<workspace>/.tmp/monster-habitat-research-20261011/edelstein-official-packs.json"
+      },
+      {
+        "packId": "mob/2150003.img",
+        "file": "<workspace>/.tmp/monster-habitat-research-20261011/edelstein-official-packs.json"
+      }
+    ],
+    "api": {
+      "wrapper": "<workspace>/.agents/skills/msw-search/scripts/msw_resource_api.cjs",
+      "function": "getResourcesBatch",
+      "endpoint": "POST https://maplestoryworlds-resourcesearch-new.nexon.com/api/v3/resources/batch",
+      "successfulBatches": [
+        {
+          "batch": 1,
+          "count": 100
+        },
+        {
+          "batch": 2,
+          "count": 26
+        }
+      ],
+      "batchLimit": 100,
+      "initialRejectedOversizedRequest": {
+        "requestedCount": 126,
+        "httpStatus": 422,
+        "validation": "ids max 100; no data returned"
+      }
+    }
+  },
+  "byPackId": {
+    "mob/0100120.img": {
+      "monsterName": "提諾",
+      "hitAnimationRuid": "5b79eb601f1c482285d4147eb1fd492e",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "5b79eb601f1c482285d4147eb1fd492e"
+        }
+      ],
+      "originalAnimationRuid": "6da58f8e04ed4b2abf7d82310efa89d7",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/0100120.img",
+        "batch": 1,
+        "batchIndex": 0,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/0100130.img": {
+      "monsterName": "穆魯",
+      "hitAnimationRuid": "8718bb335c014aec9facb301297574ed",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "8718bb335c014aec9facb301297574ed"
+        }
+      ],
+      "originalAnimationRuid": "57693c8d00d44460ad10df1cd6579860",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/0100130.img",
+        "batch": 1,
+        "batchIndex": 1,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/0100121.img": {
+      "monsterName": "提弗",
+      "hitAnimationRuid": "1166588cd2d64f39a99d0f56d2761551",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "1166588cd2d64f39a99d0f56d2761551"
+        }
+      ],
+      "originalAnimationRuid": "8be3493f73ba4bd9ad896e201b77afcf",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/0100121.img",
+        "batch": 1,
+        "batchIndex": 2,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/0100131.img": {
+      "monsterName": "穆魯帕",
+      "hitAnimationRuid": "c779eb4b6f764034b96efab88f740159",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "c779eb4b6f764034b96efab88f740159"
+        }
+      ],
+      "originalAnimationRuid": "e98866170ae04fd19e2380f0ac8a53d7",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/0100131.img",
+        "batch": 1,
+        "batchIndex": 3,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/0100122.img": {
+      "monsterName": "提姆",
+      "hitAnimationRuid": "74fb45f72e704f228cf08a04a87ea502",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "74fb45f72e704f228cf08a04a87ea502"
+        }
+      ],
+      "originalAnimationRuid": "15e8ceb9f42c48efbf3b8ccb04f3306d",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/0100122.img",
+        "batch": 1,
+        "batchIndex": 4,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/0100132.img": {
+      "monsterName": "穆魯菲亞",
+      "hitAnimationRuid": "3f596f1393d6462892b5db22cada533f",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "3f596f1393d6462892b5db22cada533f"
+        }
+      ],
+      "originalAnimationRuid": "2820a71ba1d74361b9c7e4d6179786c8",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/0100132.img",
+        "batch": 1,
+        "batchIndex": 5,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/0100133.img": {
+      "monsterName": "穆魯穆魯",
+      "hitAnimationRuid": "46e501c3c5294e4f9370b5b5f52dc0b8",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "46e501c3c5294e4f9370b5b5f52dc0b8"
+        }
+      ],
+      "originalAnimationRuid": "d37cf90985d145e88ddc0bfc3f4a9d7b",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/0100133.img",
+        "batch": 1,
+        "batchIndex": 6,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9300312.img": {
+      "monsterName": "下黃金蛋的飛格米",
+      "hitAnimationRuid": "d71a8270b28d42ad8cfd64d3950171b9",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "d71a8270b28d42ad8cfd64d3950171b9"
+        }
+      ],
+      "originalAnimationRuid": "084542cffca4474e954beed0b51d6a2e",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9300312.img",
+        "batch": 1,
+        "batchIndex": 7,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9500195.img": {
+      "monsterName": "南瓜幽靈",
+      "hitAnimationRuid": "772d29348ecb453abb8aa41398f29e5a",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "772d29348ecb453abb8aa41398f29e5a"
+        }
+      ],
+      "originalAnimationRuid": "d39b5079bf1a48ca891a74a706c4579f",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9500195.img",
+        "batch": 1,
+        "batchIndex": 8,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9500197.img": {
+      "monsterName": "幽靈",
+      "hitAnimationRuid": "25233c32b95a4f2bb8b637a56ce50941",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "25233c32b95a4f2bb8b637a56ce50941"
+        }
+      ],
+      "originalAnimationRuid": "18e1f1c670f4418381b6a1a62060963f",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9500197.img",
+        "batch": 1,
+        "batchIndex": 9,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9300064.img": {
+      "monsterName": "鬼火",
+      "hitAnimationRuid": "3b61c794a6b444589a20227da79bd310",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "3b61c794a6b444589a20227da79bd310"
+        }
+      ],
+      "originalAnimationRuid": "8b2da7d7a01343fab5c46090bb0ef6ad",
+      "originalAnimationAction": "fly",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9300064.img",
+        "batch": 1,
+        "batchIndex": 10,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/1120100.img": {
+      "monsterName": "三眼章魚",
+      "hitAnimationRuid": "c3cf643b618346c7bfa6574187b396f9",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "c3cf643b618346c7bfa6574187b396f9"
+        }
+      ],
+      "originalAnimationRuid": "3e5f23a5c00541c698fe3836b1ea244d",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/1120100.img",
+        "batch": 1,
+        "batchIndex": 11,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9300412.img": {
+      "monsterName": "訓練機器人 0",
+      "hitAnimationRuid": "83b06a4836924d0b91c534ad2b6ce613",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "83b06a4836924d0b91c534ad2b6ce613"
+        }
+      ],
+      "originalAnimationRuid": "3fda9c3099184f8090308bcee1c57931",
+      "originalAnimationAction": "fly",
+      "fallback": null,
+      "source": {
+        "kind": "cached-official-pack-detail",
+        "file": "<workspace>/.tmp/monster-habitat-research-20261011/edelstein-extra-packs.json",
+        "packId": "mob/9300412.img",
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/1150000.img": {
+      "monsterName": "巡邏機器人",
+      "hitAnimationRuid": "e69edfdc600141f48e3478fbd7145d7b",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "e69edfdc600141f48e3478fbd7145d7b"
+        }
+      ],
+      "originalAnimationRuid": "2c3fbaff3775480990fb7da37609ab61",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "cached-official-pack-detail",
+        "file": "<workspace>/.tmp/monster-habitat-research-20261011/edelstein-official-packs.json",
+        "packId": "mob/1150000.img",
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9500184.img": {
+      "monsterName": "紫色魔法書",
+      "hitAnimationRuid": "d1722488ac43482ebcc219cd9b6f8aae",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "d1722488ac43482ebcc219cd9b6f8aae"
+        }
+      ],
+      "originalAnimationRuid": "fab75ac9f77c48d3bb54be15a34bbb52",
+      "originalAnimationAction": "fly",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9500184.img",
+        "batch": 1,
+        "batchIndex": 12,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9500185.img": {
+      "monsterName": "橘色魔法書",
+      "hitAnimationRuid": "fe1d7817774843a9a97877fb2b451368",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "fe1d7817774843a9a97877fb2b451368"
+        }
+      ],
+      "originalAnimationRuid": "dd9993ae811f472eb15369d68bc5dbb3",
+      "originalAnimationAction": "fly",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9500185.img",
+        "batch": 1,
+        "batchIndex": 13,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9500186.img": {
+      "monsterName": "藍色魔法書",
+      "hitAnimationRuid": "6c15d137b3584c14966a99b5171566ef",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "6c15d137b3584c14966a99b5171566ef"
+        }
+      ],
+      "originalAnimationRuid": "71e2148d40ac472da959a809e233e199",
+      "originalAnimationAction": "fly",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9500186.img",
+        "batch": 1,
+        "batchIndex": 14,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/2100100.img": {
+      "monsterName": "母砂兔",
+      "hitAnimationRuid": "e77fd0ddfcc44f02af01fd4eb2e9ff97",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "e77fd0ddfcc44f02af01fd4eb2e9ff97"
+        }
+      ],
+      "originalAnimationRuid": "1eaee5c96fec4a07afdf902b96e3a0d8",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/2100100.img",
+        "batch": 1,
+        "batchIndex": 15,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/2300100.img": {
+      "monsterName": "蝙蝠",
+      "hitAnimationRuid": "1e543e3e410a4a27a3a4514f0e963d6e",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "1e543e3e410a4a27a3a4514f0e963d6e"
+        }
+      ],
+      "originalAnimationRuid": "d548c5a6486f48389dd7e1f7e9478d56",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/2300100.img",
+        "batch": 1,
+        "batchIndex": 16,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/2100101.img": {
+      "monsterName": "公砂兔",
+      "hitAnimationRuid": "7a7c8580735b4e4a9eef4aa9800124da",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "7a7c8580735b4e4a9eef4aa9800124da"
+        }
+      ],
+      "originalAnimationRuid": "aba7383e06ec4d4eb28fb695f602b7b1",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/2100101.img",
+        "batch": 1,
+        "batchIndex": 17,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/5200000.img": {
+      "monsterName": "小石球",
+      "hitAnimationRuid": "7472bba97ee540babf2726801f8a8819",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "7472bba97ee540babf2726801f8a8819"
+        }
+      ],
+      "originalAnimationRuid": "1277c45f644d4452a6770c2a1b73a474",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/5200000.img",
+        "batch": 1,
+        "batchIndex": 18,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/2150003.img": {
+      "monsterName": "巡邏機器人S",
+      "hitAnimationRuid": "f6660a4922b64f2ba98b35db2f98680a",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "f6660a4922b64f2ba98b35db2f98680a"
+        }
+      ],
+      "originalAnimationRuid": "87a719f8ddd3479695232dad82f8eb7c",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "cached-official-pack-detail",
+        "file": "<workspace>/.tmp/monster-habitat-research-20261011/edelstein-official-packs.json",
+        "packId": "mob/2150003.img",
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/2230109.img": {
+      "monsterName": "泡泡魚",
+      "hitAnimationRuid": "57f09ef245f845f5bd24110a0f548ba9",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "57f09ef245f845f5bd24110a0f548ba9"
+        }
+      ],
+      "originalAnimationRuid": "20946ff7a9ed48bb8a92a69d035a0133",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/2230109.img",
+        "batch": 1,
+        "batchIndex": 19,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/2230200.img": {
+      "monsterName": "花鯰魚",
+      "hitAnimationRuid": "9b033e761f844342999fc7482796413a",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "9b033e761f844342999fc7482796413a"
+        }
+      ],
+      "originalAnimationRuid": "3e350a94b70d41a9bc737d8fcb375f9b",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/2230200.img",
+        "batch": 1,
+        "batchIndex": 20,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3000000.img": {
+      "monsterName": "石球",
+      "hitAnimationRuid": "e2f5544a8c23463e9e8efc886a765125",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "e2f5544a8c23463e9e8efc886a765125"
+        }
+      ],
+      "originalAnimationRuid": "ea50dee6f5b34a6dab5a535cfb857718",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3000000.img",
+        "batch": 1,
+        "batchIndex": 21,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3000001.img": {
+      "monsterName": "蝴蝶精",
+      "hitAnimationRuid": "731aa8c4bc56416299a40bf917479aca",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "731aa8c4bc56416299a40bf917479aca"
+        }
+      ],
+      "originalAnimationRuid": "d06aaf68f8f04729a7d6d49535a76c30",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3000001.img",
+        "batch": 1,
+        "batchIndex": 22,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3100102.img": {
+      "monsterName": "禿鷹",
+      "hitAnimationRuid": "05268d3affb44b329e4ec6625c5c5ec8",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "05268d3affb44b329e4ec6625c5c5ec8"
+        }
+      ],
+      "originalAnimationRuid": "382b479cba4a49d78ba5e4ea32e458f3",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3100102.img",
+        "batch": 1,
+        "batchIndex": 23,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/5200001.img": {
+      "monsterName": "冰石球",
+      "hitAnimationRuid": "2f3d48c32c874b5d953a197a55d9ccb9",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "2f3d48c32c874b5d953a197a55d9ccb9"
+        }
+      ],
+      "originalAnimationRuid": "b3d510cd422e493fa19e551f65a88ac9",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/5200001.img",
+        "batch": 1,
+        "batchIndex": 24,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/5200002.img": {
+      "monsterName": "火石球",
+      "hitAnimationRuid": "ed18f0d0aef6459b8e6981173ae75d5c",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "ed18f0d0aef6459b8e6981173ae75d5c"
+        }
+      ],
+      "originalAnimationRuid": "e7ae62362d7f46b38403158b94a90877",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/5200002.img",
+        "batch": 1,
+        "batchIndex": 25,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3230307.img": {
+      "monsterName": "邱布",
+      "hitAnimationRuid": "728f2e6829844ca892901d1060eaeefa",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "728f2e6829844ca892901d1060eaeefa"
+        }
+      ],
+      "originalAnimationRuid": "7ad069ac329f4ec588406b378ef248e6",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3230307.img",
+        "batch": 1,
+        "batchIndex": 26,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3110300.img": {
+      "monsterName": "方塊水靈",
+      "hitAnimationRuid": "8d69bfe6ca074f12b51f7703b32d885f",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "8d69bfe6ca074f12b51f7703b32d885f"
+        }
+      ],
+      "originalAnimationRuid": "4a141fc777a14395b6af8444cef50d73",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3110300.img",
+        "batch": 1,
+        "batchIndex": 27,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3230104.img": {
+      "monsterName": "蒙面河豚",
+      "hitAnimationRuid": "506ea5470ea841749e43ab017602edc8",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "506ea5470ea841749e43ab017602edc8"
+        }
+      ],
+      "originalAnimationRuid": "49a2600dc1af49e495508a8dc9387168",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3230104.img",
+        "batch": 1,
+        "batchIndex": 28,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/5300000.img": {
+      "monsterName": "利堤",
+      "hitAnimationRuid": "b877d9b7358443938d393107ebc88254",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "b877d9b7358443938d393107ebc88254"
+        }
+      ],
+      "originalAnimationRuid": "06a45ac974274fd498b6489d2e79ee8c",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/5300000.img",
+        "batch": 1,
+        "batchIndex": 29,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/5300001.img": {
+      "monsterName": "黑利堤",
+      "hitAnimationRuid": "e7424e27cdad452592d6d551774bf0df",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "e7424e27cdad452592d6d551774bf0df"
+        }
+      ],
+      "originalAnimationRuid": "ba65e9c84e35431f85143c2addea205e",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/5300001.img",
+        "batch": 1,
+        "batchIndex": 30,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3210204.img": {
+      "monsterName": "玩具鴨",
+      "hitAnimationRuid": "585f3cd19eca4b5ca88a648d43654bc3",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "585f3cd19eca4b5ca88a648d43654bc3"
+        }
+      ],
+      "originalAnimationRuid": "e3a8290787b643b0b60ffc2f8ec4fdb6",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3210204.img",
+        "batch": 1,
+        "batchIndex": 31,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3110302.img": {
+      "monsterName": "黑妖苗",
+      "hitAnimationRuid": "29c1dc4bcac64258b8fd2dc77ce320b1",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "29c1dc4bcac64258b8fd2dc77ce320b1"
+        }
+      ],
+      "originalAnimationRuid": "ca7ff20a978a45959848eb1a89537fdc",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3110302.img",
+        "batch": 1,
+        "batchIndex": 32,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3230101.img": {
+      "monsterName": "小幽靈",
+      "hitAnimationRuid": "77286b849a66449cadc6ea4564db169b",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "77286b849a66449cadc6ea4564db169b"
+        }
+      ],
+      "originalAnimationRuid": "9658914ae9c64a87b266d8be957715bc",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3230101.img",
+        "batch": 1,
+        "batchIndex": 33,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3230200.img": {
+      "monsterName": "星光精靈",
+      "hitAnimationRuid": "f0f493b1149e4b6a863890a82d82fca6",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "f0f493b1149e4b6a863890a82d82fca6"
+        }
+      ],
+      "originalAnimationRuid": "a25f27e01d7446c6910550d595ef08b6",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3230200.img",
+        "batch": 1,
+        "batchIndex": 34,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3230300.img": {
+      "monsterName": "幼魔精靈",
+      "hitAnimationRuid": "2358e38b0c9b4d9da987387deba59de0",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "2358e38b0c9b4d9da987387deba59de0"
+        }
+      ],
+      "originalAnimationRuid": "84a2e710c5ea4cb1843b52ad777a2074",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3230300.img",
+        "batch": 1,
+        "batchIndex": 35,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3230302.img": {
+      "monsterName": "機器章魚",
+      "hitAnimationRuid": "bd3f11d2c6a04c3b8021179b1bdf6752",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "bd3f11d2c6a04c3b8021179b1bdf6752"
+        }
+      ],
+      "originalAnimationRuid": "5417210796834fe8a6648451ec86a395",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3230302.img",
+        "batch": 1,
+        "batchIndex": 36,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3210206.img": {
+      "monsterName": "黃色戰鬥機",
+      "hitAnimationRuid": "f46984b61dc84bf0a4faaa76ed6e2625",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "f46984b61dc84bf0a4faaa76ed6e2625"
+        }
+      ],
+      "originalAnimationRuid": "2ea57f7287af47c3a718c48bfa4cf5bd",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3210206.img",
+        "batch": 1,
+        "batchIndex": 37,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3210450.img": {
+      "monsterName": "潛水企鵝王",
+      "hitAnimationRuid": "86ab604017404ebbbe3d21c89d616dba",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "86ab604017404ebbbe3d21c89d616dba"
+        }
+      ],
+      "originalAnimationRuid": "de109c39fae342f198c9c0c281582ab3",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3210450.img",
+        "batch": 1,
+        "batchIndex": 38,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3230303.img": {
+      "monsterName": "粉紅色戰鬥機",
+      "hitAnimationRuid": "a259cba637e64200bfe56b685a5cba06",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "a259cba637e64200bfe56b685a5cba06"
+        }
+      ],
+      "originalAnimationRuid": "1deb8ddc76294966b6e9263894401b50",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3230303.img",
+        "batch": 1,
+        "batchIndex": 39,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3230306.img": {
+      "monsterName": "妖魔",
+      "hitAnimationRuid": "9a0ab5e69833499f9b982e401fb3f5c8",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "9a0ab5e69833499f9b982e401fb3f5c8"
+        }
+      ],
+      "originalAnimationRuid": "2e361c296dd94cab820ede0791a44553",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3230306.img",
+        "batch": 1,
+        "batchIndex": 40,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3110303.img": {
+      "monsterName": "黑妖苗三兄弟",
+      "hitAnimationRuid": "639e084cb89f4ea4818b5d13d3e47d0b",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "639e084cb89f4ea4818b5d13d3e47d0b"
+        }
+      ],
+      "originalAnimationRuid": "8104c53ae8b5462796fe594669de2ef0",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3110303.img",
+        "batch": 1,
+        "batchIndex": 41,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3230103.img": {
+      "monsterName": "機器章魚王",
+      "hitAnimationRuid": "6dad564f922a420eab103ff36758db28",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "6dad564f922a420eab103ff36758db28"
+        }
+      ],
+      "originalAnimationRuid": "85bf19a24eb54ac1b7c83313acf0115a",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3230103.img",
+        "batch": 1,
+        "batchIndex": 42,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3230304.img": {
+      "monsterName": "藍色戰鬥機",
+      "hitAnimationRuid": "fa29740aa4f94bcda51a0a48f277670e",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "fa29740aa4f94bcda51a0a48f277670e"
+        }
+      ],
+      "originalAnimationRuid": "d35b6064b6d348eaa743f89c8c6f27ab",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3230304.img",
+        "batch": 1,
+        "batchIndex": 43,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/3230308.img": {
+      "monsterName": "特威德",
+      "hitAnimationRuid": "49c455263dbf4b18b131fef8f1efee1f",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "49c455263dbf4b18b131fef8f1efee1f"
+        }
+      ],
+      "originalAnimationRuid": "b81e54f8eaae4b99bb77ac4ba09f2c57",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/3230308.img",
+        "batch": 1,
+        "batchIndex": 44,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4230101.img": {
+      "monsterName": "天使猴",
+      "hitAnimationRuid": "4c81ea278214405199875fae8ebfd951",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "4c81ea278214405199875fae8ebfd951"
+        }
+      ],
+      "originalAnimationRuid": "0c805e8052c14fbda03173990bf2d2b8",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4230101.img",
+        "batch": 1,
+        "batchIndex": 45,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4230200.img": {
+      "monsterName": "河豚",
+      "hitAnimationRuid": "b55e39376ff241e6af67741d5401f656",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "b55e39376ff241e6af67741d5401f656"
+        }
+      ],
+      "originalAnimationRuid": "d59ef8bb8a96426ab650d61bbd823cea",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4230200.img",
+        "batch": 1,
+        "batchIndex": 46,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4230201.img": {
+      "monsterName": "毒河豚",
+      "hitAnimationRuid": "bfb341c4065b4553857dd5cb1dc94c8f",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "bfb341c4065b4553857dd5cb1dc94c8f"
+        }
+      ],
+      "originalAnimationRuid": "fc8d724afa5f417fac2b1b7abd8766c2",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4230201.img",
+        "batch": 1,
+        "batchIndex": 47,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9400011.img": {
+      "monsterName": "燈籠鬼",
+      "hitAnimationRuid": "dadba96b45514df8ae56f3adad512c2d",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "dadba96b45514df8ae56f3adad512c2d"
+        }
+      ],
+      "originalAnimationRuid": "9bd4e5bcf9894dd183c048c15b317e67",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9400011.img",
+        "batch": 1,
+        "batchIndex": 48,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4230107.img": {
+      "monsterName": "獨眼蝙蝠",
+      "hitAnimationRuid": "da1ea90aa01a4d1ba8bf15f1f9a5e4f6",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "da1ea90aa01a4d1ba8bf15f1f9a5e4f6"
+        }
+      ],
+      "originalAnimationRuid": "04d56278279f45c6a99f6726ef5c91fe",
+      "originalAnimationAction": "fly",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4230107.img",
+        "batch": 1,
+        "batchIndex": 49,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4230114.img": {
+      "monsterName": "進化妖魔",
+      "hitAnimationRuid": "2d5fe3b085394494926869f70052a3ba",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "2d5fe3b085394494926869f70052a3ba"
+        }
+      ],
+      "originalAnimationRuid": "496efe3f5205442283393f88f763cf71",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4230114.img",
+        "batch": 1,
+        "batchIndex": 50,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4230119.img": {
+      "monsterName": "馬堤安",
+      "hitAnimationRuid": "9387c56817b8472a959e25ecc5a78abb",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "9387c56817b8472a959e25ecc5a78abb"
+        }
+      ],
+      "originalAnimationRuid": "56d71f4c4ce847a6a1e902fd6261cfc2",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4230119.img",
+        "batch": 1,
+        "batchIndex": 51,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4110300.img": {
+      "monsterName": "鋼鐵穆太",
+      "hitAnimationRuid": "f6c5c88ef3bf46ef89902d7ff1ad4621",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "f6c5c88ef3bf46ef89902d7ff1ad4621"
+        }
+      ],
+      "originalAnimationRuid": "206db9593b5e4eb3a49fadf7b3dbaf65",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4110300.img",
+        "batch": 1,
+        "batchIndex": 52,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4230117.img": {
+      "monsterName": "葛雷士兵",
+      "hitAnimationRuid": "810f39f763e1447e9c7bd07d3dd31f8b",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "810f39f763e1447e9c7bd07d3dd31f8b"
+        }
+      ],
+      "originalAnimationRuid": "816a0529822b4f9c8d63a32302acc433",
+      "originalAnimationAction": "fly",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4230117.img",
+        "batch": 1,
+        "batchIndex": 53,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4230120.img": {
+      "monsterName": "培利堤安",
+      "hitAnimationRuid": "dbd09fceaf9548fda4949f30134ca6c5",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "dbd09fceaf9548fda4949f30134ca6c5"
+        }
+      ],
+      "originalAnimationRuid": "465e3bc6e1824abead268d7fd6f74568",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4230120.img",
+        "batch": 1,
+        "batchIndex": 54,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4110301.img": {
+      "monsterName": "強化鋼鐵穆太",
+      "hitAnimationRuid": "c64b3d7da84c418ba898edc5cbb76113",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "c64b3d7da84c418ba898edc5cbb76113"
+        }
+      ],
+      "originalAnimationRuid": "1148e9d29e1842de97797c1e20c39fa9",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4110301.img",
+        "batch": 1,
+        "batchIndex": 55,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4230106.img": {
+      "monsterName": "月光精靈",
+      "hitAnimationRuid": "187b73445d4645d68750ed12f924203a",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "187b73445d4645d68750ed12f924203a"
+        }
+      ],
+      "originalAnimationRuid": "6c09e340af2f4ca697463ef36a95f523",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4230106.img",
+        "batch": 1,
+        "batchIndex": 56,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4230110.img": {
+      "monsterName": "積木泥人王",
+      "hitAnimationRuid": "28a6605a9d6d450796aad227ced90779",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "28a6605a9d6d450796aad227ced90779"
+        }
+      ],
+      "originalAnimationRuid": "bee00dd9a504448bb7cec3583a956124",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4230110.img",
+        "batch": 1,
+        "batchIndex": 57,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4230118.img": {
+      "monsterName": "葛雷隊長",
+      "hitAnimationRuid": "c1bd6931d5574ba780372b47664c6be8",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "c1bd6931d5574ba780372b47664c6be8"
+        }
+      ],
+      "originalAnimationRuid": "efad97a5ad6a40c799f2ac3b16eb0895",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4230118.img",
+        "batch": 1,
+        "batchIndex": 58,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4230115.img": {
+      "monsterName": "妖魔隊長",
+      "hitAnimationRuid": "0e23b49c9a0a41ac93eb165b2bf53266",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "0e23b49c9a0a41ac93eb165b2bf53266"
+        }
+      ],
+      "originalAnimationRuid": "974389e929804a15a7475de5424f5a6f",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4230115.img",
+        "batch": 1,
+        "batchIndex": 59,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4110302.img": {
+      "monsterName": "鋰礦穆太",
+      "hitAnimationRuid": "af0cfa2f179746a6b444ff335594b878",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "af0cfa2f179746a6b444ff335594b878"
+        }
+      ],
+      "originalAnimationRuid": "679e977d594e4392a9848f0e16571aa0",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4110302.img",
+        "batch": 1,
+        "batchIndex": 60,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4230102.img": {
+      "monsterName": "大幽靈",
+      "hitAnimationRuid": "23a95f12278c491bb7358ca69540c206",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "23a95f12278c491bb7358ca69540c206"
+        }
+      ],
+      "originalAnimationRuid": "2f11969b1f694825ac8ad13635711c5b",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4230102.img",
+        "batch": 1,
+        "batchIndex": 61,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/4240000.img": {
+      "monsterName": "葛雷元老",
+      "hitAnimationRuid": "0fb2b63822d04efd8498e7b59578dd2d",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "0fb2b63822d04efd8498e7b59578dd2d"
+        }
+      ],
+      "originalAnimationRuid": "9e024a03a30d4849b44f4629daad36ef",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/4240000.img",
+        "batch": 1,
+        "batchIndex": 62,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/5110300.img": {
+      "monsterName": "強化鋰礦穆太",
+      "hitAnimationRuid": "6c4ccaef40b642cb89c1972b49cbf815",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "6c4ccaef40b642cb89c1972b49cbf815"
+        }
+      ],
+      "originalAnimationRuid": "d08de4e38e764e8cbd6c665693afb3f1",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/5110300.img",
+        "batch": 1,
+        "batchIndex": 63,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/5100002.img": {
+      "monsterName": "火精靈",
+      "hitAnimationRuid": "3c760b02faa04b2c8bfbbe364e3649dd",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "3c760b02faa04b2c8bfbbe364e3649dd"
+        }
+      ],
+      "originalAnimationRuid": "1c83eb2bcc8f4441bbdb66c1b9dd93f3",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/5100002.img",
+        "batch": 1,
+        "batchIndex": 64,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/5120000.img": {
+      "monsterName": "日光精靈",
+      "hitAnimationRuid": "dc25c90c27904ce8b20ae1ada438bf9a",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "dc25c90c27904ce8b20ae1ada438bf9a"
+        }
+      ],
+      "originalAnimationRuid": "7230c88964604573b9b687a919855b00",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/5120000.img",
+        "batch": 1,
+        "batchIndex": 65,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/5120506.img": {
+      "monsterName": "書靈",
+      "hitAnimationRuid": "77f58fa82728483ab0918e853ca204e3",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "77f58fa82728483ab0918e853ca204e3"
+        }
+      ],
+      "originalAnimationRuid": "238c9e4be9b446268f56cb77e378e110",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/5120506.img",
+        "batch": 1,
+        "batchIndex": 66,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9300162.img": {
+      "monsterName": "戴利",
+      "hitAnimationRuid": "df3fc783f69446c6b908688068651c8b",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "df3fc783f69446c6b908688068651c8b"
+        }
+      ],
+      "originalAnimationRuid": "9cb67ebe1c854946b441cf23b0ecc3c9",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9300162.img",
+        "batch": 1,
+        "batchIndex": 67,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/5090000.img": {
+      "monsterName": "冥界幽靈",
+      "hitAnimationRuid": "6875aba4088d48b499af8e2c3a6fe688",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "6875aba4088d48b499af8e2c3a6fe688"
+        }
+      ],
+      "originalAnimationRuid": "78864f612e9e43bf8e44090fc075c693",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/5090000.img",
+        "batch": 1,
+        "batchIndex": 68,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/6130200.img": {
+      "monsterName": "小丑柏非",
+      "hitAnimationRuid": "3398867dfcc04a02b9d0930b916fdf17",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "3398867dfcc04a02b9d0930b916fdf17"
+        }
+      ],
+      "originalAnimationRuid": "004923bd3c884d18a1b6741b757162a3",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/6130200.img",
+        "batch": 1,
+        "batchIndex": 69,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/6090003.img": {
+      "monsterName": "書生幽靈",
+      "hitAnimationRuid": "b6285c00fb9c4aeeaf58499f756659bc",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "b6285c00fb9c4aeeaf58499f756659bc"
+        }
+      ],
+      "originalAnimationRuid": "8204e3b756db4484a56ce66ac458d35e",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/6090003.img",
+        "batch": 1,
+        "batchIndex": 70,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/6230400.img": {
+      "monsterName": "幽魂發條熊",
+      "hitAnimationRuid": "2243ef05cec34584b6b89b996612bec3",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "2243ef05cec34584b6b89b996612bec3"
+        }
+      ],
+      "originalAnimationRuid": "65870521568c40c99a700acc5418efd1",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/6230400.img",
+        "batch": 1,
+        "batchIndex": 71,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/6090001.img": {
+      "monsterName": "雪山魔女",
+      "hitAnimationRuid": "79d70b581e22411abbd0f142c038b7ad",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "79d70b581e22411abbd0f142c038b7ad"
+        }
+      ],
+      "originalAnimationRuid": "8816e805196a4f09aca79f27de12ade8",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/6090001.img",
+        "batch": 1,
+        "batchIndex": 72,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/6090000.img": {
+      "monsterName": "厄運死神",
+      "hitAnimationRuid": "e6bb40a549684e9f9225671eb568835f",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "e6bb40a549684e9f9225671eb568835f"
+        }
+      ],
+      "originalAnimationRuid": "82965e5a9a6a4a9295a9dcb72c158c10",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/6090000.img",
+        "batch": 1,
+        "batchIndex": 73,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/6110300.img": {
+      "monsterName": "燒杯怪",
+      "hitAnimationRuid": "224bcc0e9d8744df9eea3b1d09b7944d",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "224bcc0e9d8744df9eea3b1d09b7944d"
+        }
+      ],
+      "originalAnimationRuid": "f46c4862e92746afb183cd7351ce36f4",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/6110300.img",
+        "batch": 1,
+        "batchIndex": 74,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9300175.img": {
+      "monsterName": "中毒的小精靈",
+      "hitAnimationRuid": "9caebe4c9d1449828a21addf4a63ddb0",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "9caebe4c9d1449828a21addf4a63ddb0"
+        }
+      ],
+      "originalAnimationRuid": "5d10e316ef0e410aa6196ca0100fc91b",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9300175.img",
+        "batch": 1,
+        "batchIndex": 75,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/6230300.img": {
+      "monsterName": "小丑瑞奇",
+      "hitAnimationRuid": "6d53bd4a627146e79e37a649186588b0",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "6d53bd4a627146e79e37a649186588b0"
+        }
+      ],
+      "originalAnimationRuid": "a5c3da452e9a411cbc48e2d29bc922ce",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/6230300.img",
+        "batch": 1,
+        "batchIndex": 76,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/6230500.img": {
+      "monsterName": "幽魂發條熊隊長",
+      "hitAnimationRuid": "568f795aa4cd4aefa3c59c2d8c94283b",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "568f795aa4cd4aefa3c59c2d8c94283b"
+        }
+      ],
+      "originalAnimationRuid": "2a510521fe3d466a909b1afabc877e00",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/6230500.img",
+        "batch": 1,
+        "batchIndex": 77,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8140200.img": {
+      "monsterName": "冥鐘",
+      "hitAnimationRuid": "8356d60912314c79881685a9b8fcbb6e",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "8356d60912314c79881685a9b8fcbb6e"
+        }
+      ],
+      "originalAnimationRuid": "a1267117a6714a35bc1ab5000314a214",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8140200.img",
+        "batch": 1,
+        "batchIndex": 78,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/7130002.img": {
+      "monsterName": "橡木甲蟲",
+      "hitAnimationRuid": "0ddaf0c315e6464bbb208e22b68efe12",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "0ddaf0c315e6464bbb208e22b68efe12"
+        }
+      ],
+      "originalAnimationRuid": "e58c5fd852534b31915a96cae3d14013",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/7130002.img",
+        "batch": 1,
+        "batchIndex": 79,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/7110301.img": {
+      "monsterName": "哈門庫魯",
+      "hitAnimationRuid": "0aa21b28b3ed4799a5991f01262d7eb9",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "0aa21b28b3ed4799a5991f01262d7eb9"
+        }
+      ],
+      "originalAnimationRuid": "b1749640a2954a50b98b509e43290b8a",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/7110301.img",
+        "batch": 1,
+        "batchIndex": 80,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/6300100.img": {
+      "monsterName": "貝爾芬",
+      "hitAnimationRuid": "40fcf0861bb34ef2aba3192919e34b76",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "40fcf0861bb34ef2aba3192919e34b76"
+        }
+      ],
+      "originalAnimationRuid": "86e665a5dbfa410da3effcef85a465ab",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/6300100.img",
+        "batch": 1,
+        "batchIndex": 81,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/7130003.img": {
+      "monsterName": "金屬甲蟲",
+      "hitAnimationRuid": "93b0e513d2e74a3ab2152362d5ea33c2",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "93b0e513d2e74a3ab2152362d5ea33c2"
+        }
+      ],
+      "originalAnimationRuid": "76b79c890a6c470fac88947098ef962e",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/7130003.img",
+        "batch": 1,
+        "batchIndex": 82,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8140300.img": {
+      "monsterName": "黑暗冥鐘",
+      "hitAnimationRuid": "dd533959c5824a6499fd126bf61d9a02",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "dd533959c5824a6499fd126bf61d9a02"
+        }
+      ],
+      "originalAnimationRuid": "659fe5bae7b348a7911f467a51455b8f",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8140300.img",
+        "batch": 1,
+        "batchIndex": 83,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/6400100.img": {
+      "monsterName": "特貝爾芬",
+      "hitAnimationRuid": "cc317eab2bf34ecda96d2cddc9f993c2",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "cc317eab2bf34ecda96d2cddc9f993c2"
+        }
+      ],
+      "originalAnimationRuid": "1094915b7123406ca8e64d244a5e5061",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/6400100.img",
+        "batch": 1,
+        "batchIndex": 84,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8140001.img": {
+      "monsterName": "哈維",
+      "hitAnimationRuid": "dc78e9c9078e40fc9404156906317117",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "dc78e9c9078e40fc9404156906317117"
+        }
+      ],
+      "originalAnimationRuid": "e9c9f7d1a0a64accb03ff506b72a601e",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8140001.img",
+        "batch": 1,
+        "batchIndex": 85,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8200000.img": {
+      "monsterName": "時間之眼",
+      "hitAnimationRuid": "85e82ab322804ae6a648fe8312ef48ec",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "85e82ab322804ae6a648fe8312ef48ec"
+        }
+      ],
+      "originalAnimationRuid": "585a18605df24117a62ec86364ff0d8c",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8200000.img",
+        "batch": 1,
+        "batchIndex": 86,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/7140000.img": {
+      "monsterName": "百烈",
+      "hitAnimationRuid": "23521d22f089487197bbfcf6af8ef6ab",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "23521d22f089487197bbfcf6af8ef6ab"
+        }
+      ],
+      "originalAnimationRuid": "cd8ebd7aab2a4167b2b9d8f2be3b3250",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/7140000.img",
+        "batch": 1,
+        "batchIndex": 87,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8140002.img": {
+      "monsterName": "血腥哈維",
+      "hitAnimationRuid": "8fed6100596948f5aa8075509117a58f",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "8fed6100596948f5aa8075509117a58f"
+        }
+      ],
+      "originalAnimationRuid": "5004df97436a49458160b2c48e9f3748",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8140002.img",
+        "batch": 1,
+        "batchIndex": 88,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/7130010.img": {
+      "monsterName": "怨靈發條熊",
+      "hitAnimationRuid": "6ad325f9e35345e4a6cb1c0144657ee4",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "6ad325f9e35345e4a6cb1c0144657ee4"
+        }
+      ],
+      "originalAnimationRuid": "f5ffa569b67046009dfe29b6332a7b51",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/7130010.img",
+        "batch": 1,
+        "batchIndex": 89,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/7160000.img": {
+      "monsterName": "多立百烈",
+      "hitAnimationRuid": "88183d896e714eb0b03158a346bb19a9",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "88183d896e714eb0b03158a346bb19a9"
+        }
+      ],
+      "originalAnimationRuid": "ae9639db754b4aaf9e374351edfce2dc",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/7160000.img",
+        "batch": 1,
+        "batchIndex": 90,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/7130300.img": {
+      "monsterName": "怨靈發條熊隊長",
+      "hitAnimationRuid": "329722b578c3490cae3031ab59fed3e6",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "329722b578c3490cae3031ab59fed3e6"
+        }
+      ],
+      "originalAnimationRuid": "a1dea0e7d8624be5a862e724ef84bc18",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/7130300.img",
+        "batch": 1,
+        "batchIndex": 91,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8200001.img": {
+      "monsterName": "回憶的祭司",
+      "hitAnimationRuid": "89f5b13f03c94fb997c1df84f1598727",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "89f5b13f03c94fb997c1df84f1598727"
+        }
+      ],
+      "originalAnimationRuid": "fd234d210d06488cad1fc407a7cbf325",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8200001.img",
+        "batch": 1,
+        "batchIndex": 92,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8140600.img": {
+      "monsterName": "骨骸魚",
+      "hitAnimationRuid": "7104964f80d0443ebd0192af7ed2a9e6",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "7104964f80d0443ebd0192af7ed2a9e6"
+        }
+      ],
+      "originalAnimationRuid": "e07176dbc7be471191e20e4e381b0c20",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8140600.img",
+        "batch": 1,
+        "batchIndex": 93,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8141000.img": {
+      "monsterName": "維京",
+      "hitAnimationRuid": "79cbb91c5f6c40da96a73a4e44614031",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "79cbb91c5f6c40da96a73a4e44614031"
+        }
+      ],
+      "originalAnimationRuid": "b1c161a48efe4ec49257ba9a6f1a110d",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8141000.img",
+        "batch": 1,
+        "batchIndex": 94,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8141300.img": {
+      "monsterName": "烏賊怪",
+      "hitAnimationRuid": "33b17dffdf08474fa36578f78b1f9303",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "33b17dffdf08474fa36578f78b1f9303"
+        }
+      ],
+      "originalAnimationRuid": "6adccbc2b8f64db8a62022711bcf8747",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8141300.img",
+        "batch": 1,
+        "batchIndex": 95,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8200002.img": {
+      "monsterName": "回憶的神官",
+      "hitAnimationRuid": "589f9d5fc7c4474d9e7659e1c3d77c18",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "589f9d5fc7c4474d9e7659e1c3d77c18"
+        }
+      ],
+      "originalAnimationRuid": "d3af70dfe4684b4e9e612c708c9b7ded",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8200002.img",
+        "batch": 1,
+        "batchIndex": 96,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8142000.img": {
+      "monsterName": "幽魂女巫",
+      "hitAnimationRuid": "06ab0a1285e64753a5e0cf570a828537",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "06ab0a1285e64753a5e0cf570a828537"
+        }
+      ],
+      "originalAnimationRuid": "13e1f2cf1fea43ff99e6ec18023a5047",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8142000.img",
+        "batch": 1,
+        "batchIndex": 97,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8142100.img": {
+      "monsterName": "致命烏賊怪",
+      "hitAnimationRuid": "3fa6071f9b4f4cb990fc5f03ba83703e",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "3fa6071f9b4f4cb990fc5f03ba83703e"
+        }
+      ],
+      "originalAnimationRuid": "e43be4179d344657a6b90c0d43b3a87e",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8142100.img",
+        "batch": 1,
+        "batchIndex": 98,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8150300.img": {
+      "monsterName": "赤翼龍",
+      "hitAnimationRuid": "dc7a59cd48a74eccb10b2d044fb964c3",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "dc7a59cd48a74eccb10b2d044fb964c3"
+        }
+      ],
+      "originalAnimationRuid": "040fa2b4f613404ca0b75c85243de6df",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8150300.img",
+        "batch": 1,
+        "batchIndex": 99,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8141100.img": {
+      "monsterName": "巨人維京",
+      "hitAnimationRuid": "06c3a654ba5d49a4809092ec4325bd6c",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "06c3a654ba5d49a4809092ec4325bd6c"
+        }
+      ],
+      "originalAnimationRuid": "8e8a091259cb47e5871b34dea117f11e",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8141100.img",
+        "batch": 2,
+        "batchIndex": 0,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8200003.img": {
+      "monsterName": "回憶守護兵",
+      "hitAnimationRuid": "6612cfc3ce9a4ec4949dc80a586fc2c9",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "6612cfc3ce9a4ec4949dc80a586fc2c9"
+        }
+      ],
+      "originalAnimationRuid": "caed0eac916246ccb12cb6a3ece69c69",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8200003.img",
+        "batch": 2,
+        "batchIndex": 1,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8143000.img": {
+      "monsterName": "怨靈女巫",
+      "hitAnimationRuid": "e3c3cddc3eaf4f2196d4c2e8c4d6b4a2",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "e3c3cddc3eaf4f2196d4c2e8c4d6b4a2"
+        }
+      ],
+      "originalAnimationRuid": "23fec8a8a0a8411c84ddbebc56c83501",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8143000.img",
+        "batch": 2,
+        "batchIndex": 2,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9400013.img": {
+      "monsterName": "雪女",
+      "hitAnimationRuid": "d173f4ea90ce40b49dc280b080fb94b6",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "d173f4ea90ce40b49dc280b080fb94b6"
+        }
+      ],
+      "originalAnimationRuid": "890cba40e5934292a5b53177ff495a34",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9400013.img",
+        "batch": 2,
+        "batchIndex": 3,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8150301.img": {
+      "monsterName": "藍翼龍",
+      "hitAnimationRuid": "1f7d6618bba24591a2214757e4a55a0b",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "1f7d6618bba24591a2214757e4a55a0b"
+        }
+      ],
+      "originalAnimationRuid": "40eb0fc11d894ba195a05e5ae7a05e67",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8150301.img",
+        "batch": 2,
+        "batchIndex": 4,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8200004.img": {
+      "monsterName": "回憶守護隊長",
+      "hitAnimationRuid": "e6afbf8ceb1c45a6a1e74f885bdb0c0c",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "e6afbf8ceb1c45a6a1e74f885bdb0c0c"
+        }
+      ],
+      "originalAnimationRuid": "f7bc51a56e2e492186a3c82b3528484e",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8200004.img",
+        "batch": 2,
+        "batchIndex": 5,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8150302.img": {
+      "monsterName": "黑翼龍",
+      "hitAnimationRuid": "72fecb8b631b44a3969843bca9453130",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "72fecb8b631b44a3969843bca9453130"
+        }
+      ],
+      "originalAnimationRuid": "af21747f71154e3392d2669160dceb81",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8150302.img",
+        "batch": 2,
+        "batchIndex": 6,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8180001.img": {
+      "monsterName": "格瑞芬多",
+      "hitAnimationRuid": "6079cbd6f14d472d8e7e7cf98d94fb9e",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "6079cbd6f14d472d8e7e7cf98d94fb9e"
+        }
+      ],
+      "originalAnimationRuid": "74191c32e6c240d5a9daee58eac09ecb",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8180001.img",
+        "batch": 2,
+        "batchIndex": 7,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8200005.img": {
+      "monsterName": "悔恨的祭司",
+      "hitAnimationRuid": "3e5d03c46b0142ab984621db3c79dc49",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "3e5d03c46b0142ab984621db3c79dc49"
+        }
+      ],
+      "originalAnimationRuid": "5641e8309fd04e3381d210aba558c0e4",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8200005.img",
+        "batch": 2,
+        "batchIndex": 8,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8170000.img": {
+      "monsterName": "達納托斯",
+      "hitAnimationRuid": "681ac3cf4ba14ca791f3c8959fff2b9b",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "681ac3cf4ba14ca791f3c8959fff2b9b"
+        }
+      ],
+      "originalAnimationRuid": "a21cbaa71a364bd59215c432d3222dbc",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8170000.img",
+        "batch": 2,
+        "batchIndex": 9,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8200006.img": {
+      "monsterName": "悔恨的神官",
+      "hitAnimationRuid": "9bd50d7b76f74ec29c900f30d529fa0c",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "9bd50d7b76f74ec29c900f30d529fa0c"
+        }
+      ],
+      "originalAnimationRuid": "14484eb99f734914afeda8b456789bd7",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8200006.img",
+        "batch": 2,
+        "batchIndex": 10,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9300045.img": {
+      "monsterName": "女神的月光精靈",
+      "hitAnimationRuid": "446510b2f6024a3c9a7b5e3c5a4c67bd",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "446510b2f6024a3c9a7b5e3c5a4c67bd"
+        }
+      ],
+      "originalAnimationRuid": "321449eff5b34e7d821ae7f63a425411",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9300045.img",
+        "batch": 2,
+        "batchIndex": 11,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9300046.img": {
+      "monsterName": "女神的星光精靈",
+      "hitAnimationRuid": "fac3a34a9a47491ba441e74369b0f77c",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "fac3a34a9a47491ba441e74369b0f77c"
+        }
+      ],
+      "originalAnimationRuid": "025d265ab7f74d519529cec934064b0d",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9300046.img",
+        "batch": 2,
+        "batchIndex": 12,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9300047.img": {
+      "monsterName": "女神的日光精靈",
+      "hitAnimationRuid": "a129831558c2447cbe5953df91f1f4ac",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "a129831558c2447cbe5953df91f1f4ac"
+        }
+      ],
+      "originalAnimationRuid": "6128a2c23d2c431faf0011223de337c7",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9300047.img",
+        "batch": 2,
+        "batchIndex": 13,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8200007.img": {
+      "monsterName": "悔恨的守護兵",
+      "hitAnimationRuid": "614482f63ca247ccbe5cc95611e7cc10",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "614482f63ca247ccbe5cc95611e7cc10"
+        }
+      ],
+      "originalAnimationRuid": "89a7fae39ed44d82a76bfb162d9878bb",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8200007.img",
+        "batch": 2,
+        "batchIndex": 14,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/9400014.img": {
+      "monsterName": "天狗",
+      "hitAnimationRuid": "29a185b022474df4a0fb68d343052029",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "29a185b022474df4a0fb68d343052029"
+        }
+      ],
+      "originalAnimationRuid": "b93cdc5574b54ca2974898e98fb68d2d",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/9400014.img",
+        "batch": 2,
+        "batchIndex": 15,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8200008.img": {
+      "monsterName": "悔恨的守護隊長",
+      "hitAnimationRuid": "20aadeaf7d9a48f9ab290e9e1fc2e55c",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "20aadeaf7d9a48f9ab290e9e1fc2e55c"
+        }
+      ],
+      "originalAnimationRuid": "cff69f5401264842ad0192550215aaf2",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8200008.img",
+        "batch": 2,
+        "batchIndex": 16,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8200009.img": {
+      "monsterName": "忘卻的祭司",
+      "hitAnimationRuid": "f1fa2da8b86a4f2ea240aad6a8fe696e",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "f1fa2da8b86a4f2ea240aad6a8fe696e"
+        }
+      ],
+      "originalAnimationRuid": "7abfd571cadb484d99ab96b29480ac7e",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8200009.img",
+        "batch": 2,
+        "batchIndex": 17,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8220004.img": {
+      "monsterName": "多多",
+      "hitAnimationRuid": "71860db25d9f490db35856503a32b77f",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "71860db25d9f490db35856503a32b77f"
+        }
+      ],
+      "originalAnimationRuid": "a247729732f0464f85bd2842d5c064a3",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8220004.img",
+        "batch": 2,
+        "batchIndex": 18,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8200010.img": {
+      "monsterName": "忘卻的神官",
+      "hitAnimationRuid": "0a4cfa8f90a646ef8efae747a4ad1621",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "0a4cfa8f90a646ef8efae747a4ad1621"
+        }
+      ],
+      "originalAnimationRuid": "97873a2e853245ba89bc159b83dcb1a1",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8200010.img",
+        "batch": 2,
+        "batchIndex": 19,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8200011.img": {
+      "monsterName": "忘卻的守護兵",
+      "hitAnimationRuid": "58facb0472bb40c3a951ead4b3159f7c",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "58facb0472bb40c3a951ead4b3159f7c"
+        }
+      ],
+      "originalAnimationRuid": "617501c8a8cf4b02acba5f6a95507817",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8200011.img",
+        "batch": 2,
+        "batchIndex": 20,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8200012.img": {
+      "monsterName": "忘卻的守護隊長",
+      "hitAnimationRuid": "4aad26b05e9244bea91a205c11747813",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "4aad26b05e9244bea91a205c11747813"
+        }
+      ],
+      "originalAnimationRuid": "75f4058fa8ad4b4c9af10df5a5d394c1",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8200012.img",
+        "batch": 2,
+        "batchIndex": 21,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8220005.img": {
+      "monsterName": "利里諾斯",
+      "hitAnimationRuid": "0c158245b669433db00221dd0020fe6c",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "0c158245b669433db00221dd0020fe6c"
+        }
+      ],
+      "originalAnimationRuid": "8e7d819e07c24ef598cf40f6b4034fe1",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8220005.img",
+        "batch": 2,
+        "batchIndex": 22,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8240092.img": {
+      "monsterName": "量產型新時代機器人A",
+      "hitAnimationRuid": "99ae2d6866824bb0bd9df27742a1e9a1",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "99ae2d6866824bb0bd9df27742a1e9a1"
+        }
+      ],
+      "originalAnimationRuid": "5053c2f4d0a7401ba84977e3bce8d2e6",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8240092.img",
+        "batch": 2,
+        "batchIndex": 23,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8240094.img": {
+      "monsterName": "量產型新時代機器人B",
+      "hitAnimationRuid": "ebb182fcebef4ca7ac01e5763c0b6d1a",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "ebb182fcebef4ca7ac01e5763c0b6d1a"
+        }
+      ],
+      "originalAnimationRuid": "7a6e6b4f2ecb4fc9974b211849a5a094",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8240094.img",
+        "batch": 2,
+        "batchIndex": 24,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    },
+    "mob/8642102.img": {
+      "monsterName": "巴達雷伊",
+      "hitAnimationRuid": "1b5cef3ca72b448298b9fc3228f3ac88",
+      "hitAction": "hit1",
+      "availableHitClips": [
+        {
+          "action": "hit1",
+          "ruid": "1b5cef3ca72b448298b9fc3228f3ac88"
+        }
+      ],
+      "originalAnimationRuid": "4d72c5ce3a924253b1dae0f9150136ef",
+      "originalAnimationAction": "move",
+      "fallback": null,
+      "source": {
+        "kind": "msw-search-wrapper-getResourcesBatch",
+        "endpoint": "POST /v3/resources/batch",
+        "packId": "mob/8642102.img",
+        "batch": 2,
+        "batchIndex": 25,
+        "elementType": "animationclip",
+        "relPath": "hit1"
+      }
+    }
+  }
+}

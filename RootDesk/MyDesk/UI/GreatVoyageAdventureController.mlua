@@ -801,13 +801,25 @@ script GreatVoyageAdventureController extends Logic
 
 	@ExecSpace("ClientOnly")
 	method void RefreshAirBattleDisplay()
+		-- 顯示混編敵人、各物種固定賞金及本航次逐隻累計的未結算賞金。
 		local battle = self.clientAirBattle
 		if battle == nil or not isvalid(self.messageText) then return end
+		local wave = self._T.airWave
+		local waveText = ""
+		if wave ~= nil and wave.id == battle.id then
+			waveText = "｜敵群 " .. tostring(wave.remaining) .. "/" .. tostring(wave.total) .. "｜累計賞金 " .. tostring(wave.bounty) .. " G"
+		end
 		if battle.phase == "active" and self.currentMapName == "map_airship_deck" then
-			self.messageText.Text = "自動空戰｜" .. battle.enemyName .. " " .. tostring(math.ceil(battle.enemyHp)) .. "/" .. tostring(math.ceil(battle.enemyMaxHp)) .. "｜船體 " .. tostring(math.ceil(battle.playerHp)) .. "/" .. tostring(math.ceil(battle.playerMaxHp))
+			local monster = _GreatVoyageEncounterData:GetMonsterById(battle.enemyId)
+			local shot = wave and wave.id == battle.id and wave.enemies and wave.enemies.playerShot or nil
+			local result = ""
+			if shot ~= nil and shot.hit == false and (shot.elapsed or 0)+math.max(0,_UtilLogic.ElapsedSeconds-(wave.receivedAt or _UtilLogic.ElapsedSeconds)) >= (shot.flightSeconds or 0.6) then result = "｜MISS" end
+			local reward = monster and ("（賞金 " .. tostring(monster.bounty) .. " G）") or ""
+			self.messageText.Text = "自動空戰｜" .. battle.enemyName .. " " .. tostring(math.ceil(battle.enemyHp)) .. "/" .. tostring(math.ceil(battle.enemyMaxHp)) .. reward .. waveText .. result
+		elseif battle.phase == "won" and self.currentMapName == "map_airship_deck" then
+			self.messageText.Text = "敵群全滅，繼續航行" .. waveText .. "｜到港結算"
 		end
 	end
-
 	@ExecSpace("ClientOnly")
 	method void OnKeyDown(KeyDownEvent event)
 		-- 教學關閉輸入不得同時觸發港口快捷鍵或後方操作。

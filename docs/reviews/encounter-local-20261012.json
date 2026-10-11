@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-11T17:03:09.027Z",
+  "scope": "正式 mLua 方法的隔離 Lupa 回歸與離線抽樣，不取代 Maker 或正式服驗證。",
+  "pytest": {
+    "command": "python -m pytest Tests -q",
+    "status": "PASS",
+    "tests": 107,
+    "subtests": 10,
+    "stdout": "107 passed, 10 subtests passed in 1.45s"
+  },
+  "nodeSmoke": {
+    "command": "node Docs/web/encounter-balance/encounter-smoke.cjs",
+    "status": "PASS",
+    "cases": 22464,
+    "randomSamples": 98000,
+    "sourceAssignments": 300,
+    "adopted": 132,
+    "enabled": 129
+  },
+  "files": [
+    {
+      "path": "RootDesk/MyDesk/Combat/GreatVoyageEncounterData.mlua",
+      "sha256": "653feabfa4f41561edb460b1d12a7f47b8899a44da2162076d2b4fdb19fcc09f"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyageVoyageData.mlua",
+      "sha256": "23862fce0a9e6a23047360701b9f72207737975600ac286634d959e9b2313f99"
+    },
+    {
+      "path": "RootDesk/MyDesk/GreatVoyageVoyageState.mlua",
+      "sha256": "4d848864818e75e4bc0d65847f06d6fdb9d93b2953c0b5e4a3b7d31a2836d989"
+    },
+    {
+      "path": "RootDesk/MyDesk/Persistence/GreatVoyageProfileStore.mlua",
+      "sha256": "938428f4b50fee92b571e713aefdf27e8fdb7d2befecd323374bed9123fe546c"
+    },
+    {
+      "path": "RootDesk/MyDesk/UI/GreatVoyageAdventureController.mlua",
+      "sha256": "0ae1a2c13abd7cbb1793bdd6e8b17431bc7dc8b96cd650f4beda8b3c09ac9a3a"
+    },
+    {
+      "path": "RootDesk/MyDesk/ShipVisual/GVShipVisualClient.mlua",
+      "sha256": "2d51b72334af84feb8be233a12a2d7efad90a3a10465c0bb1fce1133c125f7bf"
+    },
+    {
+      "path": "Tests/test_air_wave_combat.py",
+      "sha256": "dfab9087b2a2bc2531c7c246a941f9fb810b159c0c5aeb12b80c78c785d4a589"
+    },
+    {
+      "path": "Tests/test_encounter_data.py",
+      "sha256": "1cf165b509c3530040c7240632e9af256c7524eca3bc341e3e68b7dbb9a0858e"
+    },
+    {
+      "path": "Tests/test_encounter_cadence.py",
+      "sha256": "db659b68205200160a8db8bdbff7ba17cd69f56b54eba21c5ef1e791e8a1d6ac"
+    }
+  ],
+  "codeRabbit": {
+    "receipt": "encounter-coderabbit-20261012.ndjson",
+    "filesReviewed": 8,
+    "findings": 1,
+    "repair": "ReceiveAirWaveSnapshot 在 PlayerComponent.UserId 存取前檢查 PlayerComponent ~= nil；本機正負向測試已過。",
+    "secondExternalRun": false
+  }
+}
