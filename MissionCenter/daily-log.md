@@ -135,3 +135,9 @@
 - Reason：保存完成的怪物分類／129物種空戰與賞金、船級戰力資料，以及原UID直線砲擊／命中／浮傷／爆擊／頭頂MISS與同pack受擊表情。
 - Impact：CodeRabbit完整39檔提出1 minor路徑大小寫問題，新增回歸先重現後修；1個差異檔連同關聯程式共5檔複審0 issues，兩輪exit0／review_completed，本輪未追加第三次。133 tests／21 subtests、22,464條件／98,000抽樣通過；沒有修遊戲production或重新跑Maker。高階材料造船／NPC／特殊Boss與正式服、全航程等限制保留；既有任務生命週期不變。提交／push與遠端SHA確認待以下回執補記。
 - Evidence：[完整發布紀錄](../docs/CodeRabbit-Review-20261012.md)、[review input／原始回應／驗證](../docs/reviews/2026-10-12/git-checkpoint/)。
+
+- Timestamp：2026-10-12T03:06:20+08:00｜GV-GIT-RELEASE-20261012-PUSH
+- Change：189檔 checkpoint 21fca7c2da8da2247c055d2cac4156030a4af4c2 已一般推送origin/main、exit0；git ls-remote與GitHub connector確認同SHA，當時工作目錄乾淨。
+- Reason：完成主人指定的存Git、CodeRabbit查證修正與上傳；此回執另作文件提交保存。
+- Impact：無新遊戲分支／PR、無force push；README與任務中心於推送前更新。MSW世界未由Git發布，正式服及既有任務驗收限制不變。
+- Evidence：[GitHub提交](https://github.com/Gale0418/MSW-Sky-Pirate/commit/21fca7c2da8da2247c055d2cac4156030a4af4c2)、[上傳回執](../docs/reviews/2026-10-12/git-checkpoint/push-receipt.json)。

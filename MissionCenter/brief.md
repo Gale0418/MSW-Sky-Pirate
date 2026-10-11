@@ -1,9 +1,9 @@
 <!-- Generated materialized view. Do not edit directly; rebuild from canonical MissionCenter files. -->
-<!-- mission-center-derived schema=1.0 fingerprint-format=sha256-v2-lf source-fingerprint=625acd244555ec70edf0ab28aeba49a62874013f8a08dad129877bf3397b70e1 -->
+<!-- mission-center-derived schema=1.0 fingerprint-format=sha256-v2-lf source-fingerprint=a6ba96d020441b60b0945936dca4e086bf960a5eea5d63c273d3f5bab878b43f -->
 # Mission Brief
 
 - Last organized: 2026-10-12
-- Source fingerprint: `625acd244555ec70edf0ab28aeba49a62874013f8a08dad129877bf3397b70e1`
+- Source fingerprint: `a6ba96d020441b60b0945936dca4e086bf960a5eea5d63c273d3f5bab878b43f`
 - Source of truth: `tasks.md`
 - Project: MSW Great Voyage
 - North Star: 楓之谷風格的空中航海冒險；以既有三場景原型為基線，完成 Great Voyage M1 四港、直航多空域航圖、地方商品貿易、甲板遭遇與整合 QA。
@@ -18,7 +18,7 @@
 - 最終補記：107 tests／10 subtests、22,464條件／98,000抽樣通過。CodeRabbit 8檔1 minor已查證修正並補正負向回歸；Maker Server混編／固定賞金與Client跨端Timer快照通過，build87／最終runtime58全Info、0 Warning／Error。前輪夾具與時序診斷保留，Timer清除、已stop回edit。全航程與多怪sprites／正式服未驗；收據見 ../docs/reviews/encounter-runtime-maker-20261012.json。
 - Timestamp：2026-10-12T02:47:49+08:00｜GV-COMBAT-FEEDBACK-20261012
 - Change：加入原 UID 獨立飛行與固定直線砲擊、溫和命中、±10% 傷害／5%×1.5 爆擊、原生傷害字與頭頂 MISS，129 種怪物各用同官方 pack hit1，活怪約0.3秒後還原、死怪延後回收；DIY砲台保留後續規劃。
-- [TRUNCATED] 9 additional items require canonical file access.
+- [TRUNCATED] 14 additional items require canonical file access.
 
 ## Relevant Guardrails (0)
 - None
